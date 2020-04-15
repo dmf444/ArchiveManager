@@ -28,7 +28,7 @@
     "buildVersion": "1.0.0"
   },
   "author": "David Fernandes @dmf444",
-  "license": "MIT",
+  "license": "GPLv3",
   "dependencies": {
     "@ant-design/icons": "^4.0.6",
     "@types/react": "^16.9.13",

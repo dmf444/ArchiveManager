@@ -28,7 +28,7 @@ ReactDOM.render(
             }}
         >
             <div className='logo' />
-            <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']}>
+            <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']} style={{height: "100%", display: "flex", flexWrap: "wrap", alignContent: "flex-start"}}>
                 <Menu.Item key='1'>
                     <HomeOutlined />
                     <span className='nav-text'>Home</span>
@@ -37,7 +37,9 @@ ReactDOM.render(
                     <FileAddOutlined />
                     <span className='nav-text'>Files</span>
                 </Menu.Item>
-                <Menu.Item key='3'>
+
+
+                <Menu.Item key='3' style={{position: 'absolute', bottom: '47px'}}>
                     <SettingOutlined />
                     <span className='nav-text'>Settings</span>
                 </Menu.Item>

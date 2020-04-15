@@ -1,22 +1,66 @@
 /**
  * Entry point of the Election app.
  */
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import {EventDispatcher, notificationPackage} from './Events';
+import {DiscordSettings} from "./settings/DiscordSettings";
+import {FileManagement} from "./FileManagement";
+import {SettingsManager} from '@main/settings/SettingsManager';
+import {WebDatabase} from '@main/database/WebDatabase';
+import {Bot} from '@main/DiscordBot';
+import {FileDatabase} from '@main/database/LocalDatabase';
+const log = require('electron-log');
+const electronDl = require('electron-dl');
+
 
 let mainWindow: Electron.BrowserWindow | null;
+var bot: Bot;
+var db = null;
+var settings: SettingsManager;
+var events = new EventDispatcher<notificationPackage>();
+let webDatabase: WebDatabase;
+
+
+electronDl();
+
+export function getEventsDispatcher() {
+    return events;
+}
+
+export function getSettingsManager() {
+    return settings;
+}
+
+export function getWebDatabase() {
+    return webDatabase;
+}
+
+export function reloadDiscordBot() {
+    bot.reloadSettings();
+}
+
+export function reloadWebDatabase() {
+    webDatabase.initDatabase();
+}
+
 
 function createWindow(): void {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        height: 600,
-        width: 800,
+        width: 1280,
+        height: 820,
+        icon: 'public/smcs.ico',
         webPreferences: {
             webSecurity: false,
             devTools: process.env.NODE_ENV !== 'production'
         }
     });
+
+
+    mainWindow.setTitle('');
+    //mainWindow.setMenuBarVisibility(false);
 
     // and load the index.html of the app.
     mainWindow.loadURL(
@@ -40,6 +84,21 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
+app.whenReady().then(() => {
+    let filePath = app.getPath('userData');
+
+    db = new FileDatabase(filePath);
+    settings = new SettingsManager(db);
+    webDatabase = new WebDatabase();
+
+    //FileManagement.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
+    /*let disc_bot = new Bot();
+    disc_bot.start();
+    bot = disc_bot;*/
+
+    //let webDatabase = new WebDatabase();
+    //webDatabase.matchImage('8063e8f6606f5e7d11ccd3e81839ca05').then(value => log.info("The database returned: " + value))
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -58,5 +117,23 @@ app.on('activate', () => {
     }
 });
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+
+/**
+ *
+ */
+ipcMain.on('variable-request-settings', function (event, arg) {
+    event.sender.send('variable-reply', getSettingsManager().getRenderSettings());
+});
+
+ipcMain.on('variable-send-settings-update', function (event, arg) {
+    for(let i = 0; i < arg.length; i++){
+        let info = arg[i];
+
+        let setting: ISettings = getSettingsManager().getSettings(info['category']);
+        if(!setting.equals(info['data'])){
+            setting.fromJson(info['data']);
+            getSettingsManager().updateSettings(setting);
+        }
+    }
+});
+

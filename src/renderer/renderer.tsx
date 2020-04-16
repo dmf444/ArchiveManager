@@ -12,6 +12,6 @@ import { Layout, Menu } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 import 'antd/dist/antd.css';
 
-import * as Home from './components/Home';
+import {ContentSurround} from './components/ContentSurround';
+ReactDOM.render(<ContentSurround/>, document.getElementById('app'));
 
-ReactDOM.render(<Home.Home/> ,document.getElementById('app'));

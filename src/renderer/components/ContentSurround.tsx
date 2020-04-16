@@ -7,7 +7,7 @@ import {
 import '@public/style.css';
 import { Layout, Menu } from 'antd';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Footer, Sider } = Layout;
 
 export class ContentSurround extends React.Component{
 

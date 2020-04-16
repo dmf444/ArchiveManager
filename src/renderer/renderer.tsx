@@ -17,7 +17,10 @@ import { Layout, Menu } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 import 'antd/dist/antd.css';
 
-ReactDOM.render(
+
+import {ContentSurround} from './components/ContentSurround';
+ReactDOM.render(<ContentSurround/>, document.getElementById('app'));
+/*ReactDOM.render(
     <Layout>
         <Sider collapsible
             style={{
@@ -45,7 +48,7 @@ ReactDOM.render(
                 </Menu.Item>
             </Menu>
         </Sider>
-        <Layout className='site-layout' style={{ marginLeft: 200 }}>
+        <Layout className='site-layout'>
             <Header className='site-layout-background' style={{ padding: 0 }} />
             <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
                 <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
@@ -150,4 +153,4 @@ ReactDOM.render(
         </Layout>
     </Layout>,
     document.getElementById('app')
-);
+);*/

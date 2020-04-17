@@ -7,6 +7,7 @@ import {
 import '@public/style.css';
 import { Layout, Menu } from 'antd';
 import { Home } from './Home';
+import { Files } from './Files';
 
 const { Content, Footer, Sider } = Layout;
 
@@ -22,18 +23,15 @@ export class ContentSurround extends React.Component{
         this.setState({ collapsed });
     };
 
-    changeToHome = event => {
-        event.preventDefault();
+    changeToHome = () => {
         this.setState({ currentSelection: 'Home' });
     };
 
-    changeToFiles = event => {
-        event.preventDefault();
+    changeToFiles = () => {
         this.setState({ currentSelection: 'Files' });
     }
 
-    changeToSettings = event => {
-        event.preventDefault();
+    changeToSettings = () => {
         this.setState({ currentSelection: 'Settings' });
     }
 
@@ -70,6 +68,7 @@ export class ContentSurround extends React.Component{
                 <Content style={{ margin: '24px 16px 0', overflow: 'initial' }} >
                     <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
                         {this.state.currentSelection == 'Home' && <Home {...this.props} />}
+                        {this.state.currentSelection == 'Files' && <Files {...this.props} />}
                     </div>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>

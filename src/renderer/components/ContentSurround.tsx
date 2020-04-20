@@ -8,6 +8,7 @@ import '@public/style.css';
 import { Layout, Menu } from 'antd';
 import { Home } from './Home';
 import { Files } from './Files';
+import {Settings} from "@/renderer/components/Settings";
 
 const { Content, Footer, Sider } = Layout;
 
@@ -37,7 +38,7 @@ export class ContentSurround extends React.Component{
 
     render() {
         return (
-        <Layout>
+        <Layout style={{height: "100%"}}>
             <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}
                    style={{
                        overflow: 'auto',
@@ -69,6 +70,7 @@ export class ContentSurround extends React.Component{
                     <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
                         {this.state.currentSelection == 'Home' && <Home {...this.props} />}
                         {this.state.currentSelection == 'Files' && <Files {...this.props} />}
+                        {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
                     </div>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>

@@ -75,7 +75,7 @@ export class WebDatabase {
                 });
             })
             .catch(err => {
-                log.error('[SQLDatabase] Unable to connect to the database:', err);
+                log.error('[SQLDatabase] Unable to connect to the database:', err['name']);
             });
     }
 

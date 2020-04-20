@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import '@public/style.css';
 import { Upload, message } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { FileOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
 
@@ -15,7 +15,10 @@ export class AddFiles extends React.Component {
         return(
             <div className="addFilesComp">
                 <Dragger>
-                    <p>
+                    <p className="ant-upload-drag-icon">
+                        <FileOutlined />
+                    </p>
+                    <p className="ant-upload-text">
                         Click or drag file to this area to upload UWU
                     </p>
                 </Dragger>

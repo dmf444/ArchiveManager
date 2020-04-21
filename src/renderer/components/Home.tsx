@@ -2,13 +2,16 @@
 import * as React from 'react';
 
 import '@public/style.css';
-import {Button, Col, Form, Input, Layout, Row, Upload} from 'antd';
+import { Button, Col, Form, Input, Layout, Row, Upload, Typography, Divider } from 'antd';
 
 const { Header, Content, Footer, Sider } = Layout;
+const { Title } = Typography;
 import 'antd/dist/antd.css';
 
-import * as Status from './home/Status';
 import * as AddFiles from './home/AddFiles';
+import * as Statistics from './home/Statistics';
+import * as Status from './home/Status';
+
 import {UploadOutlined} from "@ant-design/icons/lib";
 
 export class Home extends React.Component {
@@ -21,6 +24,22 @@ export class Home extends React.Component {
             <div className="homeComp">
                 <Status.Status>    
                 </Status.Status>
+
+                <div>
+                    <Row justify="start">
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Title level={3}>Statistics</Title>
+                                </Col>
+                            </Row>    
+                        </Col>
+                    </Row>
+                    <Divider orientation="left" style={{fontSize:'25px', color:'#d9d9d9'}}>Statistics</Divider>
+                    <Statistics.Statistics>
+                    </Statistics.Statistics>
+                </div>
+
 
                 <Row>
                     <Col flex={4}>
@@ -41,5 +60,11 @@ export class Home extends React.Component {
 
             </div>
         );
+    }
+}
+
+const styles = {
+    divProps: {
+        style: { fontSize:'25px', color:'#d9d9d9'}
     }
 }

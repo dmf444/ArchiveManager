@@ -29,6 +29,16 @@ export class Status extends React.Component {
                                     <Title level={4}>Discord Status</Title>
                                 </Col>
                             </Row>
+                            
+                            {/*
+                            Update the status dynamically
+                            Change colors depending on up/down/etc.
+                            */}
+                            <Row justify="center">
+                                <Col>
+                                    <Title level={2}>PLACE HOLDER STATUS</Title>
+                                </Col>
+                            </Row>
                         </div>
                     </Col>
 
@@ -39,6 +49,11 @@ export class Status extends React.Component {
                                     <Title level={4}>Database Status</Title>
                                 </Col>
                             </Row>
+                            <Row justify="center">
+                                <Col>
+                                    <Title level={2}>PLACE HOLDER STATUS</Title>
+                                </Col>
+                            </Row>
                         </div>
                     </Col>
 
@@ -47,6 +62,11 @@ export class Status extends React.Component {
                             <Row justify="start">
                                 <Col>
                                     <Title level={4}>Placeholder Status</Title>
+                                </Col>
+                            </Row>
+                            <Row justify="center">
+                                <Col>
+                                    <Title level={2}>PLACE HOLDER STATUS</Title>
                                 </Col>
                             </Row>
                         </div>

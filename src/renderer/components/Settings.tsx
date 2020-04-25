@@ -34,7 +34,7 @@ export class Settings extends React.Component {
         for (let j = 0; j < clientArgs.settings.length; j++) {
             let setting: settingValues = clientArgs.settings[j];
             let size = Math.round((24 * setting.size) / 100);
-            console.log(setting.value);
+
 
             formInputs.push(
                 <Col span={size} key={"col_" + keyId + "_" + j} style={{paddingTop: 10}}>
@@ -48,7 +48,6 @@ export class Settings extends React.Component {
     }
 
     createForm = () => {
-        console.log("Create");
         var internalFormList= [];
         if(this.state.data != null){
             for (let i = 0; i < this.state.data.length; i++) {
@@ -92,7 +91,7 @@ export class Settings extends React.Component {
             }
             returnData.push({category: settingImpl.id, data: thing});
         }
-        console.log(returnData);
+
         ipcRenderer.send('settings_fields_update', returnData);
         notification.success({
             message: 'Update Success!',

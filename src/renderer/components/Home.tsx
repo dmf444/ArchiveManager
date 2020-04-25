@@ -25,21 +25,8 @@ export class Home extends React.Component {
                 <Status.Status>    
                 </Status.Status>
 
-                <div>
-                    <Row justify="start">
-                        <Col>
-                            <Row>
-                                <Col>
-                                    <Title level={3}>Statistics</Title>
-                                </Col>
-                            </Row>    
-                        </Col>
-                    </Row>
-                    <Divider orientation="left" style={{fontSize:'25px', color:'#d9d9d9'}}>Statistics</Divider>
-                    <Statistics.Statistics>
-                    </Statistics.Statistics>
-                </div>
-
+                <Statistics.Statistics>
+                </Statistics.Statistics>
 
                 <Row>
                     <Col flex={4}>

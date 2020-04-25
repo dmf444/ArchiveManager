@@ -53,7 +53,7 @@ export class Settings extends React.Component {
             for (let i = 0; i < this.state.data.length; i++) {
                 let clientArgs: settingFrame = this.state.data[i];
 
-                internalFormList.push(<Divider orientation="left" key={i}>{clientArgs.category}</Divider>);
+                internalFormList.push(<Divider orientation="left" style={{ fontSize: "20px" }} key={i}>{clientArgs.category}</Divider>);
                 internalFormList.push(
                     <Row style={{width: "100%"}} key={"row_" + i}>
                         {this.createInputs(clientArgs, i)}

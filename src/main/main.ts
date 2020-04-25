@@ -121,11 +121,11 @@ app.on('activate', () => {
 /**
  *
  */
-ipcMain.on('variable-request-settings', function (event, arg) {
-    event.sender.send('variable-reply', getSettingsManager().getRenderSettings());
+ipcMain.on('settings_fields_get', function (event, arg) {
+    event.sender.send('setting_fields_get_reply', getSettingsManager().getRenderSettings());
 });
 
-ipcMain.on('variable-send-settings-update', function (event, arg) {
+ipcMain.on('settings_fields_update', function (event, arg) {
     for(let i = 0; i < arg.length; i++){
         let info = arg[i];
 

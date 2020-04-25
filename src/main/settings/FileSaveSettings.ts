@@ -38,8 +38,8 @@ export class FileSaveSettings implements ISettings{
             id: this.categoryName,
             category: this.localizedName,
             settings: [
-                {id: 'staging_path', value: this._stagingPath, size: 12, name: "Staging Files Path"},
-                {id: 'processing_path', value: this._processingPath, size: 12, name: "Downloaded File Path"}
+                {id: 'staging_path', value: this._stagingPath, size: 100, name: "Staging Files Path"},
+                {id: 'processing_path', value: this._processingPath, size: 100, name: "Downloaded File Path"}
             ]
         }
     }

@@ -11,6 +11,9 @@ import {SettingsManager} from '@main/settings/SettingsManager';
 import {WebDatabase} from '@main/database/WebDatabase';
 import {Bot} from '@main/DiscordBot';
 import {FileDatabase} from '@main/database/LocalDatabase';
+import {FileModel} from '@main/file/FileModel';
+import {FileUploadData} from '@main/file/FileUploadData';
+import {FileState} from '@main/file/FileState';
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -91,8 +94,19 @@ app.whenReady().then(() => {
     settings = new SettingsManager(db);
     webDatabase = new WebDatabase();
 
-    //FileManagement.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
-    /*let disc_bot = new Bot();
+    /*let metadata = FileUploadData.fromJson(null);
+    let file = new FileModel(db.getNextFreeFileId(), "TestFile1", "C:/Fake/Path/Location", FileState.NEW, metadata);
+    db.addFile(file);
+
+    let metadata1 = FileUploadData.fromJson(null);
+    let fileId: number = db.getNextFreeFileId();
+    log.info("FILE ID: ", fileId);
+    let file1 = new FileModel(fileId, "TestFile2", "C:/Faker/Pathy/Location", FileState.NORMAL, metadata1);
+    db.addFile(file1);
+
+    log.info(db.getFileById(fileId).toJson());
+    FileManagement.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
+    let disc_bot = new Bot();
     disc_bot.start();
     bot = disc_bot;*/
 

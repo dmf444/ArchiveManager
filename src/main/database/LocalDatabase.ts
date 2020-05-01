@@ -1,12 +1,12 @@
 import {DiscordSettings} from "@main/settings/DiscordSettings";
 import {FileSaveSettings} from "@main/settings/FileSaveSettings";
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
+import {FileModel} from '@main/file/FileModel';
 
 const log = require('electron-log');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
-export type FileModel = { id: string, category: string, settings: settingValues[]};
 
 export class FileDatabase {
     private database;
@@ -17,6 +17,30 @@ export class FileDatabase {
         //log.info("FileDB:" + filePath + '/appdb.json');
         this.database = low(adapter);
         this.database.defaults({ settings: {}, files: []}).write();
+    }
+
+    public addFile(file: FileModel) {
+        let model = this.database.get('files').find({id: file.getId()});
+        let modelValue = model.value();
+        if(modelValue == null || modelValue == []) {
+            this.database.get('files').push(file.toJson()).write();
+        } else {
+            model.assign(file.toJson()).write();
+        }
+    }
+
+    public getFileById(id: number): FileModel {
+        let model = this.database.get('files').find({id: id}).value();
+        return FileModel.fromJson(model);
+    }
+
+    public getNextFreeFileId(): number{
+        let highestModel = this.database.get('files').orderBy('id', 'desc').take(1);
+        if(highestModel.size().value() != 0) {
+            return highestModel.value()[0]['id'] + 1;
+        } else {
+            return 0;
+        }
     }
 
     public getDiscordConfig() : ISettings {

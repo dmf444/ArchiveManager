@@ -151,3 +151,7 @@ ipcMain.on('settings_fields_update', function (event, arg) {
     }
 });
 
+ipcMain.on('files_get_new', function(event, arg) {
+   event.sender.send('files_get_new_reply', db.getNewFiles());
+});
+

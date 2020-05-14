@@ -2,6 +2,7 @@ import {DiscordSettings} from "@main/settings/DiscordSettings";
 import {FileSaveSettings} from "@main/settings/FileSaveSettings";
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {FileModel} from '@main/file/FileModel';
+import {FileState} from '@main/file/FileState';
 
 const log = require('electron-log');
 const low = require('lowdb');
@@ -41,6 +42,10 @@ export class FileDatabase {
         } else {
             return 0;
         }
+    }
+
+    public getNewFiles(): FileModel[] {
+        return this.database.get('files').filter({state: "NEW"}).value();
     }
 
     public getDiscordConfig() : ISettings {

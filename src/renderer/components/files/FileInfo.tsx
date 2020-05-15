@@ -8,7 +8,7 @@ export class FileInfo extends React.Component{
 
     render() {
         return (
-            <div style={{color:'#d9d9d9', position:'absolute'}}>
+            <div style={{position:'absolute'}}>
                 <p>THIS IS TEXT</p>
             </div>
         );

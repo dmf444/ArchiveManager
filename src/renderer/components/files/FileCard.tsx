@@ -2,21 +2,14 @@ import * as React from 'react';
 import {Card, Col, Row} from 'antd';
 import { EditTwoTone, FileOutlined, SettingOutlined} from '@ant-design/icons/lib';
 
-import {FileInfo} from './FileInfo';
+interface FileProps {
+    infoOpen: (event: React.MouseEvent) => void
+}
 
-
-export class FileCard extends React.Component{
+export class FileCard extends React.Component<FileProps, {}>{
 
     constructor(props) {
         super(props);
-    }
-
-    state = {
-        cardInfoOpen: false
-    }
-
-    openFileInfo = event => {
-        this.setState({cardInfoOpen: true})
     }
 
     render() {
@@ -29,18 +22,17 @@ export class FileCard extends React.Component{
                                 <Col style={{paddingRight: "3px"}}>
                                     <FileOutlined style={{fontSize: "3em"}}/>
                                 </Col>
-                                <Col>
+                                <Col onClick={this.props.infoOpen}>
                                     <h4 style={{marginBottom: "0px"}}>This is the title of the file</h4>
                                     <h6 style={{textAlign: "left"}}>id number</h6>
                                 </Col>
                             </Row>
                         </Col>
                         <Col style={{marginRight: "-15px"}}>
-                            <EditTwoTone onClick={this.openFileInfo} style={{fontSize: "2em"}}/>
+                            <EditTwoTone style={{fontSize: "2em"}}/>
                         </Col>
                     </Row>
                 </Card>
-                {this.state.cardInfoOpen && <FileInfo/>}
             </div>
         );
     }

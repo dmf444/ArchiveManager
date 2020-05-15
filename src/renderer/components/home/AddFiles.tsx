@@ -31,7 +31,7 @@ export class AddFiles extends React.Component {
                     </Col>
                 </Row>
                 
-                <Row gutter={6}>
+                <Row gutter={12}>
                     <Col flex={12}>                        
                         <Dragger>
                             <p className="ant-upload-drag-icon">

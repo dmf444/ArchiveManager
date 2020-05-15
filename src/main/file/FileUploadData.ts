@@ -1,21 +1,27 @@
 
 export class FileUploadData {
+    set container(value: number) {
+        this._container = value;
+    }
+    set restrictions(value: number) {
+        this._restrictions = value;
+    }
 
     private localizedName: string;
-    private container: number;
+    private _container: number;
     private description: string;
     private descriptionVersion: string;
     private pageCount: number;
-    private restrictions: number;
+    private _restrictions: number;
     private tags: string[];
 
     constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[]) {
         this.localizedName = localizedName;
-        this.container = container;
+        this._container = container;
         this.description = desc;
         this.descriptionVersion = descVers;
         this.pageCount = count;
-        this.restrictions = restriction;
+        this._restrictions = restriction;
         this.tags = tags;
     }
 
@@ -23,11 +29,11 @@ export class FileUploadData {
     public toJson() {
         return {
             localName: this.localizedName,
-            container: this.container,
+            container: this._container,
             description: this.description,
             descVersion: this.descriptionVersion,
             count: this.pageCount,
-            restr: this.restrictions,
+            restr: this._restrictions,
             tags: this.tags
         };
     }

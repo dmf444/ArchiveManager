@@ -9,8 +9,15 @@ const { Dragger } = Upload;
 
 import {UploadOutlined} from "@ant-design/icons/lib";
 import 'antd/dist/antd.css';
+import {ipcRenderer} from "electron";
 
 export class AddFiles extends React.Component {
+
+    finish = values => {
+      if(values['url'] != null && values['url'] != ""){
+          ipcRenderer.send('homepage_url_add', values['url']);
+      }
+    };
     
     render() {
         return(
@@ -30,34 +37,44 @@ export class AddFiles extends React.Component {
                         </Row>    
                     </Col>
                 </Row>
-                
-                <Row gutter={6}>
-                    <Col flex={12}>                        
-                        <Dragger>
-                            <p className="ant-upload-drag-icon">
-                                <FileOutlined />
-                            </p>
-                            <p className="ant-upload-text">
-                                Click or drag file to this area to upload
-                            </p>
-                        </Dragger>
-                    </Col>
+                <Form name={"add_files"} layout={"vertical"} onFinish={this.finish}>
+                    <Row gutter={6}>
+                        <Col flex={6}>
+                            <Form.Item name={"multi_file"}>
+                                <Dragger multiple={true}>
+                                    <p className="ant-upload-drag-icon">
+                                        <FileOutlined />
+                                    </p>
+                                    <p className="ant-upload-text">
+                                        Add one or more Files
+                                    </p>
+                                </Dragger>
+                            </Form.Item>
+                        </Col>
 
-                    <Col flex={12}>
-                        <Form.Item label="Add File By URL" name="url">
-                            <Input />
-                        </Form.Item>
-                        <Row>
-                            <Col>
-                                <Upload action="https://www.mocky.io/v2/5cc8019d300000980a055e76" directory>
-                                    <Button>
-                                        <UploadOutlined /> Select A Directory
-                                    </Button>
-                                </Upload>
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
+                        <Col flex={12}>
+                            <Form.Item label="Add File By URL" name="url">
+                                <Input />
+                            </Form.Item>
+                            <Row>
+                                <Col>
+                                    <Form.Item name={"directory_select"}>
+                                        <Upload directory>
+                                            <Button>
+                                                <UploadOutlined /> Select A Directory
+                                            </Button>
+                                        </Upload>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
             </div>
         );
     }

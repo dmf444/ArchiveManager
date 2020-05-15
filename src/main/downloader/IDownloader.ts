@@ -11,6 +11,6 @@ interface IDownloader {
     acceptsUrl(url: string): boolean;
 
 
-    downloadUrl(url: string): void;
+    downloadUrl(url: string, stage: boolean): void;
 
 }

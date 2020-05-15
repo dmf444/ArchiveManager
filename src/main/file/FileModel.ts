@@ -8,14 +8,16 @@ export class FileModel {
     private fileName: string;
     private savedLocation: string;
     private state: FileState;
+    private url: string;
     private fileMetadata: FileUploadData;
 
 
-    constructor(id: number, fileName: string, saveLoc: string, state: FileState, fileMetadata: FileUploadData) {
+    constructor(id: number, fileName: string, saveLoc: string, state: FileState, url: string, fileMetadata: FileUploadData) {
         this.id = id;
         this.fileName = fileName;
         this.savedLocation = saveLoc;
         this.state = state;
+        this.url = url;
         this.fileMetadata = fileMetadata;
     }
 
@@ -30,12 +32,16 @@ export class FileModel {
             fileName: this.fileName,
             saveLoc: this.savedLocation,
             state: FileState[this.state],
+            url: this.url,
             metaData: this.fileMetadata.toJson()
         };
     }
 
     static fromJson(fileModelJson: {}): FileModel {
         let stateString: string = fileModelJson['state'];
-        return new FileModel(fileModelJson['id'], fileModelJson['fileName'], fileModelJson['saveLoc'], FileState[stateString], FileUploadData.fromJson(fileModelJson['metaData']));
+        if(fileModelJson['url'] == null){
+            fileModelJson['url'] = "";
+        }
+        return new FileModel(fileModelJson['id'], fileModelJson['fileName'], fileModelJson['saveLoc'], FileState[stateString], fileModelJson["url"], FileUploadData.fromJson(fileModelJson['metaData']));
     }
 }

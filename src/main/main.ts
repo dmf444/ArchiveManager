@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
 import {DiscordSettings} from "./settings/DiscordSettings";
-import {FileManagement} from "./FileManagement";
+import {FileUtils} from "./downloader/FileUtils";
 import {SettingsManager} from '@main/settings/SettingsManager';
 import {WebDatabase} from '@main/database/WebDatabase';
 import {Bot} from '@main/DiscordBot';
@@ -14,6 +14,7 @@ import {FileDatabase} from '@main/database/LocalDatabase';
 import {FileModel} from '@main/file/FileModel';
 import {FileUploadData} from '@main/file/FileUploadData';
 import {FileState} from '@main/file/FileState';
+import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -30,6 +31,10 @@ electronDl();
 
 export function getEventsDispatcher() {
     return events;
+}
+
+export function getFileDatabase() {
+    return db;
 }
 
 export function getSettingsManager() {
@@ -105,7 +110,7 @@ app.whenReady().then(() => {
     db.addFile(file1);
 
     log.info(db.getFileById(fileId).toJson());
-    FileManagement.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
+    FileUtils.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
     let disc_bot = new Bot();
     disc_bot.start();
     bot = disc_bot;*/
@@ -150,4 +155,16 @@ ipcMain.on('settings_fields_update', function (event, arg) {
         }
     }
 });
+
+ipcMain.on('files_get_new', function(event, arg) {
+   event.sender.send('files_get_new_reply', db.getNewFiles());
+});
+
+ipcMain.on('homepage_url_add', function (event, arg) {
+    let downloader: DefaultDownloader = new DefaultDownloader();
+    log.info(arg);
+    if(downloader.acceptsUrl(arg)) {
+        downloader.downloadUrl(arg, false);
+    }
+})
 

@@ -14,6 +14,8 @@ class RecordTags extends Model {}
 
 export class WebDatabase {
 
+    private connected: boolean = false;
+
     constructor() {
         this.initDatabase();
         getEventsDispatcher().register(this.eventListener);
@@ -28,6 +30,7 @@ export class WebDatabase {
         sequelize.authenticate()
             .then(() => {
                 log.info('[SQLDatabase] Connection has been established successfully.');
+                this.connected = true;
                 Images.init({
                     // attributes
                     id: {
@@ -75,6 +78,7 @@ export class WebDatabase {
                 });
             })
             .catch(err => {
+                this.connected = false;
                 log.error('[SQLDatabase] Unable to connect to the database:', err['name']);
             });
     }
@@ -84,6 +88,10 @@ export class WebDatabase {
             log.info("[Webdatabase] Listener Called - Reloading Remote Database");
             reloadWebDatabase();
         }
+    }
+
+    public isConnected(): boolean {
+        return this.connected;
     }
 
     async matchAny(inputHash: string): Promise<boolean> {

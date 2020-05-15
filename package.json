@@ -1,7 +1,7 @@
 {
   "name": "smcs_archives_manager",
   "version": "1.0.0",
-  "description": "Pre-configured boilerplate for Electron + React + TypeScript",
+  "description": "The file management app for the SMCS archives.",
   "main": "./dist/main.bundle.js",
   "scripts": {
     "start": "electron ./dist/main.bundle.js",

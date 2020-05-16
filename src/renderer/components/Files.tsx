@@ -25,11 +25,18 @@ export class Files extends React.Component<{}, CardInfoState> {
             cardInfoOpen: false
         }
         this.openFileInfo = this.openFileInfo.bind(this);
+        this.closeFileInfo = this.closeFileInfo.bind(this);
     }
 
     openFileInfo = (event: React.MouseEvent) => {
         event.preventDefault();
         this.setState({cardInfoOpen: true});
+        return {CardInfoProps : this.state.cardInfoOpen};
+    }
+
+    closeFileInfo = (event: React.MouseEvent) => {
+        event.preventDefault();
+        this.setState({cardInfoOpen: false});
         return {CardInfoProps : this.state.cardInfoOpen};
     }
 
@@ -62,7 +69,7 @@ export class Files extends React.Component<{}, CardInfoState> {
                         </Row>
                 </div>
                 
-                {this.state.cardInfoOpen && <FileInfo />}
+                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} />}
             </div>
         );
     }

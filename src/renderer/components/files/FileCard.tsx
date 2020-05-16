@@ -22,14 +22,14 @@ export class FileCard extends React.Component<FileProps, {}>{
                                 <Col style={{paddingRight: "3px"}}>
                                     <FileOutlined style={{fontSize: "3em"}}/>
                                 </Col>
-                                <Col onClick={this.props.infoOpen}>
+                                <Col>
                                     <h4 style={{marginBottom: "0px"}}>This is the title of the file</h4>
                                     <h6 style={{textAlign: "left"}}>id number</h6>
                                 </Col>
                             </Row>
                         </Col>
                         <Col style={{marginRight: "-15px"}}>
-                            <EditTwoTone style={{fontSize: "2em"}}/>
+                            <EditTwoTone onClick={this.props.infoOpen} style={{fontSize: "2em"}}/>
                         </Col>
                     </Row>
                 </Card>

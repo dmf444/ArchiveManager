@@ -31,8 +31,8 @@ export class Status extends React.Component {
                             </Row>
                             
                             {/*
-                            Update the status dynamically
-                            Change colors depending on up/down/etc.
+                                Update the status dynamically
+                                Change colors depending on up/down/etc.
                             */}
                             <Row justify="center">
                                 <Col>

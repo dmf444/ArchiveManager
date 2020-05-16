@@ -5,15 +5,10 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
-import {DiscordSettings} from "./settings/DiscordSettings";
-import {FileUtils} from "./downloader/FileUtils";
 import {SettingsManager} from '@main/settings/SettingsManager';
 import {WebDatabase} from '@main/database/WebDatabase';
 import {Bot} from '@main/DiscordBot';
 import {FileDatabase} from '@main/database/LocalDatabase';
-import {FileModel} from '@main/file/FileModel';
-import {FileUploadData} from '@main/file/FileUploadData';
-import {FileState} from '@main/file/FileState';
 import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -99,24 +94,10 @@ app.whenReady().then(() => {
     settings = new SettingsManager(db);
     webDatabase = new WebDatabase();
 
-    /*let metadata = FileUploadData.fromJson(null);
-    let file = new FileModel(db.getNextFreeFileId(), "TestFile1", "C:/Fake/Path/Location", FileState.NEW, metadata);
-    db.addFile(file);
-
-    let metadata1 = FileUploadData.fromJson(null);
-    let fileId: number = db.getNextFreeFileId();
-    log.info("FILE ID: ", fileId);
-    let file1 = new FileModel(fileId, "TestFile2", "C:/Faker/Pathy/Location", FileState.NORMAL, metadata1);
-    db.addFile(file1);
-
-    log.info(db.getFileById(fileId).toJson());
-    FileUtils.downloadFile("http://localhost/smcsarchives/images/reallycoolRailway.jpg");
     let disc_bot = new Bot();
     disc_bot.start();
-    bot = disc_bot;*/
+    bot = disc_bot;
 
-    //let webDatabase = new WebDatabase();
-    //webDatabase.matchImage('8063e8f6606f5e7d11ccd3e81839ca05').then(value => log.info("The database returned: " + value))
 });
 
 // Quit when all windows are closed.
@@ -166,5 +147,13 @@ ipcMain.on('homepage_url_add', function (event, arg) {
     if(downloader.acceptsUrl(arg)) {
         downloader.downloadUrl(arg, false);
     }
-})
+});
+
+ipcMain.on('status_box_discord_get', function(event, arg) {
+    event.sender.send('status_box_discord_reply', bot.isOnline());
+});
+
+ipcMain.on('status_box_webdb_get', function(event, arg) {
+    event.sender.send('status_box_webdb_reply', webDatabase.isConnected());
+});
 

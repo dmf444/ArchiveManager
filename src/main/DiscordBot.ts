@@ -25,9 +25,7 @@ export class Bot {
 
 
             this.client.on('message', (msg: Message) => {
-                if (msg.content === 'ping') {
-                    msg.reply('pong');
-                }
+                this.onNewMessageRecieved(msg);
             });
 
             process.on('exit', () => {
@@ -35,11 +33,22 @@ export class Bot {
             });
 
 
-            this.client.login(this._settings.token);
+            this.client.login(this._settings.token).catch(error => console.log(error));
             //'Njg5OTUwMzI1NzY3Mjc0NTYz.XnKUlQ.hz21x-kJNbaLHwHnJ1YA0y6Scgk'
         } else {
             log.warn("Discord Token not set, bot not Initialized!");
         }
+    }
+
+    public onNewMessageRecieved(msg: Message) {
+        if(msg.channel.id == this._settings.channel_id) {
+            log.info(msg);
+            console.log(msg);
+        }
+    }
+
+    public isOnline(): boolean {
+        return this.client.user != null;
     }
 
     public reloadSettings(){

@@ -9,6 +9,7 @@ const { Title } = Typography;
 
 import 'antd/dist/antd.css';
 import '../../style/home/Status.css';
+import {StatusBox} from "@/renderer/components/home/StatusBox";
 
 export class Status extends React.Component {
     
@@ -23,38 +24,10 @@ export class Status extends React.Component {
             <div className="statusComp">
                 <Row gutter={[40, 16]} justify="start">
                     <Col flex={4} span={8}>
-                        <div className="discStatus">
-                            <Row justify="start">
-                                <Col>
-                                    <Title level={4}>Discord Status</Title>
-                                </Col>
-                            </Row>
-                            
-                            {/*
-                            Update the status dynamically
-                            Change colors depending on up/down/etc.
-                            */}
-                            <Row justify="center">
-                                <Col>
-                                    <Title level={2}>PLACE HOLDER STATUS</Title>
-                                </Col>
-                            </Row>
-                        </div>
+                        <StatusBox getCall={'status_box_discord_get'} replyCall={'status_box_discord_reply'} title={"Discord Bot"}/>
                     </Col>
-
                     <Col flex={4} span={8}>
-                        <div className="dbStatus">
-                            <Row justify="start">
-                                <Col>
-                                    <Title level={4}>Database Status</Title>
-                                </Col>
-                            </Row>
-                            <Row justify="center">
-                                <Col>
-                                    <Title level={2}>PLACE HOLDER STATUS</Title>
-                                </Col>
-                            </Row>
-                        </div>
+                        <StatusBox getCall={'status_box_webdb_get'} replyCall={'status_box_webdb_reply'} title={"Remote Database"}/>
                     </Col>
 
                     <Col flex={4} span={8}>

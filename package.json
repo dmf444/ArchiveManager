@@ -36,6 +36,8 @@
     "antd": "^4.1.3",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
+    "ffmpeg-static": "4.2.1",
+    "erlpack": "^0.1.3",
     "discord.js": "12.0.2",
     "sequelize": "5.21.6",
     "mariadb": "2.3.1",

@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Card, Col, Row, Button, Divider, Input, Typography} from 'antd';
 
 const { Text, Title } = Typography;
+const { TextArea } = Input;
 import { EditTwoTone, FileOutlined, SettingOutlined} from '@ant-design/icons/lib';
 
 interface FileProps {
@@ -72,50 +73,46 @@ export class FileInfo extends React.Component<FileProps, {}>{
                 */}
                 <Row gutter={[40, 16]}>
                     <Col span={24}>
-                        <Row>
-                            <Col span={24}>
-                                <Input placeholder="File Name"/>
-                            </Col>
-                        </Row>
+                        <Input placeholder="File Name"/>
                     </Col>
-                    
+                </Row>
+
+                <Row gutter={[40, 16]}>
                     <Col span={24}>
-                        <Row>
-                            <Col span={24}>
-                                <Input placeholder="Restriction"/>
-                            </Col>
-                        </Row>
+                        <Input placeholder="Restriction(s)"/>
                     </Col>
-                    
-                    <Col span={4}>
+                </Row>
+
+                <Row gutter={[40, 16]}>                   
+                    <Col span={8}>
                         <Text>Page Count</Text>
                     </Col>
                     
-                    <Col span={4}>
+                    <Col span={8}>
                         <Text>Container</Text>
                     </Col>
 
-                    <Col span={4}>
-                        <Text>Revision</Text>
+                    <Col span={8}>
+                        <Text>Revision Number</Text>
                     </Col>
                 </Row>
 
                 {/*
                     File description
                 */}
-                <Row>
+                <Row gutter={[40, 16]}>
                     <Col span={24}>
-                        Description
+                        <TextArea rows={4} placeholder="Description"/> 
                     </Col>
                 </Row>
 
-                <Row gutter={12} align={"middle"}>
-                    <Col>
-                        <Button type="primary">Submit</Button>
-                    </Col>
-                    
+                <Row gutter={12} justify="space-between" align="middle">                    
                     <Col>
                         <Button onClick={this.props.infoClose}>Cancel</Button>
+                    </Col>
+
+                    <Col>
+                        <Button type="primary">Submit</Button>
                     </Col>
                 </Row>
             </div>

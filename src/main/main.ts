@@ -10,6 +10,7 @@ import {WebDatabase} from '@main/database/WebDatabase';
 import {Bot} from '@main/DiscordBot';
 import {FileDatabase} from '@main/database/LocalDatabase';
 import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
+import {FileManager} from "@main/downloader/FileManager";
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -20,6 +21,7 @@ var db = null;
 var settings: SettingsManager;
 var events = new EventDispatcher<notificationPackage>();
 let webDatabase: WebDatabase;
+let fileManager: FileManager;
 
 
 electronDl();
@@ -46,6 +48,10 @@ export function reloadDiscordBot() {
 
 export function reloadWebDatabase() {
     webDatabase.initDatabase();
+}
+
+export function getFileManager() {
+    return fileManager;
 }
 
 
@@ -93,6 +99,7 @@ app.whenReady().then(() => {
     db = new FileDatabase(filePath);
     settings = new SettingsManager(db);
     webDatabase = new WebDatabase();
+    fileManager = new FileManager();
 
     let disc_bot = new Bot();
     disc_bot.start();

@@ -10,13 +10,14 @@ import { Home } from './Home';
 import { Files } from './Files';
 import {Settings} from "@/renderer/components/Settings";
 
-const { Content, Footer, Sider } = Layout;
+const { Content, Footer, Sider, Header } = Layout;
 
 export class ContentSurround extends React.Component{
 
     state = {
         collapsed: false,
-        currentSelection: 'Home'
+        currentSelection: 'Home',
+        headerBarContent: null
     };
 
     onCollapse = collapsed => {
@@ -25,15 +26,19 @@ export class ContentSurround extends React.Component{
     };
 
     changeToHome = () => {
-        this.setState({ currentSelection: 'Home' });
+        this.setState({ currentSelection: 'Home', headerBarContent: null });
     };
 
     changeToFiles = () => {
-        this.setState({ currentSelection: 'Files' });
+        this.setState({ currentSelection: 'Files', headerBarContent: null });
     }
 
     changeToSettings = () => {
-        this.setState({ currentSelection: 'Settings' });
+        this.setState({ currentSelection: 'Settings', headerBarContent: null });
+    }
+
+    insertHeader = (header: any) => {
+        this.setState({headerBarContent: header});
     }
 
     render() {
@@ -66,10 +71,11 @@ export class ContentSurround extends React.Component{
                 </Menu>
             </Sider>
             <Layout className='site-layout' style={{ marginLeft: 200 }} id="contentBox">
+                {this.state.headerBarContent != null && <Header className="site-layout-background">{this.state.headerBarContent}</Header>}
                 <Content style={{ margin: '24px 16px 0', overflow: 'initial' }} >
                     <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
                         {this.state.currentSelection == 'Home' && <Home {...this.props} />}
-                        {this.state.currentSelection == 'Files' && <Files {...this.props} />}
+                        {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
                         {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
                     </div>
                 </Content>

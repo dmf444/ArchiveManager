@@ -2,16 +2,18 @@ import * as React from 'react';
 import {Card, Col, Row, Button, Divider, Input, Typography} from 'antd';
 
 const { Text, Title } = Typography;
-import { EditTwoTone, FileOutlined, SettingOutlined} from '@ant-design/icons/lib';
+import {EditTwoTone, FileOutlined, LeftOutlined, SettingOutlined} from '@ant-design/icons/lib';
 
 interface FileProps {
     infoClose: (event: React.MouseEvent) => void
+    insertHeaderFunc: any
 }
 
 export class FileInfo extends React.Component<FileProps, {}>{
 
     constructor(props) {
         super(props);
+        this.props.insertHeaderFunc(<Button onClick={this.props.infoClose}><LeftOutlined />Go Back</Button>);
     }
 
     render() {
@@ -112,10 +114,6 @@ export class FileInfo extends React.Component<FileProps, {}>{
                 <Row gutter={12} align={"middle"}>
                     <Col>
                         <Button type="primary">Submit</Button>
-                    </Col>
-                    
-                    <Col>
-                        <Button onClick={this.props.infoClose}>Cancel</Button>
                     </Col>
                 </Row>
             </div>

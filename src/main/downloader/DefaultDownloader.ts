@@ -18,8 +18,9 @@ export class DefaultDownloader implements IDownloader {
 
     downloadUrl(url: string, stage: boolean): void {
         let filePathDir = FileUtils.getFilePath(stage);
-
-        download(BrowserWindow.getFocusedWindow(), url, {directory: filePathDir}).then((fileDownload: DownloadItem) => {
+        log.info(url, stage, filePathDir);
+        //As it stands right now, I can guarantee that there's only one window open at a time.
+        download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir}).then((fileDownload: DownloadItem) => {
             if(fileDownload.getState() == "completed") {
                 //Get file MD5
                 let filePath = filePathDir + "\\" + fileDownload.getFilename();

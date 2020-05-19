@@ -17,7 +17,7 @@ interface CardInfoState {
     cardInfoOpen: boolean
 }
 
-export class Files extends React.Component<{}, CardInfoState> {
+export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     
     constructor(props) {
         super(props);
@@ -37,6 +37,7 @@ export class Files extends React.Component<{}, CardInfoState> {
     closeFileInfo = (event: React.MouseEvent) => {
         event.preventDefault();
         this.setState({cardInfoOpen: false});
+        this.props.insHeader(null);
         return {CardInfoProps : this.state.cardInfoOpen};
     }
 
@@ -69,7 +70,7 @@ export class Files extends React.Component<{}, CardInfoState> {
                         </Row>
                 </div>
                 
-                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} />}
+                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader}/>}
             </div>
         );
     }

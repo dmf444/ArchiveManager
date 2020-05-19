@@ -1,7 +1,7 @@
 import {Client, Message} from 'discord.js';
 import {DiscordSettings} from "./settings/DiscordSettings";
 import {notificationPackage} from "./Events";
-import {getEventsDispatcher, getSettingsManager, reloadDiscordBot} from "./main";
+import {getEventsDispatcher, getFileManager, getSettingsManager, reloadDiscordBot} from "./main";
 const log = require('electron-log');
 
 export class Bot {
@@ -24,7 +24,7 @@ export class Bot {
             });
 
 
-            this.client.on('message', (msg: Message) => {
+            this.client.on('message', (msg) => {
                 this.onNewMessageRecieved(msg);
             });
 
@@ -42,8 +42,15 @@ export class Bot {
 
     public onNewMessageRecieved(msg: Message) {
         if(msg.channel.id == this._settings.channel_id) {
-            log.info(msg);
-            console.log(msg);
+            let regex = /(https?|ftp):\/\/[^\s\/$.?#].[^\s]*/igm;
+            let urls = msg.cleanContent.match(regex);
+            if(urls != null) {
+                for(let i = 0; i < urls.length; i++) {
+                    let url: string = urls[i];
+                    getFileManager().downloadFile(url, true);
+                }
+                msg.react(this._settings.icons_download);
+            }
         }
     }
 

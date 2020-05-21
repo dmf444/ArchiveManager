@@ -145,7 +145,12 @@ ipcMain.on('settings_fields_update', function (event, arg) {
 });
 
 ipcMain.on('files_get_new', function(event, arg) {
+    log.info("Sending new files!");
    event.sender.send('files_get_new_reply', db.getNewFiles());
+});
+
+ipcMain.on('files_get_normal', function(event, arg) {
+    event.sender.send('files_get_normal_reply', db.getNonNewFiles());
 });
 
 ipcMain.on('homepage_url_add', function (event, arg) {

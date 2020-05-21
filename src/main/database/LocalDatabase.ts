@@ -21,7 +21,7 @@ export class FileDatabase {
     }
 
     public addFile(file: FileModel) {
-        let model = this.database.get('files').find({id: file.getId()});
+        let model = this.database.get('files').find({id: file.id});
         let modelValue = model.value();
         if(modelValue == null || modelValue == []) {
             this.database.get('files').push(file.toJson()).write();
@@ -46,6 +46,14 @@ export class FileDatabase {
 
     public getNewFiles(): FileModel[] {
         return this.database.get('files').filter({state: "NEW"}).value();
+    }
+
+    public getNonNewFiles(): FileModel[] {
+        let a = this.database.get('files');
+        let b = a.filter(i => {
+            return i.state != "NEW";
+        });
+        return b.value();
     }
 
     public getDiscordConfig() : ISettings {

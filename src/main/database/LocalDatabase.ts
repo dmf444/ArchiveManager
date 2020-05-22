@@ -30,6 +30,14 @@ export class FileDatabase {
         }
     }
 
+    public removeFile(file: FileModel) {
+        this.database.get('files').remove({id: file.id}).write();
+    }
+
+    public updateFile(file: FileModel) {
+        this.database.get('files').find({id: file.id}).assign(file.toJson()).write();
+    }
+
     public getFileById(id: number): FileModel {
         let model = this.database.get('files').find({id: id}).value();
         return FileModel.fromJson(model);
@@ -45,15 +53,33 @@ export class FileDatabase {
     }
 
     public getNewFiles(): FileModel[] {
-        return this.database.get('files').filter({state: "NEW"}).value();
+        return this.database.get('files').filter(i => {
+            return i.state == "NEW" || i.state == "ACCEPTED";
+        }).value();
     }
 
     public getNonNewFiles(): FileModel[] {
         let a = this.database.get('files');
         let b = a.filter(i => {
-            return i.state != "NEW";
+            return i.state != "NEW" && i.state != "ACCEPTED";
         });
         return b.value();
+    }
+
+    public isFileUnique(md5Hash: string) {
+        return this.database.get('files').filter(i => {
+            return i.md5 == md5Hash;
+        }).size().value() == 0;
+    }
+
+    public getAllFileCount(): number {
+        return this.database.get('files').size().value();
+    }
+
+    public getErrorFileCount(): number {
+        return this.database.get('files').filter(i => {
+            return i.state == "ERROR" || i.state == "WARN";
+        }).size().value();
     }
 
     public getDiscordConfig() : ISettings {

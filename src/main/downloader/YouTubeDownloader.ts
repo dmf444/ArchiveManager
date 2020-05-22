@@ -7,7 +7,7 @@ export class YouTubeDownloader implements IDownloader {
         return regex.test(url);
     }
 
-    downloadUrl(url: string, stage: boolean): void {
+    downloadUrl(url: string, stage: boolean, callbackFunc: (state: string, fileName: string, filePathDir: string) => void): void {
     }
 
 }

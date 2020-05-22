@@ -145,7 +145,6 @@ ipcMain.on('settings_fields_update', function (event, arg) {
 });
 
 ipcMain.on('files_get_new', function(event, arg) {
-    log.info("Sending new files!");
    event.sender.send('files_get_new_reply', db.getNewFiles());
 });
 
@@ -154,11 +153,7 @@ ipcMain.on('files_get_normal', function(event, arg) {
 });
 
 ipcMain.on('homepage_url_add', function (event, arg) {
-    let downloader: DefaultDownloader = new DefaultDownloader();
-    log.info(arg);
-    if(downloader.acceptsUrl(arg)) {
-        downloader.downloadUrl(arg, false);
-    }
+    fileManager.downloadFile(arg, false);
 });
 
 ipcMain.on('status_box_discord_get', function(event, arg) {
@@ -169,3 +164,22 @@ ipcMain.on('status_box_webdb_get', function(event, arg) {
     event.sender.send('status_box_webdb_reply', webDatabase.isConnected());
 });
 
+ipcMain.on('file_delete', function(event, arg) {
+    getFileManager().removeFileById(arg);
+});
+
+ipcMain.on('file_download', function(event, arg) {
+    getFileManager().moveFileToIngestById(arg);
+});
+
+ipcMain.on('stats_new_files', function(event, arg) {
+    event.sender.send('stats_new_files_reply', db.getNewFiles().length);
+});
+
+ipcMain.on('stats_all_files', function(event, arg) {
+    event.sender.send('stats_all_files_reply', db.getAllFileCount());
+});
+
+ipcMain.on('stats_error_files', function(event, arg) {
+    event.sender.send('stats_error_files_reply', db.getErrorFileCount());
+});

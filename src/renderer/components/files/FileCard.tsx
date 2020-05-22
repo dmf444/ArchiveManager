@@ -1,21 +1,25 @@
 import * as React from 'react';
 import {Card, Col, Row} from 'antd';
 import {
-    DeleteOutlined,
+    DeleteOutlined, DeleteTwoTone,
     DownloadOutlined,
     EditTwoTone,
     FileImageOutlined,
     FileOutlined,
     FilePdfOutlined,
     FileTextOutlined,
-    FileWordOutlined
+    FileWordOutlined,
+    LoadingOutlined
 } from '@ant-design/icons/lib';
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
+import {ipcRenderer} from "electron";
+
 const log = require('electron-log');
 
 interface FileProps {
     infoOpen: (event: React.MouseEvent) => void,
+    filterFile: (file: FileModel) => void,
     cardInfo: FileModel
 }
 
@@ -42,9 +46,9 @@ export class FileCard extends React.Component<FileProps, {}>{
     getActionButton = () => {
         let cardinal: any = FileState[this.props.cardInfo.state];
         if(cardinal === FileState.DUPLICATE.valueOf()) {
-            return <DeleteOutlined onClick={this.deleteFile} style={{fontSize: "2em"}}/>;
-        } else if((cardinal == FileState.NEW.valueOf() || cardinal == FileState.ACCEPTED.valueOf()) && this.props.cardInfo.url != ""){
-            return <DownloadOutlined style={{fontSize: "2em"}} onClick={this.downloadFile}/>;
+            return <DeleteTwoTone style={{fontSize: "2em"}} onClick={this.deleteFile}/>;
+        } else if(cardinal == FileState.NEW.valueOf() && this.props.cardInfo.url != ""){
+            return <DownloadOutlined style={{fontSize: "2em", color: "#1890ff"}} onClick={this.downloadFile}/>;
         } else {
             return <EditTwoTone style={{fontSize: "2em"}} onClick={this.props.infoOpen}/>;
         }
@@ -57,7 +61,7 @@ export class FileCard extends React.Component<FileProps, {}>{
         } else if(cardinal === FileState.ERROR.valueOf()) {
             return {width: "100%", borderColor: "red"};
         } else if(cardinal === FileState.WARN.valueOf()) {
-            return {width: "100%", borderColor: "yellow"};
+            return {width: "100%", borderColor: "#fadb14"};
         } else {
             return {width: "100%"};
         }
@@ -65,11 +69,15 @@ export class FileCard extends React.Component<FileProps, {}>{
 
     deleteFile = (event: React.MouseEvent) => {
         event.stopPropagation();
+        ipcRenderer.send('file_delete', this.props.cardInfo.id);
+        this.props.filterFile(this.props.cardInfo);
     }
 
     downloadFile = (event: React.MouseEvent) => {
-        log.info("File downloaded!");
         event.stopPropagation();
+        ipcRenderer.send('file_download', this.props.cardInfo.id);
+        this.props.cardInfo.state = FileState.NORMAL;
+        this.setState({})
     }
 
     render() {

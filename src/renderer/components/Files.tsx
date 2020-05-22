@@ -57,6 +57,14 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         this.setState({newCards: args});
     }
 
+    removeFileFromUI = (file: FileModel) => {
+        let index: number = this.state.allCards.findIndex((fileModel: FileModel) => {
+           return fileModel.id == file.id;
+        });
+        this.state.allCards.splice(index, 1);
+        this.setState({allCards: this.state.allCards});
+    }
+
 
     openFileInfo = (event: React.MouseEvent) => {
         event.preventDefault();
@@ -78,7 +86,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
             let keyBase: string = "row" + startIndex + "_col" + i;
             rowRenderData.push(
                 <Col span={8} key={keyBase + "_column"}>
-                    <FileCard infoOpen={this.openFileInfo} cardInfo={models[i]} key={keyBase + "_card"}/>
+                    <FileCard infoOpen={this.openFileInfo} filterFile={this.removeFileFromUI} cardInfo={models[i]} key={keyBase + "_card"}/>
                 </Col>
             );
         }

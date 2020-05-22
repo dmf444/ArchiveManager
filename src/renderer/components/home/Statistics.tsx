@@ -2,12 +2,14 @@
 import * as React from 'react';
 
 import '@public/style.css';
-import { Layout, Row, Col, Divider, Typography } from 'antd';
+import {Layout, Row, Col, Divider, Typography, Card, Statistic} from 'antd';
 
 const { Title } = Typography;
 
 const { Header, Content, Footer, Sider } = Layout;
 import 'antd/dist/antd.css';
+import {ArrowUpOutlined, LineOutlined} from "@ant-design/icons/lib";
+import {StatisticsBox} from "@/renderer/components/home/StatisticsBox";
 
 export class Statistics extends React.Component {
     
@@ -31,53 +33,14 @@ export class Statistics extends React.Component {
 
                 <Row gutter={[40, 16]} justify="start">
                     <Col flex={4} span={8}>
-                        <div className="discStatus">
-                            <Row justify="start">
-                                <Col>
-                                    <Title level={4}>Files</Title>
-                                </Col>
-                            </Row>
-                            
-                            {/*
-                            Update the status dynamically
-                            Change colors depending on up/down/etc.
-                            */}
-                            <Row justify="center">
-                                <Col>
-                                    <Title level={2}>PLACE HOLDER STATUS</Title>
-                                </Col>
-                            </Row>
-                        </div>
+                        <StatisticsBox replyCall={'stats_new_files_reply'} getCall={'stats_new_files'} title={"New"} color={'#3f8600'} prefix={<ArrowUpOutlined />}/>
                     </Col>
 
                     <Col flex={4} span={8}>
-                        <div className="dbStatus">
-                            <Row justify="start">
-                                <Col>
-                                    <Title level={4}>Files</Title>
-                                </Col>
-                            </Row>
-                            <Row justify="center">
-                                <Col>
-                                    <Title level={2}>PLACE HOLDER STATUS</Title>
-                                </Col>
-                            </Row>
-                        </div>
+                        <StatisticsBox replyCall={'stats_all_files_reply'} getCall={'stats_all_files'} title={"Total"} color={'#595959'} prefix={<LineOutlined />}/>
                     </Col>
-
                     <Col flex={4} span={8}>
-                        <div className="tbd">
-                            <Row justify="start">
-                                <Col>
-                                    <Title level={4}>Files</Title>
-                                </Col>
-                            </Row>
-                            <Row justify="center">
-                                <Col>
-                                    <Title level={2}>PLACE HOLDER STATUS</Title>
-                                </Col>
-                            </Row>
-                        </div>
+                        <StatisticsBox replyCall={'stats_error_files_reply'} getCall={'stats_error_files'} title={"Errors"} color={'#cf1322'} prefix={<LineOutlined />}/>
                     </Col>
                 </Row>
             </div>

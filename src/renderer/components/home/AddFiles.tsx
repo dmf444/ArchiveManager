@@ -10,13 +10,16 @@ const { Dragger } = Upload;
 import {UploadOutlined} from "@ant-design/icons/lib";
 import 'antd/dist/antd.css';
 import {ipcRenderer} from "electron";
+import {FormInstance} from "antd/lib/form";
 
 export class AddFiles extends React.Component {
+    formRef = React.createRef<FormInstance>();
 
     finish = values => {
       if(values['url'] != null && values['url'] != ""){
           ipcRenderer.send('homepage_url_add', values['url']);
       }
+        this.formRef.current.resetFields();
     };
     
     render() {
@@ -38,7 +41,7 @@ export class AddFiles extends React.Component {
                     </Col>
                 </Row>
 
-                <Form name={"add_files"} layout={"vertical"} onFinish={this.finish}>
+                <Form name={"add_files"} layout={"vertical"} onFinish={this.finish} ref={this.formRef}>
                     <Row gutter={12}>
                         <Col flex={12}>
                             <Form.Item name={"multi_file"}>

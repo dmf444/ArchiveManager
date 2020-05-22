@@ -44,27 +44,42 @@ export class FileUtils {
         return metadata;
     }
 
-    public static createNewFileEntry(filePath: string, item: DownloadItem, url: string, isDuplicate: boolean) {
+    public static createNewFileEntry(filePath: string, fileName: string, url: string, isDuplicate: boolean, md5: string, isStaged: boolean) {
         let metadata = FileUtils.createDefaultMetadataEntry();
         let fileId: number = getFileDatabase().getNextFreeFileId();
-        let state: FileState = isDuplicate ? FileState.DUPLICATE : FileState.NEW;
-        let file = new FileModel(fileId, item.getFilename(), filePath, state, url, metadata);
+        let firstState: FileState = isStaged ? FileState.NEW : FileState.ACCEPTED;
+        let state: FileState = isDuplicate ? FileState.DUPLICATE : firstState;
+        let file = new FileModel(fileId, fileName, filePath, state, url, md5, metadata);
         getFileDatabase().addFile(file);
     }
 
     public static createNewErrorFileEntry(url: string) {
         let metadata: FileUploadData = FileUploadData.fromJson(null);
         let fileId: number = getFileDatabase().getNextFreeFileId();
-        let file = new FileModel(fileId, "", "", FileState.ERROR, url, metadata);
+        let file = new FileModel(fileId, "", "", FileState.ERROR, url, "", metadata);
         getFileDatabase().addFile(file);
     }
 
-    public static async queryRemoteForDuplicates(hash: string): Promise<boolean> {
+    public static async queryForDuplicates(hash: string): Promise<boolean> {
+        let remoteAnswer: boolean = false;
         if (getWebDatabase().isConnected()) {
             //Check MD5 against database
-            return await getWebDatabase().matchAny(hash);
+            remoteAnswer = await getWebDatabase().matchAny(hash);
         }
-        return false;
+        return !(remoteAnswer && getFileDatabase().isFileUnique(hash));
+    }
+
+    public static deletePhysicalFile(file: FileModel) {
+        jetpack.remove(file.savedLocation);
+    }
+
+    public static moveFileToIngestion(file: FileModel) {
+        let stagingingPath: string = this.getProcessingPath();
+        if(jetpack.exists(stagingingPath + file.fileName) != false){
+            jetpack.rename(file.savedLocation, "1_" + file.fileName);
+            file.fileName = "1_" + file.fileName;
+        }
+        jetpack.move(file.savedLocation, stagingingPath + file.fileName);
     }
 
 }

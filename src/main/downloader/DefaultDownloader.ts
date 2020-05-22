@@ -16,23 +16,12 @@ export class DefaultDownloader implements IDownloader {
         return true;
     }
 
-    downloadUrl(url: string, stage: boolean): void {
+    downloadUrl(url: string, stage: boolean, callbackFunction: (state: string, fileName: string, filePathDir: string) => void): void {
         let filePathDir = FileUtils.getFilePath(stage);
         log.info(url, stage, filePathDir);
         //As it stands right now, I can guarantee that there's only one window open at a time.
         download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir}).then((fileDownload: DownloadItem) => {
-            if(fileDownload.getState() == "completed") {
-                //Get file MD5
-                let filePath = filePathDir + "\\" + fileDownload.getFilename();
-                let result: InspectResult = jetpack.inspect(filePath, {checksum: "md5"});
-                log.info("[FileDownloaded] Success with MD5:" + result['md5']);
-                FileUtils.queryRemoteForDuplicates(result['md5']).then((contains: boolean) => {
-                    FileUtils.createNewFileEntry(filePath, fileDownload, url, contains);
-                });
-
-            } else {
-                FileUtils.createNewErrorFileEntry(url);
-            }
+            callbackFunction(fileDownload.getState(), fileDownload.getFilename(), filePathDir);
         });
     }
 

@@ -20,7 +20,8 @@ const log = require('electron-log');
 interface FileProps {
     infoOpen: (event: React.MouseEvent) => void,
     filterFile: (file: FileModel) => void,
-    cardInfo: FileModel
+    cardInfo: FileModel,
+    setCardEditing: (file: FileModel) => void
 }
 
 export class FileCard extends React.Component<FileProps, {}>{
@@ -80,10 +81,16 @@ export class FileCard extends React.Component<FileProps, {}>{
         this.setState({})
     }
 
+    clickHandler = (event) => {
+        this.props.setCardEditing(this.props.cardInfo);
+        this.props.infoOpen(event);
+    }
+
+
     render() {
         return (
             <div>
-                <Card style={this.getCardStyle()} onClick={this.props.infoOpen}>
+                <Card style={this.getCardStyle()} onClick={this.clickHandler}>
                     <Row justify={"space-between"} align={"middle"}>
                         <Col>
                             <Row style={{marginLeft: "-15px"}}>

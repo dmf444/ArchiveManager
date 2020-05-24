@@ -1,8 +1,6 @@
-
-import * as jetpack from "fs-jetpack";
-import { InspectResult } from "fs-jetpack/types";
 import DownloadItem = Electron.DownloadItem;
 import {FileUtils} from "@main/downloader/FileUtils";
+const {basename} = require('path');
 const log = require('electron-log');
 
 const {BrowserWindow} = require("electron");
@@ -21,7 +19,8 @@ export class DefaultDownloader implements IDownloader {
         log.info(url, stage, filePathDir);
         //As it stands right now, I can guarantee that there's only one window open at a time.
         download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir}).then((fileDownload: DownloadItem) => {
-            callbackFunction(fileDownload.getState(), fileDownload.getFilename(), filePathDir);
+            let fileName = basename(fileDownload.getSavePath());
+            callbackFunction(fileDownload.getState(), fileName, filePathDir);
         });
     }
 

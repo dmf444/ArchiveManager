@@ -19,7 +19,8 @@ interface CardInfoProps {
 interface CardInfoState {
     cardInfoOpen: boolean,
     allCards: FileModel[],
-    newCards: FileModel[]
+    newCards: FileModel[],
+    currentEditingCard: FileModel
 }
 
 export class Files extends React.Component<{insHeader: any}, CardInfoState> {
@@ -29,7 +30,8 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         this.state = {
             cardInfoOpen: false,
             allCards: null,
-            newCards: null
+            newCards: null,
+            currentEditingCard: null
         }
         this.openFileInfo = this.openFileInfo.bind(this);
         this.closeFileInfo = this.closeFileInfo.bind(this);
@@ -51,6 +53,10 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
 
     updateAllCardsState(event, args: FileModel[]){
         this.setState({allCards: args});
+    }
+
+    setEditingFile = (file: FileModel) => {
+        this.setState({currentEditingCard: file});
     }
 
     updateNewCardState(event, args: FileModel[]) {
@@ -86,7 +92,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
             let keyBase: string = "row" + startIndex + "_col" + i;
             rowRenderData.push(
                 <Col span={8} key={keyBase + "_column"}>
-                    <FileCard infoOpen={this.openFileInfo} filterFile={this.removeFileFromUI} cardInfo={models[i]} key={keyBase + "_card"}/>
+                    <FileCard infoOpen={this.openFileInfo} filterFile={this.removeFileFromUI} cardInfo={models[i]} key={keyBase + "_card"} setCardEditing={this.setEditingFile}/>
                 </Col>
             );
         }
@@ -126,7 +132,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
                     {this.generateCards(this.state.allCards)}
                 </div>
                 
-                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader}/>}
+                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader} editingCard={FileModel.fromJson(this.state.currentEditingCard)}/>}
             </div>
         );
     }

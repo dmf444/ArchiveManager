@@ -1,7 +1,7 @@
 /**
  * Entry point of the Election app.
  */
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell} from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
@@ -182,4 +182,12 @@ ipcMain.on('stats_all_files', function(event, arg) {
 
 ipcMain.on('stats_error_files', function(event, arg) {
     event.sender.send('stats_error_files_reply', db.getErrorFileCount());
+});
+
+ipcMain.on('shell_open', function(event, arg) {
+    shell.openExternal(arg);
+});
+
+ipcMain.on('shell_open_file', function(event, arg) {
+    shell.showItemInFolder(arg);
 });

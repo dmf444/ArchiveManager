@@ -3,6 +3,9 @@ import {FileUploadData} from '@main/file/FileUploadData';
 
 
 export class FileModel {
+    get fileMetadata(): FileUploadData {
+        return this._fileMetadata;
+    }
     get md5(): string {
         return this._md5;
     }
@@ -41,7 +44,7 @@ export class FileModel {
     private _state: FileState;
     private _url: string;
     private _md5: string;
-    private fileMetadata: FileUploadData;
+    private _fileMetadata: FileUploadData;
 
 
     constructor(id: number, fileName: string, saveLoc: string, state: FileState, url: string, md5: string, fileMetadata: FileUploadData) {
@@ -51,7 +54,7 @@ export class FileModel {
         this._state = state;
         this._url = url;
         this._md5 = md5;
-        this.fileMetadata = fileMetadata;
+        this._fileMetadata = fileMetadata;
     }
 
 
@@ -64,7 +67,7 @@ export class FileModel {
             state: FileState[this._state],
             url: this._url,
             md5: this._md5,
-            metaData: this.fileMetadata.toJson()
+            metaData: this._fileMetadata.toJson()
         };
     }
 

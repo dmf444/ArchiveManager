@@ -66,7 +66,7 @@ export class FileUtils {
             //Check MD5 against database
             remoteAnswer = await getWebDatabase().matchAny(hash);
         }
-        return !(remoteAnswer && getFileDatabase().isFileUnique(hash));
+        return remoteAnswer || !getFileDatabase().isFileUnique(hash);
     }
 
     public static deletePhysicalFile(file: FileModel) {

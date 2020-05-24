@@ -1,5 +1,8 @@
 
 export class FileUploadData {
+    get restrictions(): number {
+        return this._restrictions;
+    }
     set container(value: number) {
         this._container = value;
     }

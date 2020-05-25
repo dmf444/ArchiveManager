@@ -86,6 +86,13 @@ export class FileCard extends React.Component<FileProps, {}>{
         this.props.infoOpen(event);
     }
 
+    shortendName = () => {
+        if(this.props.cardInfo.fileName.length >= 35) {
+            return this.props.cardInfo.fileName.substring(0, 28) + "..." + this.props.cardInfo.fileName.split(".")[1];
+        }
+        return this.props.cardInfo.fileName;
+    }
+
 
     render() {
         return (
@@ -98,7 +105,7 @@ export class FileCard extends React.Component<FileProps, {}>{
                                     {this.getIcon(this.props.cardInfo.fileName)}
                                 </Col>
                                 <Col>
-                                    <h4 style={{marginBottom: "0px"}}>{this.props.cardInfo.fileName}</h4>
+                                    <h4 style={{marginBottom: "0px"}}>{this.shortendName()}</h4>
                                     <h6 style={{textAlign: "left"}}>File Id:  {this.props.cardInfo.id}</h6>
                                 </Col>
                             </Row>

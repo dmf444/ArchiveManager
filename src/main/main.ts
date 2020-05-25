@@ -11,6 +11,8 @@ import {Bot} from '@main/DiscordBot';
 import {FileDatabase} from '@main/database/LocalDatabase';
 import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
 import {FileManager} from "@main/downloader/FileManager";
+import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
+import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -22,6 +24,7 @@ var settings: SettingsManager;
 var events = new EventDispatcher<notificationPackage>();
 let webDatabase: WebDatabase;
 let fileManager: FileManager;
+let dlManager: YoutubeDLManager;
 
 
 electronDl();
@@ -52,6 +55,10 @@ export function reloadWebDatabase() {
 
 export function getFileManager() {
     return fileManager;
+}
+
+export function getYoutubeDlManager() {
+    return dlManager;
 }
 
 
@@ -104,6 +111,9 @@ app.whenReady().then(() => {
     let disc_bot = new Bot();
     disc_bot.start();
     bot = disc_bot;
+
+    dlManager = new YoutubeDLManager(filePath);
+    dlManager.getNewestDownloaderVersion();
 
 });
 

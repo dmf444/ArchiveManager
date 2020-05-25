@@ -44,7 +44,8 @@
     "pg-hstore": "^2.3.3",
     "electron-log": "^4.1.2",
     "electron-dl": "^3.0.0",
-    "fs-jetpack": "^2.2.3"
+    "fs-jetpack": "^2.2.3",
+    "adm-zip": "^0.4.14"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

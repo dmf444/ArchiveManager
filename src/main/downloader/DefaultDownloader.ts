@@ -14,7 +14,7 @@ export class DefaultDownloader implements IDownloader {
         return true;
     }
 
-    downloadUrl(url: string, stage: boolean, callbackFunction: (state: string, fileName: string, filePathDir: string) => void): void {
+    downloadUrl(url: string, stage: boolean, callbackFunction: (state: string, fileName: string, filePathDir: string, md5?: string) => void): void {
         let filePathDir = FileUtils.getFilePath(stage);
         log.info(url, stage, filePathDir);
         //As it stands right now, I can guarantee that there's only one window open at a time.

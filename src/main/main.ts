@@ -201,3 +201,12 @@ ipcMain.on('shell_open', function(event, arg) {
 ipcMain.on('shell_open_file', function(event, arg) {
     shell.showItemInFolder(arg);
 });
+
+ipcMain.on('get_downloaders', function (event, arg) {
+    event.sender.send('get_downloaders_reply', getFileManager().getDownloaders());
+});
+
+ipcMain.on('file_redownload', function (event, arg) {
+    getFileManager().redownloadFile(getFileDatabase().getFileById(arg[0]), arg[1]);
+    //event.sender.send('get_downloaders_reply', getFileManager().getDownloaders());
+});

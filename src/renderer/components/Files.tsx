@@ -42,6 +42,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     }
 
     componentDidMount(): void {
+        log.info("HERE?");
         ipcRenderer.send('files_get_normal', []);
         ipcRenderer.send('files_get_new', []);
     }
@@ -82,6 +83,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         event.preventDefault();
         this.setState({cardInfoOpen: false});
         this.props.insHeader(null);
+        this.forceUpdate();
         return {CardInfoProps : this.state.cardInfoOpen};
     }
 

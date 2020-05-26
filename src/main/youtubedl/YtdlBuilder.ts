@@ -94,8 +94,8 @@ export class YtdlBuilder {
         return this;
     }
 
-    public executeCommand(closeCallback: (code: any) => void) {
-        if(this.outputPath != null){
+    public async executeCommand(): Promise<number> {
+        if (this.outputPath != null) {
             this.executeArgs.push("-o", this.outputPath + this.outputFormat);
         } else {
             this.executeArgs.push("-o", this.outputFormat);
@@ -104,8 +104,8 @@ export class YtdlBuilder {
 
         const youtubedl = spawn(getYoutubeDlManager().getFullApplicationPath(), this.executeArgs);
 
-        youtubedl.on('close', (code) => {
-            closeCallback(code);
+        return  await new Promise((resolve, reject) => {
+            youtubedl.on('close', resolve);
         });
     }
 

@@ -3,8 +3,6 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {getFileDatabase} from "@main/main";
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
-import {InspectResult} from "fs-jetpack/types";
-import * as jetpack from "fs-jetpack";
 import {YouTubeDownloader} from "@main/downloader/YouTubeDownloader";
 
 const log = require('electron-log');
@@ -25,18 +23,17 @@ export class FileManager {
         for(let i = 0; i < this.downloaders.length; i++) {
             let downloader: IDownloader = this.downloaders[i];
             if(downloader.acceptsUrl(url)) {
-                downloader.downloadUrl(url, stage,
-                    (state: string, fileName: string, filePathDir: string, md5?: string) => {
+                downloader.downloadUrl(url, stage).then((downloadPromise: downloadPromise) => {
+                    let state = downloadPromise.state;
+                    let filePathDir = downloadPromise.filePathDir;
+                    let fileName = downloadPromise.fileName;
                     if(state == "completed") {
-                        let hashCheck: string;
                         let filePath = filePathDir + fileName;
-                        if(md5 == null){
-                            //Get file MD5
-                            let result: InspectResult = jetpack.inspect(filePath, {checksum: "md5"});
-                            log.info("[FileDownloaded] Success with MD5:" + result['md5']);
-                            hashCheck = result.md5;
-                        } else {
-                            hashCheck = md5;
+
+                        //Get file MD5
+                        let hashCheck: string = downloadPromise.md5;
+                        if (hashCheck == null) {
+                            hashCheck = FileUtils.getFileHash(filePath);
                         }
 
                         FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
@@ -47,9 +44,54 @@ export class FileManager {
                         FileUtils.createNewErrorFileEntry(url);
                     }
                 });
-                break;
             }
         }
+    }
+
+
+    public redownloadFile(file: FileModel, downloaderName: string) {
+        let downloader: IDownloader = this.downloaders.slice(-1)[0];
+        this.downloaders.forEach((registeredDownloaders: IDownloader) => {
+            if (registeredDownloaders.downloaderName === downloaderName) {
+                downloader = registeredDownloaders;
+            }
+        });
+
+        let staged:boolean = file.savedLocation.startsWith(FileUtils.getFilePath(true));
+
+        downloader.downloadUrl(file.url, staged).then((downloadPromise: downloadPromise) => {
+            if (downloadPromise.state == "completed") {
+                let filePath = downloadPromise.filePathDir + downloadPromise.fileName;
+
+                //Get file MD5
+                let hashCheck: string = downloadPromise.md5;
+                if (hashCheck == null) {
+                    hashCheck = FileUtils.getFileHash(filePath);
+                }
+
+                FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
+                    file.fileName = downloadPromise.fileName;
+                    file.savedLocation = filePath;
+                    file.md5 = hashCheck;
+                    if(contains){
+                        file.state = FileState.DUPLICATE;
+                    }
+                    getFileDatabase().updateFile(file);
+                });
+
+            } else {
+                file.state = FileState.ERROR;
+                getFileDatabase().updateFile(file);
+            }
+        });
+    }
+
+    public getDownloaders(): string[] {
+        let loaders: string[] = [];
+        this.downloaders.forEach((downloader: IDownloader) => {
+            loaders.push(downloader.downloaderName);
+        });
+        return loaders;
     }
 
     public removeFileById(id: number) {

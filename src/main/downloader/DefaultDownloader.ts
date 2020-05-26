@@ -14,14 +14,18 @@ export class DefaultDownloader implements IDownloader {
         return true;
     }
 
-    downloadUrl(url: string, stage: boolean, callbackFunction: (state: string, fileName: string, filePathDir: string, md5?: string) => void): void {
+    async downloadUrl(url: string, stage: boolean): Promise<downloadPromise> {
         let filePathDir = FileUtils.getFilePath(stage);
         log.info(url, stage, filePathDir);
         //As it stands right now, I can guarantee that there's only one window open at a time.
-        download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir}).then((fileDownload: DownloadItem) => {
-            let fileName = basename(fileDownload.getSavePath());
-            callbackFunction(fileDownload.getState(), fileName, filePathDir);
-        });
+        let fileDownload: DownloadItem = await download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir});
+
+        let fileName = basename(fileDownload.getSavePath());
+        return {
+            state: fileDownload.getState(),
+            fileName: fileName,
+            filePathDir: filePathDir
+        };
     }
 
 }

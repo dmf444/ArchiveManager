@@ -22,13 +22,44 @@ interface FileProps {
     editingCard: FileModel
 }
 
-export class FileInfo extends React.Component<FileProps, {}>{
+interface FileInfoState {
+    options: any[]
+}
+
+export class FileInfo extends React.Component<FileProps, FileInfoState>{
 
     constructor(props) {
         super(props);
         this.props.insertHeaderFunc(
             <Button onClick={this.props.infoClose}><LeftOutlined />Go Back</Button>
         );
+        this.state = {
+            options: [<Option value={"Default Downloader"}>Default Downloader</Option>]
+        };
+
+        this.updateDownloaderOptions = this.updateDownloaderOptions.bind(this);
+        ipcRenderer.on('get_downloaders_reply', this.updateDownloaderOptions);
+    }
+
+
+    componentDidMount(): void {
+        ipcRenderer.send('get_downloaders', []);
+    }
+
+    componentWillUnmount(): void {
+        ipcRenderer.removeListener('get_downloaders_reply', this.updateDownloaderOptions);
+    }
+
+    updateDownloaderOptions(event, args: string[]){
+        let updatedDownloaders = [];
+        args.forEach((downloadName: string) => {
+            updatedDownloaders.push(<Option value={downloadName} key={"dl_" + downloadName.split(" ")[0]}>{downloadName}</Option>);
+        });
+        this.setState({options: updatedDownloaders});
+    }
+
+    redownloadForm = (values) => {
+        ipcRenderer.send('file_redownload', [this.props.editingCard.id, values["downloader"]]);
     }
 
     private timer = null;
@@ -85,16 +116,16 @@ export class FileInfo extends React.Component<FileProps, {}>{
                             </Row>
 
                             <Row gutter={[0, 16]}>
-                                <Form layout={"inline"} style={{width: "100%"}}>
+                                <Form layout={"inline"} style={{width: "100%"}} initialValues={{ remember: true }} onFinish={this.redownloadForm}>
                                     <Col span={12}>
-                                        <Form.Item>
+                                        <Form.Item name={"downloader"}>
                                             <Select style={{borderTopRightRadius: 0, borderBottomRightRadius: 0}} placeholder="Select a downloader">
-                                                <Option value={"Default Downloader"}>Default Downloader</Option>
+                                                {this.state.options}
                                             </Select>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12} flex={"initial"}>
-                                        <Button type="primary" icon={<DownloadOutlined />} style={{paddingLeft: "10px", paddingRight: "10px", width: "125px", borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>Redownload</Button>
+                                        <Button type="primary" htmlType={"submit"} icon={<DownloadOutlined />} style={{paddingLeft: "10px", paddingRight: "10px", width: "125px", borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>Redownload</Button>
                                     </Col>
                             </Form>
                             </Row>

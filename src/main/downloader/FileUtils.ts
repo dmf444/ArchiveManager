@@ -5,6 +5,7 @@ import {FileUploadData} from "@main/file/FileUploadData";
 import {FileState} from "@main/file/FileState";
 import {FileModel} from "@main/file/FileModel";
 import DownloadItem = Electron.DownloadItem;
+import {InspectResult} from "fs-jetpack/types";
 
 const log = require('electron-log');
 
@@ -80,6 +81,11 @@ export class FileUtils {
             file.fileName = "1_" + file.fileName;
         }
         jetpack.move(file.savedLocation, stagingingPath + file.fileName);
+    }
+
+    public static getFileHash(filePath: string): string {
+        let result: InspectResult = jetpack.inspect(filePath, {checksum: "md5"});
+        return result.md5;
     }
 
 }

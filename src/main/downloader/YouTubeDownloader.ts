@@ -36,12 +36,13 @@ export class YouTubeDownloader implements IDownloader {
                 zip.addLocalFile(initalDirectory + path.sep + dlFileName);
             });
 
+            let zipBasePath: string = FileUtils.getFilePath(stage);
             let zipName: string = fileName.split('.')[0] + ".zip";
-            let zipSavePath: string = FileUtils.getFilePath(stage) + path.sep + zipName;
+            let zipSavePath: string = zipBasePath + path.sep + zipName;
             zip.writeZip(zipSavePath);
 
             log.error("Video Downloaded!");
-            downloadPromise = {state: "completed", fileName: zipName, filePathDir: zipSavePath, md5: md5};
+            downloadPromise = {state: "completed", fileName: zipName, filePathDir: zipBasePath, md5: md5};
         } else {
             log.error("Failed to download video file!");
             downloadPromise = {state: "error", fileName: "", filePathDir: ""};

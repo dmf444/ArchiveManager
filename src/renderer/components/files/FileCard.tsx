@@ -8,7 +8,7 @@ import {
     FileOutlined,
     FilePdfOutlined,
     FileTextOutlined,
-    FileWordOutlined,
+    FileWordOutlined, FileZipOutlined,
     LoadingOutlined
 } from '@ant-design/icons/lib';
 import {FileModel} from "@main/file/FileModel";
@@ -35,10 +35,12 @@ export class FileCard extends React.Component<FileProps, {}>{
             return <FilePdfOutlined style={{fontSize: "3em"}}/>;
         } else if(fileName.endsWith(".txt")) {
             return <FileTextOutlined style={{fontSize: "3em"}}/>
-        } else if(fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png") || fileName.endsWith(".gif")) {
+        } else if(fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png") || fileName.endsWith(".gif") || fileName.endsWith(".tif") || fileName.endsWith(".tiff")) {
             return <FileImageOutlined style={{fontSize: "3em"}}/>
-        } else if(fileName.endsWith(".doc") || fileName.endsWith(".docx")){
+        } else if(fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
             return <FileWordOutlined style={{fontSize: "3em"}}/>;
+        } else if(fileName.endsWith(".zip") || fileName.endsWith(".rar")){
+            return <FileZipOutlined style={{fontSize: "3em"}}/>
         } else {
             return <FileOutlined style={{fontSize: "3em"}}/>
         }
@@ -87,8 +89,8 @@ export class FileCard extends React.Component<FileProps, {}>{
     }
 
     shortendName = () => {
-        if(this.props.cardInfo.fileName.length >= 35) {
-            return this.props.cardInfo.fileName.substring(0, 28) + "..." + this.props.cardInfo.fileName.split(".")[1];
+        if(this.props.cardInfo.fileName.length >= 30) {
+            return this.props.cardInfo.fileName.substring(0, 22) + "..." + this.props.cardInfo.fileName.split(".")[1];
         }
         return this.props.cardInfo.fileName;
     }

@@ -4,6 +4,7 @@ import {getFileDatabase} from "@main/main";
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
 import {YouTubeDownloader} from "@main/downloader/YouTubeDownloader";
+import {sendError, sendSuccess} from "@main/NotificationBundle";
 
 const log = require('electron-log');
 
@@ -38,12 +39,15 @@ export class FileManager {
 
                         FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
                             FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
+                            sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
                         });
 
                     } else {
                         FileUtils.createNewErrorFileEntry(url);
+                        sendError("Download Failed!", `Unable to download ${url}`);
                     }
                 });
+                break;
             }
         }
     }

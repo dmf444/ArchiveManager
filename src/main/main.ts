@@ -9,10 +9,10 @@ import {SettingsManager} from '@main/settings/SettingsManager';
 import {WebDatabase} from '@main/database/WebDatabase';
 import {Bot} from '@main/DiscordBot';
 import {FileDatabase} from '@main/database/LocalDatabase';
-import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
 import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
-import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
+import {FileEditBuilder} from "@main/file/FileEditBuilder";
+const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -25,9 +25,11 @@ var events = new EventDispatcher<notificationPackage>();
 let webDatabase: WebDatabase;
 let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
+let fileUpdateBuilder: FileEditBuilder = null;
 
 
 electronDl();
+contextMenu();
 
 export function getEventsDispatcher() {
     return events;
@@ -59,6 +61,10 @@ export function getFileManager() {
 
 export function getYoutubeDlManager() {
     return dlManager;
+}
+
+export function getFileUpdater() {
+    return fileUpdateBuilder;
 }
 
 
@@ -209,4 +215,12 @@ ipcMain.on('get_downloaders', function (event, arg) {
 ipcMain.on('file_redownload', function (event, arg) {
     getFileManager().redownloadFile(getFileDatabase().getFileById(arg[0]), arg[1]);
     //event.sender.send('get_downloaders_reply', getFileManager().getDownloaders());
+});
+
+ipcMain.on('file_edit_start', function (event, arg) {
+    fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
+});
+
+ipcMain.on('file_edit_stop', function (event, arg) {
+    fileUpdateBuilder.commitFile();
 });

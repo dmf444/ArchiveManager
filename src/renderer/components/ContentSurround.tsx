@@ -5,10 +5,14 @@ import {
     SettingOutlined
 } from '@ant-design/icons';
 import '@public/style.css';
-import { Layout, Menu } from 'antd';
+import {Layout, Menu, notification} from 'antd';
 import { Home } from './Home';
 import { Files } from './Files';
 import {Settings} from "@/renderer/components/Settings";
+import {ipcRenderer} from "electron";
+import {CheckCircleOutlined} from "@ant-design/icons/lib";
+import {ArgsProps} from "antd/lib/notification";
+import {notificationBundle} from "@main/NotificationBundle";
 
 const { Content, Footer, Sider, Header } = Layout;
 
@@ -19,6 +23,29 @@ export class ContentSurround extends React.Component{
         currentSelection: 'Home',
         headerBarContent: null
     };
+
+    constructor(props) {
+        super(props);
+        this.showNotification = this.showNotification.bind(this);
+        ipcRenderer.on('notification_show', this.showNotification);
+    }
+
+    showNotification(event, bundle: notificationBundle) {
+        let config: ArgsProps = {
+            message: bundle.message,
+            description: bundle.description,
+            placement: "bottomRight",
+            duration: 5
+        }
+
+        if(bundle.status == "success") {
+            notification.success(config);
+        } else if(bundle.status == "warn") {
+            notification.warning(config);
+        } else {
+            notification.error(config);
+        }
+    }
 
     onCollapse = collapsed => {
         document.getElementById('contentBox').style.marginLeft = collapsed ? "80px": "200px";

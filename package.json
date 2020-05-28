@@ -45,7 +45,8 @@
     "electron-log": "^4.1.2",
     "electron-dl": "^3.0.0",
     "fs-jetpack": "^2.2.3",
-    "adm-zip": "^0.4.14"
+    "adm-zip": "^0.4.14",
+    "electron-context-menu": "^2.0.1"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

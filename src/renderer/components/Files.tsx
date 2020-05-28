@@ -42,7 +42,6 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     }
 
     componentDidMount(): void {
-        log.info("HERE?");
         ipcRenderer.send('files_get_normal', []);
         ipcRenderer.send('files_get_new', []);
     }
@@ -61,6 +60,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     }
 
     updateNewCardState(event, args: FileModel[]) {
+        log.info("Update New Cards!")
         this.setState({newCards: args});
     }
 
@@ -83,8 +83,13 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         event.preventDefault();
         this.setState({cardInfoOpen: false});
         this.props.insHeader(null);
-        this.forceUpdate();
+        setTimeout(this.delayedUpdate, 100);
         return {CardInfoProps : this.state.cardInfoOpen};
+    }
+
+    delayedUpdate = () => {
+        ipcRenderer.send('files_get_normal', []);
+        ipcRenderer.send('files_get_new', []);
     }
 
     buildColumns(startIndex: number, files?: FileModel[]) {
@@ -119,7 +124,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     generateNew = () => {
         var fileRenderData = [];
         if(this.state.newCards != null){
-            fileRenderData.push(<Divider orientation={'left'}>New</Divider>);
+            fileRenderData.push(<Divider key={"new_files"} orientation={'left'}>New</Divider>);
             fileRenderData.push(this.generateCards(this.state.newCards));
         }
         return fileRenderData;

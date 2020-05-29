@@ -63,7 +63,7 @@ export class AddFiles extends React.Component {
                             <Row>
                                 <Col>
                                     <Form.Item name={"directory_select"}>
-                                        <Upload directory>
+                                        <Upload directory={true}>
                                             <Button>
                                                 <UploadOutlined /> Select A Directory
                                             </Button>

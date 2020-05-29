@@ -70,45 +70,36 @@ export class ContentSurround extends React.Component{
 
     render() {
         return (
-        <Layout style={{height: "100%"}}>
-            <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}
-                   style={{
-                       overflow: 'auto',
-                       height: '100vh',
-                       position: 'fixed',
-                       left: 0
-                   }}
-            >
-                <div className='logo' />
-                <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']} style={{height: "100%", display: "flex", flexWrap: "wrap", alignContent: "flex-start"}}>
-                    <Menu.Item key='1' onClick={this.changeToHome}>
-                        <HomeOutlined />
-                        <span className='nav-text'>Home</span>
-                    </Menu.Item>
-                    <Menu.Item key='2' onClick={this.changeToFiles}>
-                        <FileAddOutlined />
-                        <span className='nav-text'>Files</span>
-                    </Menu.Item>
-
-
-                    <Menu.Item key='3' style={{position: 'absolute', bottom: '47px'}} onClick={this.changeToSettings}>
-                        <SettingOutlined />
-                        <span className='nav-text'>Settings</span>
-                    </Menu.Item>
-                </Menu>
-            </Sider>
-            <Layout className='site-layout' style={{ marginLeft: 200 }} id="contentBox">
-                {this.state.headerBarContent != null && <Header className="site-layout-background">{this.state.headerBarContent}</Header>}
-                <Content style={{ margin: '24px 16px 0', overflow: 'initial' }} >
-                    <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
-                        {this.state.currentSelection == 'Home' && <Home {...this.props} />}
-                        {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
-                        {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
-                    </div>
-                </Content>
-                <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>
+            <Layout style={{height: "100%"}}>
+                <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse} style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0}}>
+                    <div className='logo' />
+                    <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']} style={{height: "100%", display: "flex", flexWrap: "wrap", alignContent: "flex-start"}}>
+                        <Menu.Item key='1' onClick={this.changeToHome}>
+                            <HomeOutlined />
+                            <span className='nav-text'>Home</span>
+                        </Menu.Item>
+                        <Menu.Item key='2' onClick={this.changeToFiles}>
+                            <FileAddOutlined />
+                            <span className='nav-text'>Files</span>
+                        </Menu.Item>
+                        <Menu.Item key='3' style={{position: 'absolute', bottom: '47px'}} onClick={this.changeToSettings}>
+                            <SettingOutlined />
+                            <span className='nav-text'>Settings</span>
+                        </Menu.Item>
+                    </Menu>
+                </Sider>
+                <Layout className='site-layout' style={{ marginLeft: 200 }} id="contentBox">
+                    {this.state.headerBarContent != null && <Header className="site-layout-background">{this.state.headerBarContent}</Header>}
+                    <Content style={{ margin: '24px 16px 0', overflow: 'initial' }} >
+                        <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
+                            {this.state.currentSelection == 'Home' && <Home {...this.props} />}
+                            {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
+                            {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
+                        </div>
+                    </Content>
+                    <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>
+                </Layout>
             </Layout>
-        </Layout>
         );
     }
 }

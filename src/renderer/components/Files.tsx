@@ -60,7 +60,6 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     }
 
     updateNewCardState(event, args: FileModel[]) {
-        log.info("Update New Cards!")
         this.setState({newCards: args});
     }
 

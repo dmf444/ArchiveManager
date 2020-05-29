@@ -28,6 +28,11 @@ export class FileEditBuilder {
         return this;
     }
 
+    public setDescriptionVersion(version: string): FileEditBuilder {
+        this.currentFile.fileMetadata.descriptionVersion =version;
+        return this;
+    }
+
     public setContainer(containerId: number): FileEditBuilder {
         this.currentFile.fileMetadata.container = containerId;
         return this;
@@ -84,5 +89,14 @@ ipcMain.on('file_edit_date', function (event, arg) {
 });
 
 ipcMain.on('file_edit_container', function (event, arg) {
+    log.info(arg);
     getFileUpdater().setContainer(arg);
+});
+
+ipcMain.on('file_edit_description', function (event, arg) {
+    getFileUpdater().setDescription(arg);
+});
+
+ipcMain.on('file_edit_desc_version', function (event, arg) {
+    getFileUpdater().setDescriptionVersion(arg);
 });

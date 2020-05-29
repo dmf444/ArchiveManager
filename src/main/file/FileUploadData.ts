@@ -1,5 +1,15 @@
 
 export class FileUploadData {
+    get descriptionVersion(): string {
+        return this._descriptionVersion;
+    }
+
+    set descriptionVersion(value: string) {
+        this._descriptionVersion = value;
+    }
+    get container(): number {
+        return this._container;
+    }
     get date(): string {
         return this._date;
     }
@@ -54,7 +64,7 @@ export class FileUploadData {
     private _localizedName: string;
     private _container: number;
     private _description: string;
-    private descriptionVersion: string;
+    private _descriptionVersion: string;
     private _pageCount: number;
     private _restrictions: number;
     private tags: string[];
@@ -64,7 +74,7 @@ export class FileUploadData {
         this._localizedName = localizedName;
         this._container = container;
         this._description = desc;
-        this.descriptionVersion = descVers;
+        this._descriptionVersion = descVers;
         this._pageCount = count;
         this._restrictions = restriction;
         this.tags = tags;
@@ -77,7 +87,7 @@ export class FileUploadData {
             localName: this._localizedName,
             container: this._container,
             description: this._description,
-            descVersion: this.descriptionVersion,
+            descVersion: this._descriptionVersion,
             count: this._pageCount,
             restr: this._restrictions,
             tags: this.tags,

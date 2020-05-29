@@ -25,7 +25,7 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     constructor(props) {
         super(props);
         this.state = {
-            options: [<Option value={0}>Digital File</Option>]
+            options: [[0, "Digital File"]]
         };
 
         this.updateDownloaderOptions = this.updateDownloaderOptions.bind(this);
@@ -42,8 +42,6 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
 
     componentWillUnmount(): void {
         ipcRenderer.send('file_edit_stop', []);
-        //ipcRenderer.removeListener('get_downloaders_reply', this.updateDownloaderOptions);
-        log.info("dismantled!");
     }
 
     updateDownloaderOptions(event, args: string[]){
@@ -54,8 +52,16 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         this.setState({options: updatedDownloaders});
     }
 
+    renderContainerOptions = () => {
+      let options = [];
+      this.state.options.forEach((optionList: [number, string]) => {
+          options.push(<Option value={optionList[0]} key={"containerselect_" + optionList[0]}>{optionList[1]}</Option>);
+      });
+      return options;
+    };
+
     getDateMoment = () => {
-        return moment(this.props.editingCard.fileMetadata.date, "YYYY");
+        return this.props.editingCard.fileMetadata.date == "" ? null : moment(this.props.editingCard.fileMetadata.date, "YYYY");
     };
 
     private nameTimer = null;
@@ -90,23 +96,48 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         ipcRenderer.send('file_edit_container', changed);
     }
 
+    private descTimer = null;
+    descChange = (e) => {
+        clearTimeout(this.descTimer);
+        this.descTimer = setTimeout(this.sendDescChange, 750, e.target.value);
+    };
+
+    sendDescChange = (value) => {
+        ipcRenderer.send('file_edit_description', value);
+    };
+
+    sendDescVersion = (e) => {
+        ipcRenderer.send('file_edit_desc_version', e.target.value);
+    }
+
+    defaultValues = {
+        description: this.props.editingCard.fileMetadata.description,
+        file_name: this.props.editingCard.fileMetadata.localizedName,
+        page_count:this.props.editingCard.fileMetadata.pageCount,
+        restriction: this.props.editingCard.fileMetadata.restrictions,
+        year: this.getDateMoment(),
+        container_sel: this.props.editingCard.fileMetadata.container,
+        desc_vers: this.props.editingCard.fileMetadata.descriptionVersion
+    };
+
+
     render() {
         return (
-            <Form layout={"vertical"}>
+            <Form layout={"vertical"} initialValues={this.defaultValues}>
                 <Row gutter={[40, 16]}>
                     <Col span={8}>
-                        <Form.Item label={"File Name"}>
-                            <Input placeholder={this.props.editingCard.fileName} defaultValue={this.props.editingCard.fileMetadata.localizedName} onChange={this.fileNameChange}/>
+                        <Form.Item label={"File Name"} name={"file_name"}>
+                            <Input placeholder={this.props.editingCard.fileName} onChange={this.fileNameChange}/>
                         </Form.Item>
                     </Col>
                     <Col span={8}>
                         <Form.Item label={"Page Count"} name={"page_count"}>
-                            <Input type={'number'} defaultValue={this.props.editingCard.fileMetadata.pageCount} onChange={this.pageChange}/>
+                            <Input type={'number'} onChange={this.pageChange}/>
                         </Form.Item>
                     </Col>
                     <Col span={8}>
-                        <Form.Item label={"Access Restriction"}>
-                            <Select defaultValue={this.props.editingCard.fileMetadata.restrictions} onChange={this.sendAccessChange}>
+                        <Form.Item label={"Access Restriction"} name={"restriction"}>
+                            <Select onChange={this.sendAccessChange}>
                                 <Option value={0} key={"ar0"}>Everyone</Option>
                                 <Option value={1} key={"ar1"}>Logged In</Option>
                                 <Option value={2} key={"ar2"}>Music Library</Option>
@@ -121,21 +152,20 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                 <Row gutter={[40, 16]}>
                     <Col span={8}>
                         <Form.Item label={"File Year"} name={"year"}>
-                            <DatePicker picker="year" style={{width: "100%"}} onChange={this.sendDateChange} defaultValue={this.getDateMoment()}/>
+                            <DatePicker picker="year" style={{width: "100%"}} onChange={this.sendDateChange}/>
                         </Form.Item>
                     </Col>
-
                     <Col span={8}>
-                        <Form.Item label={"Container"} name={"container"}>
-                            <Select defaultValue={0} onChange={this.sendContainerChange} style={{ width: '100%' }}>
-                                {this.state.options}
+                        <Form.Item label={"Container"} name={"container_sel"}>
+                            <Select onChange={this.sendContainerChange}>
+                                {this.renderContainerOptions()}
                             </Select>
                         </Form.Item>
                     </Col>
 
                     <Col span={8}>
                         <Form.Item label={"Description Version"} name={"desc_vers"}>
-                            <Input/>
+                            <Input onChange={this.sendDescVersion}/>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -151,7 +181,7 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                 <Row gutter={[40, 16]}>
                     <Col span={24}>
                         <Form.Item name={"description"}>
-                            <TextArea rows={6} placeholder="Description" defaultValue={this.props.editingCard.fileMetadata.description}/>
+                            <TextArea rows={6} placeholder="Description" onChange={this.descChange}/>
                         </Form.Item>
 
                     </Col>

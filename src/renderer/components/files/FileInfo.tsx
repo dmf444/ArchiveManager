@@ -45,7 +45,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
             </Row>
         );
         this.state = {
-            options: [<Option value={"Default Downloader"}>Default Downloader</Option>]
+            options: [<Option value={"Default Downloader"} key={"dd_001"}>Default Downloader</Option>]
         };
 
         this.updateDownloaderOptions = this.updateDownloaderOptions.bind(this);

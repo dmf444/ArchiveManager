@@ -13,6 +13,7 @@ import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
 import {FileEditBuilder} from "@main/file/FileEditBuilder";
 const contextMenu = require('electron-context-menu');
+const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 
@@ -73,7 +74,7 @@ function createWindow(): void {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 820,
-        icon: 'public/smcs.ico',
+        icon: icon,
         webPreferences: {
             webSecurity: false,
             devTools: process.env.NODE_ENV !== 'production'

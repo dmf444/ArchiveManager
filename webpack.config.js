@@ -26,7 +26,7 @@ const commonConfig = {
       '@utils': srcPaths('src/utils'),
     },
     extensions: ['.js', '.json', '.ts', '.tsx'],
-    mainFields: ["main"]
+    mainFields: ['main'],
   },
   module: {
     rules: [

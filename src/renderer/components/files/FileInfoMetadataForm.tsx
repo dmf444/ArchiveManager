@@ -137,12 +137,15 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         let tagOps = [];
         let ignoredTags = ["root", "temp", "documents", "other", "music"];
 
-        for(let i = 0; i < this.state.tagOptions.length; i++) {
-            let tagName: string = this.state.tagOptions[i];
-            if(isNaN(Number(tagName)) && isNaN(Number(tagName.substring(0, tagName.length - 1))) && !ignoredTags.includes(tagName)){
-                tagOps.push(<Option value={tagName} key={"tagopt" + i}>{tagName}</Option>);
+        if(this.state.tagOptions != null) {
+            for(let i = 0; i < this.state.tagOptions.length; i++) {
+                let tagName: string = this.state.tagOptions[i];
+                if(isNaN(Number(tagName)) && isNaN(Number(tagName.substring(0, tagName.length - 1))) && !ignoredTags.includes(tagName)){
+                    tagOps.push(<Option value={tagName} key={"tagopt" + i}>{tagName}</Option>);
+                }
             }
         }
+
         return tagOps;
     }
 

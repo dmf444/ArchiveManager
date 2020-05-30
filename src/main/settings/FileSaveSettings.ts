@@ -1,4 +1,5 @@
 const { app } = require('electron');
+const path = require('path');
 
 export class FileSaveSettings implements ISettings{
     get stagingPath(): string {
@@ -16,8 +17,8 @@ export class FileSaveSettings implements ISettings{
     constructor() {
         this.categoryName = "save";
         this.localizedName = "Save Settings";
-        this._stagingPath = app.getPath('temp') + "\\";
-        this._processingPath = app.getPath('documents') + "\\smcs_archiver\\";
+        this._stagingPath = app.getPath('temp') + path.sep;
+        this._processingPath = app.getPath('documents') + path.sep + "archiver" + path.sep;
     }
 
     public getSettingsJson(): {} {

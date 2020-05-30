@@ -16,7 +16,7 @@ export class FileSaveSettings implements ISettings{
     constructor() {
         this.categoryName = "save";
         this.localizedName = "Save Settings";
-        this._stagingPath = app.getPath('temp');
+        this._stagingPath = app.getPath('temp') + "\\";
         this._processingPath = app.getPath('documents') + "\\smcs_archiver\\";
     }
 

@@ -207,5 +207,16 @@ export class WebDatabase {
         return tagList;
     }
 
+    async getContainers(): Promise<any[]> {
+        if(!this.isConnected()){
+            return null;
+        }
+
+        let containers = await Containers.findAll();
+
+        let containerReply = [];
+        containers.every(container => containerReply.push({id: container.id, name: container.name}));
+        return containerReply;
+    }
 
 }

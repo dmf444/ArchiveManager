@@ -17,6 +17,7 @@ const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
+const {autoUpdater} = require("electron-updater");
 
 
 let mainWindow: Electron.BrowserWindow | null;
@@ -109,6 +110,9 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 app.whenReady().then(() => {
+    autoUpdater.checkForUpdatesAndNotify();
+
+
     let filePath = app.getPath('userData');
 
     db = new FileDatabase(filePath);
@@ -122,6 +126,7 @@ app.whenReady().then(() => {
 
     dlManager = new YoutubeDLManager(filePath);
     dlManager.getNewestDownloaderVersion();
+    log.info("Launched with version:", app.getVersion())
 
 });
 
@@ -234,8 +239,8 @@ ipcMain.on('file_edit_get_tags', function (event, arg) {
     });
 });
 
-ipcMain.on('file_edit_save', function (event, arg) {
-    getWebDatabase().getAllTags(arg).then((tags: string[]) => {
-        event.sender.send('file_edit_get_tags_reply', tags);
+ipcMain.on('file_edit_get_containers', function (event, arg) {
+    getWebDatabase().getContainers().then((containers: any[]) => {
+        event.sender.send('file_edit_get_containers_reply', containers);
     });
 });

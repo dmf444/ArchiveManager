@@ -1,7 +1,7 @@
 {
-  "name": "smcs_archives_manager",
+  "name": "archives_manager",
   "version": "1.0.0",
-  "description": "The file management app for the SMCS archives.",
+  "description": "The file & metadata management app for archives.",
   "main": "./dist/main.bundle.js",
   "scripts": {
     "start": "electron ./dist/main.bundle.js",
@@ -12,8 +12,9 @@
     "build:mac": "electron-builder build --mac --x64"
   },
   "build": {
-    "appId": "com.dmf444.smcsarchives",
-    "productName": "SMCS Archives Manager",
+    "appId": "com.dmf444.archivesmanager",
+    "productName": "Archives Manager",
+    "copyright": "Copyright ©2020 David Fernandes",
     "directories": {
       "app": "./dist/",
       "output": "./out/"
@@ -23,7 +24,12 @@
     },
     "win": {
       "target": "nsis",
-      "asar": true
+      "asar": true,
+      "icon": "./dist/public/archivesLogo.ico"
+    },
+    "nsis": {
+      "installerIcon": "./dist/public/archivesLogo.ico",
+      "uninstallerIcon": "./dist/public/archivesLogo.ico"
     },
     "buildVersion": "1.0.0"
   },
@@ -46,7 +52,8 @@
     "electron-dl": "^3.0.0",
     "fs-jetpack": "^2.2.3",
     "adm-zip": "^0.4.14",
-    "electron-context-menu": "^2.0.1"
+    "electron-context-menu": "^2.0.1",
+    "electron-updater": "4.3.1"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

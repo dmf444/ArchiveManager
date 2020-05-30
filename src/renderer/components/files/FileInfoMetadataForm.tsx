@@ -26,17 +26,19 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     constructor(props) {
         super(props);
         this.state = {
-            options: [[0, "Digital File"]],
+            options: [{id: 0, name: "Digital File"}],
             tagOptions: []
         };
 
         this.setTagOptions = this.setTagOptions.bind(this);
         ipcRenderer.on('file_edit_get_tags_reply', this.setTagOptions);
+        ipcRenderer.on('file_edit_get_containers_reply', this.setContainerOptions);
     }
 
     componentDidMount(): void {
         ipcRenderer.send('file_edit_start', this.props.editingCard.id);
         ipcRenderer.send('file_edit_get_tags', null);
+        ipcRenderer.send('file_edit_get_containers', null);
 
         if(this.props.editingCard.state == FileState.ACCEPTED) {
             ipcRenderer.send('file_edit_notnew', []);
@@ -46,6 +48,13 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     componentWillUnmount(): void {
         ipcRenderer.send('file_edit_save', []);
         ipcRenderer.removeListener('file_edit_get_tags_reply', this.setTagOptions);
+        ipcRenderer.removeListener('file_edit_get_containers_reply', this.setContainerOptions);
+    }
+
+    setContainerOptions(event, args: any[]) {
+        if(args != null) {
+            this.setState({options: args});
+        }
     }
 
     setTagOptions(event, args: string[]){
@@ -64,8 +73,8 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
 
     renderContainerOptions = () => {
       let options = [];
-      this.state.options.forEach((optionList: [number, string]) => {
-          options.push(<Option value={optionList[0]} key={"containerselect_" + optionList[0]}>{optionList[1]}</Option>);
+      this.state.options.forEach((optionList) => {
+          options.push(<Option value={optionList.id} key={"containerselect_" + optionList.id}>{optionList.name}</Option>);
       });
       return options;
     };

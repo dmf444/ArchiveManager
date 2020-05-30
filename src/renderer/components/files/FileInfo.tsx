@@ -11,7 +11,7 @@ import {
     EditTwoTone,
     FileOutlined,
     IeOutlined,
-    LeftOutlined,
+    LeftOutlined, SaveOutlined,
     SettingOutlined
 } from '@ant-design/icons/lib';
 import {FileModel} from "@main/file/FileModel";
@@ -37,7 +37,10 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                 <Col span={12}>
                     <Button onClick={this.props.infoClose}><LeftOutlined />Go Back</Button>
                 </Col>
-                <Col span={1} offset={9}>
+                <Col span={3} offset={5}>
+                    <Button type="primary" icon={<SaveOutlined/>} onClick={() => ipcRenderer.send('file_edit_save', [])} block={true}>Save</Button>
+                </Col>
+                <Col span={3} offset={1}>
                     <Popconfirm placement="bottomRight" title={"Are you sure you want to delete this file?"} onConfirm={this.deleteFile} okText="Yes" cancelText="No">
                         <Button type={"primary"} danger={true}><DeleteOutlined />Delete File</Button>
                     </Popconfirm>

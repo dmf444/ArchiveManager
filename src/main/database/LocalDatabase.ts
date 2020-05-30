@@ -43,6 +43,14 @@ export class FileDatabase {
         return FileModel.fromJson(model);
     }
 
+    public getFileByUrl(url: string): FileModel {
+        if(url == "" || url == null){
+            return null;
+        }
+        let model = this.database.get('files').find({url: url}).value();
+        return model == null ? null : FileModel.fromJson(model);
+    }
+
     public getNextFreeFileId(): number{
         let highestModel = this.database.get('files').orderBy('id', 'desc').take(1);
         if(highestModel.size().value() != 0) {

@@ -107,6 +107,10 @@ export class FileManager {
 
     public moveFileToIngestById(id: number) {
         let file: FileModel = getFileDatabase().getFileById(id);
+        this.moveFileToIngest(file);
+    }
+
+    public moveFileToIngest(file: FileModel) {
         log.info("File moved to Ingestion with id: " + file.id + " and name: " + file.fileName);
         FileUtils.moveFileToIngestion(file);
         file.savedLocation = FileUtils.getFilePath(false) + file.fileName;

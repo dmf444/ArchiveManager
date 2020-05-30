@@ -1,5 +1,12 @@
 
 export class FileUploadData {
+    get tags(): string[] {
+        return this._tags;
+    }
+
+    set tags(value: string[]) {
+        this._tags = value;
+    }
     get descriptionVersion(): string {
         return this._descriptionVersion;
     }
@@ -48,18 +55,7 @@ export class FileUploadData {
         this._restrictions = value;
     }
 
-    public addTag(tagString: string) {
-        if(!this.tags.includes(tagString)) {
-            this.tags.push(tagString);
-        }
-    }
 
-    public removeTag(tagString: string) {
-        let index = this.tags.indexOf(tagString);
-        if (index > -1) {
-            this.tags.splice(index, 1);
-        }
-    }
 
     private _localizedName: string;
     private _container: number;
@@ -67,7 +63,7 @@ export class FileUploadData {
     private _descriptionVersion: string;
     private _pageCount: number;
     private _restrictions: number;
-    private tags: string[];
+    private _tags: string[];
     private _date: string;
 
     constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[], date: string) {
@@ -77,7 +73,7 @@ export class FileUploadData {
         this._descriptionVersion = descVers;
         this._pageCount = count;
         this._restrictions = restriction;
-        this.tags = tags;
+        this._tags = tags;
         this._date = date;
     }
 
@@ -90,7 +86,7 @@ export class FileUploadData {
             descVersion: this._descriptionVersion,
             count: this._pageCount,
             restr: this._restrictions,
-            tags: this.tags,
+            tags: this._tags,
             date: this._date
         };
     }

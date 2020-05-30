@@ -2,7 +2,8 @@ import {getEventsDispatcher, getSettingsManager, reloadWebDatabase} from "@main/
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {notificationPackage} from "@main/Events";
 
-const {Sequelize, Model} = require('sequelize');
+
+const {Sequelize, Model, Op} = require('sequelize');
 const log = require('electron-log');
 
 
@@ -10,7 +11,12 @@ class Images extends Model {}
 class Documents extends Model {}
 class Records extends Model {}
 class Containers extends Model {}
-class RecordTags extends Model {}
+class Tags extends Model {
+    public id!: number;
+    public unique_tag!: string;
+    public tag!: string;
+
+}
 
 export class WebDatabase {
 
@@ -76,6 +82,82 @@ export class WebDatabase {
                     modelName: 'images'
                     // options
                 });
+                Containers.init({
+                    id: {
+                        type: Sequelize.INTEGER,
+                        autoIncrement: true,
+                        primaryKey: true,
+                        allowNull: false
+                    },
+                    name: {
+                        type: Sequelize.STRING(100),
+                        allowNull: false
+                    },
+                    code: {
+                        type: Sequelize.STRING(10),
+                        allowNull: false
+                    }
+                }, {
+                   sequelize,
+                   modelName: 'containers'
+                });
+                Documents.init({
+                    id: {
+                        type: Sequelize.INTEGER,
+                        autoIncrement: true,
+                        primaryKey: true,
+                        allowNull: false
+                    },
+                    name: {
+                        type: Sequelize.STRING(255),
+                        allowNull: false
+                    },
+                    image: {
+                        type: Sequelize.TEXT,
+                        allowNull: false
+                    },
+                    download_url: {
+                        type: Sequelize.TEXT,
+                        allowNull: false
+                    },
+                    mimeType: {
+                        type: Sequelize.STRING(32)
+                    },
+                    restriction: {
+                        type: Sequelize.INTEGER,
+                        allowNull: false
+                    },
+                    md5: {
+                        type: Sequelize.STRING(32),
+                        allowNull: false
+                    },
+                    doc_box: {
+                        type: Sequelize.INTEGER,
+                        allowNull: false
+                    }
+                }, {
+                    sequelize,
+                    modelName: 'digital_documents'
+                });
+                Tags.init({
+                    id: {
+                        type: Sequelize.INTEGER,
+                        autoIncrement: true,
+                        primaryKey: true,
+                        allowNull: false
+                    },
+                    tag: {
+                        type: Sequelize.STRING(100),
+                        allowNull: false
+                    },
+                    unique_tag: {
+                        type: Sequelize.STRING(100),
+                        allowNull: false
+                    }
+                }, {
+                    sequelize,
+                    modelName: 'tags'
+                });
             })
             .catch(err => {
                 this.connected = false;
@@ -95,12 +177,34 @@ export class WebDatabase {
     }
 
     async matchAny(inputHash: string): Promise<boolean> {
-        return this.matchImage(inputHash) || false;
+        return await this.matchImage(inputHash) || this.matchDocument(inputHash);
     }
 
     async matchImage(inputHash: string): Promise<boolean> {
         let count = await Images.count({where: {md5: inputHash}});
         return count > 0;
+    }
+
+    async matchDocument(inputHash: string): Promise<boolean> {
+        let count = await Documents.count({where: {md5: inputHash}});
+        return count > 0;
+    }
+
+    async getAllTags(input?: string): Promise<string[]> {
+        if(!this.isConnected()){
+            return null;
+        }
+
+
+        let option = {attributes: ['tag']};
+        if(input != null) {
+            option["where"] = {tag: {[Op.substring]: input}};
+        }
+
+        let tags = await Tags.findAll(option);
+        let tagList: string[] = [];
+        tags.every(tag => tagList.push(tag.tag));
+        return tagList;
     }
 
 

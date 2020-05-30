@@ -17,7 +17,8 @@ interface FileInfoMetadataFormProps {
     editingCard: FileModel
 }
 interface FileInfoMetadataFormState {
-    options: any[]
+    options: any[],
+    tagOptions: any[]
 }
 
 export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormProps, FileInfoMetadataFormState> {
@@ -25,15 +26,17 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     constructor(props) {
         super(props);
         this.state = {
-            options: [[0, "Digital File"]]
+            options: [[0, "Digital File"]],
+            tagOptions: []
         };
 
-        this.updateDownloaderOptions = this.updateDownloaderOptions.bind(this);
-        //ipcRenderer.on('get_downloaders_reply', this.updateDownloaderOptions);
+        this.setTagOptions = this.setTagOptions.bind(this);
+        ipcRenderer.on('file_edit_get_tags_reply', this.setTagOptions);
     }
 
     componentDidMount(): void {
         ipcRenderer.send('file_edit_start', this.props.editingCard.id);
+        ipcRenderer.send('file_edit_get_tags', null);
 
         if(this.props.editingCard.state == FileState.ACCEPTED) {
             ipcRenderer.send('file_edit_notnew', []);
@@ -41,16 +44,23 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     }
 
     componentWillUnmount(): void {
-        ipcRenderer.send('file_edit_stop', []);
+        ipcRenderer.send('file_edit_save', []);
+        ipcRenderer.removeListener('file_edit_get_tags_reply', this.setTagOptions);
     }
 
-    updateDownloaderOptions(event, args: string[]){
-        let updatedDownloaders = [];
-        args.forEach((downloadName: string) => {
-            updatedDownloaders.push(<Option value={downloadName} key={"dl_" + downloadName.split(" ")[0]}>{downloadName}</Option>);
-        });
-        this.setState({options: updatedDownloaders});
+    setTagOptions(event, args: string[]){
+        this.setState({tagOptions: args});
     }
+
+    private tagGetTimer = null;
+    searchTags = (value: string) => {
+        clearTimeout(this.tagGetTimer);
+        this.tagGetTimer = setTimeout(this.sendTagSearch, 300, value);
+    }
+    sendTagSearch = (value) => {
+        ipcRenderer.send('file_edit_get_tags', value);
+    };
+
 
     renderContainerOptions = () => {
       let options = [];
@@ -110,6 +120,23 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         ipcRenderer.send('file_edit_desc_version', e.target.value);
     }
 
+    sendTagChange = (changed, all) => {
+        ipcRenderer.send('file_edit_tags', changed);
+    }
+
+    private renderTagOptions() {
+        let tagOps = [];
+        let ignoredTags = ["root", "temp", "documents", "other", "music"];
+
+        for(let i = 0; i < this.state.tagOptions.length; i++) {
+            let tagName: string = this.state.tagOptions[i];
+            if(isNaN(Number(tagName)) && isNaN(Number(tagName.substring(0, tagName.length - 1))) && !ignoredTags.includes(tagName)){
+                tagOps.push(<Option value={tagName} key={"tagopt" + i}>{tagName}</Option>);
+            }
+        }
+        return tagOps;
+    }
+
     defaultValues = {
         description: this.props.editingCard.fileMetadata.description,
         file_name: this.props.editingCard.fileMetadata.localizedName,
@@ -117,7 +144,8 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         restriction: this.props.editingCard.fileMetadata.restrictions,
         year: this.getDateMoment(),
         container_sel: this.props.editingCard.fileMetadata.container,
-        desc_vers: this.props.editingCard.fileMetadata.descriptionVersion
+        desc_vers: this.props.editingCard.fileMetadata.descriptionVersion,
+        file_tags: this.props.editingCard.fileMetadata.tags
     };
 
 
@@ -171,8 +199,9 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                 </Row>
                 <Row>
                     <Col span={24}>
-                        <Form.Item label={"Tags"}>
-                            <Select mode="tags" style={{ width: '100%' }}>
+                        <Form.Item label={"Tags"} name={"file_tags"}>
+                            <Select mode="tags" style={{ width: '100%' }} onChange={this.sendTagChange} onSearch={this.searchTags}>
+                                {this.renderTagOptions()}
                             </Select>
                         </Form.Item>
                     </Col>
@@ -189,5 +218,4 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
             </Form>
         );
     }
-
 }

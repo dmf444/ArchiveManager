@@ -9,12 +9,12 @@ Thanks to @Devtography, for providing a working boilerplate for React/Electron! 
 ## Getting started
 ```sh
 // execute
-git clone https://github.com/iamWing/electron-react-typescript-base-proj.git
+git clone https://github.com/dmf444/ArchiveManager.git
 ```
 
 Then install all the `node_modules` needed by executing the following command:
 ```sh
-cd folder-containing-the-cloned-boilerplate
+cd ArchiveManager\
 npm install
 ```
 
@@ -34,6 +34,8 @@ npm start
 ## Authors
 
 [D M F](https://github.com/dmf444)
+
+[Patrick Ocampo](https://github.com/patrick-aoc)
 
 ## License
 The SMCS Archives Manager is open source software [licensed as GPLv3](LICENSE).

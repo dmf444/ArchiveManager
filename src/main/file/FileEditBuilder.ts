@@ -38,13 +38,8 @@ export class FileEditBuilder {
         return this;
     }
 
-    public addTag(tagString: string): FileEditBuilder {
-        this.currentFile.fileMetadata.addTag(tagString);
-        return this;
-    }
-
-    public removeTag(tagString: string): FileEditBuilder {
-        this.currentFile.fileMetadata.removeTag(tagString);
+    public setTags(tagStrings: string[]): FileEditBuilder {
+        this.currentFile.fileMetadata.tags = tagStrings;
         return this;
     }
 
@@ -99,4 +94,8 @@ ipcMain.on('file_edit_description', function (event, arg) {
 
 ipcMain.on('file_edit_desc_version', function (event, arg) {
     getFileUpdater().setDescriptionVersion(arg);
+});
+
+ipcMain.on('file_edit_tags', function (event, arg: string[]) {
+    getFileUpdater().setTags(arg);
 });

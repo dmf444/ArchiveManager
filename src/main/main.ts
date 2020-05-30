@@ -12,6 +12,7 @@ import {FileDatabase} from '@main/database/LocalDatabase';
 import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
 import {FileEditBuilder} from "@main/file/FileEditBuilder";
+import {sendSuccess} from "@main/NotificationBundle";
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
@@ -82,8 +83,8 @@ function createWindow(): void {
     });
 
 
-    mainWindow.setTitle('');
-    //mainWindow.setMenuBarVisibility(false);
+    mainWindow.setTitle('Archives Manager');
+    mainWindow.setMenuBarVisibility(false);
 
     // and load the index.html of the app.
     mainWindow.loadURL(
@@ -222,6 +223,19 @@ ipcMain.on('file_edit_start', function (event, arg) {
     fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
 });
 
-ipcMain.on('file_edit_stop', function (event, arg) {
+ipcMain.on('file_edit_save', function (event, arg) {
     fileUpdateBuilder.commitFile();
+    sendSuccess("File Saved!", "Successfully saved the file metadata.");
+});
+
+ipcMain.on('file_edit_get_tags', function (event, arg) {
+    getWebDatabase().getAllTags(arg).then((tags: string[]) => {
+        event.sender.send('file_edit_get_tags_reply', tags);
+    });
+});
+
+ipcMain.on('file_edit_save', function (event, arg) {
+    getWebDatabase().getAllTags(arg).then((tags: string[]) => {
+        event.sender.send('file_edit_get_tags_reply', tags);
+    });
 });

@@ -1,7 +1,13 @@
-# ![Manager Logo](https://github.com/dmf444/ArchiveManager/blob/master/notes/archivesManagerLogo.png "Archives Manager Logo") Archives Manager
-A file manager and downloader. Allows tracking of files for accession and uploading to a remote database.
-As this project gets closer to completion, this repo will be updated with database specs, so that anyone may use this
-software.
+<div align="center">
+  <img src="https://github.com/dmf444/ArchiveManager/blob/master/notes/archivesManagerLogo.svg" width="200" height="200">
+
+  <h1>Archives Manager</h1>
+
+  <p>A file manager and downloader. Allows tracking of files for accession and uploading to a remote database.
+  As this project gets closer to completion, this repo will be updated with database specs, so that anyone may use this
+  software.</p>
+
+</div>
 
 
 Thanks to @Devtography, for providing a working boilerplate for React/Electron! View his project [here](https://github.com/Devtography/electron-react-typescript-webpack-boilerplate/).

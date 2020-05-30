@@ -1,4 +1,4 @@
-# SMCS Archives Manager
+# Archives Manager
 A file manager and downloader. Allows tracking of files for accession and uploading to a remote database.
 As this project gets closer to completion, this repo will be updated with database specs, so that anyone may use this
 software.

@@ -42,7 +42,6 @@ export class Bot {
 
 
             this.client.login(this._settings.token).catch(error => console.log(error));
-            //'Njg5OTUwMzI1NzY3Mjc0NTYz.XnKUlQ.hz21x-kJNbaLHwHnJ1YA0y6Scgk'
         } else {
             log.warn("Discord Token not set, bot not Initialized!");
         }

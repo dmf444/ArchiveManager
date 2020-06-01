@@ -1,11 +1,13 @@
 //https://yt-dl.org/downloads/latest/youtube-dl.exe
 import * as jetpack from "fs-jetpack";
 import {InspectResult} from "fs-jetpack/types";
+import DownloadItem = Electron.DownloadItem;
 
 const {download} = require("electron-dl");
 const {BrowserWindow} = require("electron");
 const path = require('path');
 const log = require('electron-log');
+const fs = require('fs');
 
 export class YoutubeDLManager {
 
@@ -64,7 +66,11 @@ export class YoutubeDLManager {
         log.info("Downloading newest version of Youtube DL");
         let file: string = this.isWindows ? "youtube-dl.exe" : "youtube-dl";
         let url: string = "https://yt-dl.org/downloads/latest/" + file;
-        download(BrowserWindow.getAllWindows()[0], url, {directory: this.basePath});
+        download(BrowserWindow.getAllWindows()[0], url, {directory: this.basePath}).then((downloadItem: DownloadItem) => {
+            if(!this.isWindows) {
+                fs.chmodSync(downloadItem.getSavePath(), 0o555);
+            }
+        });
     }
 
 }

@@ -1,7 +1,7 @@
 /**
  * Entry point of the Election app.
  */
-import { app, BrowserWindow, ipcMain, shell} from 'electron';
+import { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage} from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
@@ -29,6 +29,7 @@ let webDatabase: WebDatabase;
 let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
 let fileUpdateBuilder: FileEditBuilder = null;
+let tray = null;
 
 
 electronDl();
@@ -105,12 +106,41 @@ function createWindow(): void {
     });
 }
 
+function toggleMenu() {
+    if(mainWindow != null){
+        if(mainWindow.isVisible()) {
+            mainWindow.hide();
+        } else {
+            mainWindow.show();
+        }
+    } else {
+        createWindow();
+    }
+}
+
+function createTrayMenu() {
+    tray = new Tray(icon);
+    tray.setToolTip("Archives Manager");
+    let image: nativeImage = nativeImage.createFromPath(icon);
+    image = image.resize({width: 16, height: 16, quality: "better"});
+    log.info(image.getSize());
+    let contextMenu = Menu.buildFromTemplate([
+        {label: "Super Control Panel", type: "normal", enabled: false, icon: image},
+        {type: "separator"},
+        {label: "Toggle Window Visibility", type: "normal", click: (menuItem, browserWindow, event) => {toggleMenu()}},
+        {label: "Close Program", type: "normal", click: (menuItem, browserWindow, event) => { app.quit()}}
+    ]);
+    tray.setContextMenu(contextMenu);
+    tray.on('click', (event, bounds, position) => {toggleMenu()});
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 app.whenReady().then(() => {
     autoUpdater.checkForUpdatesAndNotify();
+    createTrayMenu();
 
 
     let filePath = app.getPath('userData');
@@ -135,7 +165,7 @@ app.on('window-all-closed', () => {
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
-        app.quit();
+        mainWindow.hide();
     }
 });
 

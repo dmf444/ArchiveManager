@@ -4,13 +4,10 @@ import * as jetpack from "fs-jetpack";
 import {FileUploadData} from "@main/file/FileUploadData";
 import {FileState} from "@main/file/FileState";
 import {FileModel} from "@main/file/FileModel";
-import DownloadItem = Electron.DownloadItem;
 import {InspectResult} from "fs-jetpack/types";
 
 const log = require('electron-log');
 
-const {BrowserWindow} = require("electron");
-const {download} = require("electron-dl");
 
 
 export class FileUtils {

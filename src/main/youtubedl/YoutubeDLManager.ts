@@ -2,6 +2,7 @@
 import * as jetpack from "fs-jetpack";
 import {InspectResult} from "fs-jetpack/types";
 import DownloadItem = Electron.DownloadItem;
+import {toggleMenu} from "@main/main";
 
 const {download} = require("electron-dl");
 const {BrowserWindow} = require("electron");
@@ -66,6 +67,10 @@ export class YoutubeDLManager {
         log.info("Downloading newest version of Youtube DL");
         let file: string = this.isWindows ? "youtube-dl.exe" : "youtube-dl";
         let url: string = "https://yt-dl.org/downloads/latest/" + file;
+        let window : Electron.BrowserWindow = BrowserWindow.getAllWindows()[0];
+        if(window == null) {
+            toggleMenu();
+        }
         download(BrowserWindow.getAllWindows()[0], url, {directory: this.basePath}).then((downloadItem: DownloadItem) => {
             if(!this.isWindows) {
                 fs.chmodSync(downloadItem.getSavePath(), 0o555);

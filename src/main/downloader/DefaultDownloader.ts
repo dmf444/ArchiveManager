@@ -1,5 +1,6 @@
 import DownloadItem = Electron.DownloadItem;
 import {FileUtils} from "@main/downloader/FileUtils";
+import {toggleMenu} from "@main/main";
 const {basename} = require('path');
 const log = require('electron-log');
 
@@ -18,6 +19,10 @@ export class DefaultDownloader implements IDownloader {
         let filePathDir = FileUtils.getFilePath(stage);
         log.info(url, stage, filePathDir);
         //As it stands right now, I can guarantee that there's only one window open at a time.
+        let window : Electron.BrowserWindow = BrowserWindow.getAllWindows()[0];
+        if(window == null) {
+            toggleMenu();
+        }
         let fileDownload: DownloadItem = await download(BrowserWindow.getAllWindows()[0], url, {directory: filePathDir});
 
         let fileName = basename(fileDownload.getSavePath());

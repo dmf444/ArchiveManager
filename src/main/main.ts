@@ -106,7 +106,7 @@ function createWindow(): void {
     });
 }
 
-function toggleMenu() {
+export function toggleMenu() {
     if(mainWindow != null){
         if(mainWindow.isVisible()) {
             mainWindow.hide();

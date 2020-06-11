@@ -11,6 +11,8 @@ import {UploadOutlined} from "@ant-design/icons/lib";
 import 'antd/dist/antd.css';
 import {ipcRenderer} from "electron";
 import {FormInstance} from "antd/lib/form";
+import {UploadFile} from "antd/es/upload/interface";
+const log = require('electron-log');
 
 export class AddFiles extends React.Component {
     formRef = React.createRef<FormInstance>();
@@ -18,6 +20,15 @@ export class AddFiles extends React.Component {
     finish = values => {
       if(values['url'] != null && values['url'] != ""){
           ipcRenderer.send('homepage_url_add', values['url']);
+      } else if(values["multi_file"] != null && values["multi_file"].fileList.length > 0){
+          let filePaths = [];
+          for(let i = 0; i < values["multi_file"].fileList.length; i++) {
+              let file: UploadFile = values["multi_file"].fileList[i];
+              if ("path" in file.originFileObj) {
+                  filePaths.push({fileName: file.originFileObj.name, path: file.originFileObj.path});
+              }
+          }
+          ipcRenderer.send('import_local_file', filePaths);
       }
         this.formRef.current.resetFields();
     };

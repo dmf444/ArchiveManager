@@ -1,7 +1,7 @@
 /**
  * Entry point of the Election app.
  */
-import { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage} from 'electron';
+import {app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, ipcRenderer} from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
@@ -169,6 +169,12 @@ app.on('window-all-closed', () => {
     }
 });
 
+app.on('will-quit', () => {
+   if(tray != null) {
+       tray.destroy();
+   }
+});
+
 app.on('activate', () => {
     // On OS X it"s common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -272,5 +278,12 @@ ipcMain.on('file_edit_get_tags', function (event, arg) {
 ipcMain.on('file_edit_get_containers', function (event, arg) {
     getWebDatabase().getContainers().then((containers: any[]) => {
         event.sender.send('file_edit_get_containers_reply', containers);
+    });
+});
+
+type localInputType = {path: string, fileName: string;}
+ipcMain.on('import_local_file', function (event, filePaths: []) {
+    filePaths.forEach((fileModule: localInputType) => {
+       getFileManager().addFileFromLocal(fileModule.path, fileModule.fileName);
     });
 });

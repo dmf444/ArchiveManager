@@ -42,13 +42,14 @@ export class FileUtils {
         return metadata;
     }
 
-    public static createNewFileEntry(filePath: string, fileName: string, url: string, isDuplicate: boolean, md5: string, isStaged: boolean) {
+    public static createNewFileEntry(filePath: string, fileName: string, url: string, isDuplicate: boolean, md5: string, isStaged: boolean): FileModel {
         let metadata = FileUtils.createDefaultMetadataEntry();
         let fileId: number = getFileDatabase().getNextFreeFileId();
         let firstState: FileState = isStaged ? FileState.NEW : FileState.ACCEPTED;
         let state: FileState = isDuplicate ? FileState.DUPLICATE : firstState;
         let file = new FileModel(fileId, fileName, filePath, state, url, md5, metadata);
         getFileDatabase().addFile(file);
+        return file;
     }
 
     public static createNewErrorFileEntry(url: string) {
@@ -71,13 +72,36 @@ export class FileUtils {
         jetpack.remove(file.savedLocation);
     }
 
+    /**
+     * Moves a file from anywhere to the Ingestion (active) directory. This will rename the file if a file already exists with the same name
+     *
+     * NOTE: This function can change the file name! Make sure that after using it, you save the fileModel back to the database.
+     * @param file file you wish to move
+     */
     public static moveFileToIngestion(file: FileModel) {
         let stagingingPath: string = this.getProcessingPath();
-        if(jetpack.exists(stagingingPath + file.fileName) != false){
-            jetpack.rename(file.savedLocation, "1_" + file.fileName);
-            file.fileName = "1_" + file.fileName;
+        let oldFileName = file.fileName;
+        file.fileName = this.renameFileIfExists(file.fileName, file.savedLocation);
+        if(oldFileName != file.fileName) {
+            file.savedLocation = file.savedLocation.replace(oldFileName, "") + file.fileName;
         }
         jetpack.move(file.savedLocation, stagingingPath + file.fileName);
+    }
+
+    private static renameFileIfExists(fileName: string, currentAbsolutePath: string,  destinationPath: string = FileUtils.getFilePath(false)): string {
+        if(jetpack.exists(destinationPath + fileName) != false) {
+            let fileNumber: number = 1;
+            let fileNameSplit = fileName.split(".", 2);
+            let newFileName = fileNameSplit[0] + "_" + fileNumber + "." + fileNameSplit[1];
+            while (jetpack.exists(destinationPath + newFileName) != false) {
+                fileNumber++;
+                newFileName = fileNameSplit[0] + "_" + fileNumber + fileNameSplit[1];
+            }
+
+            jetpack.rename(currentAbsolutePath, newFileName);
+            return newFileName;
+        }
+        return fileName;
     }
 
     public static getFileHash(filePath: string): string {

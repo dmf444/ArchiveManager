@@ -74,7 +74,7 @@ export class Bot {
                     urls.forEach((url:string) => {
                        let file: FileModel = getFileDatabase().getFileByUrl(url);
                        if(file != null) {
-                           getFileManager().moveFileToIngest(file);
+                           getFileManager().moveFileToIngest(file, false);
                        }
                     });
                 } else if(reaction.emoji.toString() == this._settings.icons_refuse) {

@@ -90,6 +90,18 @@ export class FileManager {
         });
     }
 
+    public addFileFromLocal(filePath: string, fileName: string) {
+        if(!filePath.includes(FileUtils.getFilePath(true)) && !filePath.includes(FileUtils.getFilePath(false))){
+
+            let hashCheck: string = FileUtils.getFileHash(filePath);
+            FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
+                let file = FileUtils.createNewFileEntry(filePath, fileName, '', contains, hashCheck, false);
+                this.moveFileToIngest(file, false);
+                sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
+            });
+        }
+    }
+
     public getDownloaders(): string[] {
         let loaders: string[] = [];
         this.downloaders.forEach((downloader: IDownloader) => {
@@ -107,14 +119,16 @@ export class FileManager {
 
     public moveFileToIngestById(id: number) {
         let file: FileModel = getFileDatabase().getFileById(id);
-        this.moveFileToIngest(file);
+        this.moveFileToIngest(file, true);
     }
 
-    public moveFileToIngest(file: FileModel) {
+    public moveFileToIngest(file: FileModel, updateState: boolean) {
         log.info("File moved to Ingestion with id: " + file.id + " and name: " + file.fileName);
         FileUtils.moveFileToIngestion(file);
         file.savedLocation = FileUtils.getFilePath(false) + file.fileName;
-        file.state = FileState.NORMAL;
+        if(updateState){
+            file.state = FileState.NORMAL;
+        }
         getFileDatabase().updateFile(file);
     }
 

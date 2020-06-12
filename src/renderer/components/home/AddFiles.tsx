@@ -7,7 +7,7 @@ import { FileOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
 
-import {UploadOutlined} from "@ant-design/icons/lib";
+import {DeleteTwoTone, UploadOutlined} from '@ant-design/icons/lib';
 import 'antd/dist/antd.css';
 import {ipcRenderer} from "electron";
 import {FormInstance} from "antd/lib/form";
@@ -36,19 +36,19 @@ export class AddFiles extends React.Component {
     render() {
         return(
             <div className="addFilesComp">
-                
+
                 <Row justify="start">
                     <Col>
                         <Row>
                             <Col>
-                                <Divider 
-                                    orientation="left" 
+                                <Divider
+                                    orientation="left"
                                     style={{
                                     fontSize: "20px"
                                 }}>Add Files
                                 </Divider>
                             </Col>
-                        </Row>    
+                        </Row>
                     </Col>
                 </Row>
 
@@ -84,11 +84,15 @@ export class AddFiles extends React.Component {
                             </Row>
                         </Col>
                     </Row>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            Submit
-                        </Button>
-                    </Form.Item>
+                    <Row>
+                        <Col span={7} offset={7}>
+                            <Form.Item>
+                                <Button size="large" type="primary" htmlType="submit" block={true}>
+                                    Submit
+                                </Button>
+                            </Form.Item>
+                        </Col>
+                    </Row>
                 </Form>
             </div>
         );

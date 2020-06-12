@@ -1,4 +1,4 @@
-import set = Reflect.set;
+
 
 
 export class DiscordSettings implements ISettings{

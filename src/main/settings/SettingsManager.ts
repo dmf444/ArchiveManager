@@ -1,5 +1,6 @@
-import {FileDatabase} from "../database/LocalDatabase";
-import {getEventsDispatcher} from "../main";
+import {getEventsDispatcher} from '@main/main';
+import {FileDatabase} from '@main/database/LocalDatabase';
+
 const log = require('electron-log');
 const {} = require("../main");
 

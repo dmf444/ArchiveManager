@@ -1,4 +1,4 @@
-import {Client, Message, MessageReaction, User} from 'discord.js';
+import {Client, Message, MessageReaction, PartialMessage, User} from 'discord.js';
 import {DiscordSettings} from "./settings/DiscordSettings";
 import {notificationPackage} from "./Events";
 import {getEventsDispatcher, getFileDatabase, getFileManager, getSettingsManager, reloadDiscordBot} from "./main";
@@ -47,7 +47,7 @@ export class Bot {
         }
     }
 
-    public onNewMessageRecieved(msg: Message) {
+    public onNewMessageRecieved(msg: Message | PartialMessage) {
         if(msg.channel.id == this._settings.channel_id) {
             let regex = /(https?|ftp):\/\/[^\s\/$.?#].[^\s]*/igm;
             let urls = msg.cleanContent.match(regex);

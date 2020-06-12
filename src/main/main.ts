@@ -1,7 +1,7 @@
 /**
  * Entry point of the Election app.
  */
-import {app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, ipcRenderer} from 'electron';
+import {app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage} from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import {EventDispatcher, notificationPackage} from './Events';
@@ -13,7 +13,7 @@ import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
 import {FileEditBuilder} from "@main/file/FileEditBuilder";
 import {sendSuccess} from "@main/NotificationBundle";
-import {autoUpdateControl} from "@main/updater/AutoUpdateController";
+import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
@@ -84,7 +84,7 @@ function createWindow(): void {
             devTools: process.env.NODE_ENV !== 'production'
         }
     });
-
+    log.info("Something wrong while creating window?");
 
     mainWindow.setTitle('Archives Manager');
     mainWindow.setMenuBarVisibility(false);
@@ -120,9 +120,10 @@ export function toggleMenu() {
 }
 
 function createTrayMenu() {
-    tray = new Tray(icon);
+    let ico = path.join(__dirname, "public", "archivesLogo.ico");
+    tray = new Tray(ico);
     tray.setToolTip("Archives Manager");
-    let image: nativeImage = nativeImage.createFromPath(icon);
+    let image: nativeImage = nativeImage.createFromPath(ico);
     image = image.resize({width: 16, height: 16, quality: "better"});
     //log.info(image.getSize());
     let contextMenu = Menu.buildFromTemplate([
@@ -282,9 +283,9 @@ ipcMain.on('file_edit_get_containers', function (event, arg) {
     });
 });
 
-type localInputType = {path: string, fileName: string;}
+
 ipcMain.on('import_local_file', function (event, filePaths: []) {
-    filePaths.forEach((fileModule: localInputType) => {
+    filePaths.forEach((fileModule: {path: string, fileName: string}) => {
        getFileManager().addFileFromLocal(fileModule.path, fileModule.fileName);
     });
 });

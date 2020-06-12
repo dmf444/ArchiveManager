@@ -1,6 +1,6 @@
 {
   "name": "archives_manager",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The file & metadata management app for archives.",
   "main": "./dist/main.bundle.js",
   "scripts": {
@@ -32,7 +32,7 @@
       "installerIcon": "./dist/public/archivesLogo.ico",
       "uninstallerIcon": "./dist/public/archivesLogo.ico"
     },
-    "buildVersion": "1.1.0"
+    "buildVersion": "1.1.1"
   },
   "author": "David Fernandes @dmf444",
   "license": "GPLv3",

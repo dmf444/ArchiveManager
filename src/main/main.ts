@@ -13,11 +13,12 @@ import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
 import {FileEditBuilder} from "@main/file/FileEditBuilder";
 import {sendSuccess} from "@main/NotificationBundle";
+import {autoUpdateControl} from "@main/updater/AutoUpdateController";
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
-const {autoUpdater} = require("electron-updater");
+
 
 
 let mainWindow: Electron.BrowserWindow | null;
@@ -123,7 +124,7 @@ function createTrayMenu() {
     tray.setToolTip("Archives Manager");
     let image: nativeImage = nativeImage.createFromPath(icon);
     image = image.resize({width: 16, height: 16, quality: "better"});
-    log.info(image.getSize());
+    //log.info(image.getSize());
     let contextMenu = Menu.buildFromTemplate([
         {label: "Super Control Panel", type: "normal", enabled: false, icon: image},
         {type: "separator"},
@@ -139,7 +140,7 @@ function createTrayMenu() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 app.whenReady().then(() => {
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdateControl.checkForUpdates();
     createTrayMenu();
 
 
@@ -156,7 +157,7 @@ app.whenReady().then(() => {
 
     dlManager = new YoutubeDLManager(filePath);
     dlManager.getNewestDownloaderVersion();
-    log.info("Launched with version:", app.getVersion())
+    log.info("Launched with version:", app.getVersion());
 
 });
 
@@ -286,4 +287,8 @@ ipcMain.on('import_local_file', function (event, filePaths: []) {
     filePaths.forEach((fileModule: localInputType) => {
        getFileManager().addFileFromLocal(fileModule.path, fileModule.fileName);
     });
+});
+
+ipcMain.on('info_update_status', function (event, arg) {
+    event.sender.send('info_update_status_reply', autoUpdateControl.getUpdateInfo());
 });

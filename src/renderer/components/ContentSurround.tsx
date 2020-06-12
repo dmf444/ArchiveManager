@@ -10,9 +10,10 @@ import { Home } from './Home';
 import { Files } from './Files';
 import {Settings} from "@/renderer/components/Settings";
 import {ipcRenderer} from "electron";
-import {CheckCircleOutlined} from "@ant-design/icons/lib";
+import {CheckCircleOutlined, InfoCircleOutlined} from "@ant-design/icons/lib";
 import {ArgsProps} from "antd/lib/notification";
 import {notificationBundle} from "@main/NotificationBundle";
+import {Info} from "@/renderer/components/Info";
 
 const { Content, Footer, Sider, Header } = Layout;
 
@@ -64,6 +65,10 @@ export class ContentSurround extends React.Component{
         this.setState({ currentSelection: 'Settings', headerBarContent: null });
     }
 
+    changeToInfo = () => {
+        this.setState({ currentSelection: 'Info', headerBarContent: null });
+    }
+
     insertHeader = (header: any) => {
         this.setState({headerBarContent: header});
     }
@@ -82,6 +87,10 @@ export class ContentSurround extends React.Component{
                             <FileAddOutlined />
                             <span className='nav-text'>Files</span>
                         </Menu.Item>
+                        <Menu.Item key='4' style={{position: 'absolute', bottom: '90px'}} onClick={this.changeToInfo}>
+                            <InfoCircleOutlined />
+                            <span className='nav-text'>Info</span>
+                        </Menu.Item>
                         <Menu.Item key='3' style={{position: 'absolute', bottom: '47px'}} onClick={this.changeToSettings}>
                             <SettingOutlined />
                             <span className='nav-text'>Settings</span>
@@ -95,6 +104,7 @@ export class ContentSurround extends React.Component{
                             {this.state.currentSelection == 'Home' && <Home {...this.props} />}
                             {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
                             {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
+                            {this.state.currentSelection == 'Info' && <Info />}
                         </div>
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>

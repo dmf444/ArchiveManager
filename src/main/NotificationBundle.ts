@@ -8,7 +8,7 @@ export type notificationBundle = {
 }
 
 function sendNotification(bundle: notificationBundle) {
-    BrowserWindow.getAllWindows()[0].webContents.send('notification_show', bundle)
+    BrowserWindow.getAllWindows()[0].webContents.send('notification_show', bundle);
 }
 
 export function sendSuccess(message: string, desc: string) {

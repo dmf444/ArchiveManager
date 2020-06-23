@@ -15,7 +15,7 @@ export class YouTubeDownloader implements IDownloader {
     }
 
     async downloadUrl(url: string, stage: boolean): Promise<downloadPromise> {
-        let initalDirectory = FileUtils.getFilePath(true) + "video_dl";
+        let initalDirectory = this.getNextFreeFolder();
         log.info(initalDirectory);
         jetpack.dir(initalDirectory, {empty: true});
 
@@ -37,11 +37,12 @@ export class YouTubeDownloader implements IDownloader {
             });
 
             let zipBasePath: string = FileUtils.getFilePath(stage);
-            let zipName: string = fileName.split('.')[0] + ".zip";
+            let lastDot: number = fileName.lastIndexOf(".");
+            let zipName: string = fileName.substring(0, lastDot) + ".zip";
             let zipSavePath: string = zipBasePath + path.sep + zipName;
             zip.writeZip(zipSavePath);
 
-            log.error("Video Downloaded!");
+            log.info("Video Downloaded!");
             downloadPromise = {state: "completed", fileName: zipName, filePathDir: zipBasePath, md5: md5};
         } else {
             log.error("Failed to download video file!");
@@ -65,6 +66,16 @@ export class YouTubeDownloader implements IDownloader {
     private getMd5FromFile(fullFilePath: string): string {
         let result: InspectResult = jetpack.inspect(fullFilePath, {checksum: "md5"});
         return result.md5;
+    }
+
+    private getNextFreeFolder(): string {
+        let folderNumber: number = 0;
+        let initalDirectory = FileUtils.getFilePath(true) + "video_dl_" + folderNumber;
+        while(jetpack.exists(initalDirectory) != false) {
+            folderNumber++;
+            initalDirectory = FileUtils.getFilePath(true) + "video_dl_" + folderNumber;
+        }
+        return initalDirectory;
     }
 
 }

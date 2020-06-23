@@ -104,7 +104,7 @@ export class YtdlBuilder {
 
         const youtubedl = spawn(getYoutubeDlManager().getFullApplicationPath(), this.executeArgs);
 
-        return  await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             youtubedl.on('close', resolve);
         });
     }

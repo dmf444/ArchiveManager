@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Card, Col, Row} from 'antd';
+import {Card, Col, Row, Tooltip} from 'antd';
 import {
     DeleteOutlined, DeleteTwoTone,
     DownloadOutlined,
@@ -90,7 +90,8 @@ export class FileCard extends React.Component<FileProps, {}>{
 
     shortendName = () => {
         if(this.props.cardInfo.fileName.length >= 30) {
-            return this.props.cardInfo.fileName.substring(0, 22) + "..." + this.props.cardInfo.fileName.split(".")[1];
+            let lastDot: number = this.props.cardInfo.fileName.lastIndexOf(".");
+            return this.props.cardInfo.fileName.substring(0, 22) + "..." + this.props.cardInfo.fileName.slice(lastDot);
         }
         return this.props.cardInfo.fileName;
     }
@@ -107,7 +108,9 @@ export class FileCard extends React.Component<FileProps, {}>{
                                     {this.getIcon(this.props.cardInfo.fileName)}
                                 </Col>
                                 <Col>
-                                    <h4 style={{marginBottom: "0px"}}>{this.shortendName()}</h4>
+                                    <Tooltip placement="topLeft" title={this.props.cardInfo.fileName}>
+                                        <h4 style={{marginBottom: "0px"}}>{this.shortendName()}</h4>
+                                    </Tooltip>
                                     <h6 style={{textAlign: "left"}}>File Id:  {this.props.cardInfo.id}</h6>
                                 </Col>
                             </Row>

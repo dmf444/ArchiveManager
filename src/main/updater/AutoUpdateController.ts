@@ -1,6 +1,7 @@
 import {BrowserWindow, ipcMain} from "electron";
 
 const {autoUpdater} = require("electron-updater");
+const log = require('electron-log');
 
 
 
@@ -21,6 +22,13 @@ export class AutoUpdateController {
                 this.remoteVersion = results.updateInfo.version;
             }
         });
+        autoUpdater.on('download-progress', (progressObj) => {
+            log.info(progressObj.percent);
+        });
+        autoUpdater.on('update-downloaded', (info) => {
+            autoUpdater.quitAndInstall();
+        });
+
         this.lastChecked = Date.now();
     }
 

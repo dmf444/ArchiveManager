@@ -17,6 +17,7 @@ import {
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {FileInfoMetadataForm} from "@/renderer/components/files/FileInfoMetadataForm";
+import path from "path";
 
 interface FileProps {
     infoClose: (event: React.MouseEvent) => void
@@ -74,6 +75,28 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
 
     redownloadForm = (values) => {
         ipcRenderer.send('file_redownload', [this.props.editingCard.id, values["downloader"]]);
+    }
+
+    attachExtraFile = (thing) => {
+        //log.info(thing.file.originFileObj.path);
+        ipcRenderer.send('file_edit_extraFile', thing.file.originFileObj.path);
+    }
+
+    getDefaultFile = () => {
+        if(this.props.editingCard.fileMetadata.extraFile != null && this.props.editingCard.fileMetadata.extraFile != "") {
+            let index = this.props.editingCard.fileMetadata.extraFile.lastIndexOf("\\");
+            let fileName = this.props.editingCard.fileMetadata.extraFile.slice(index + 1);
+            return [
+                {
+                    uid: '1',
+                    name: fileName,
+                    status: 'done',
+                    size: 0,
+                    type: "tjomg"
+                }
+            ]
+        }
+        return null;
     }
 
 
@@ -140,11 +163,11 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                             </Form>
                         </Row>
                         <Row>
-                            <Upload>
-                                <Button>
-                                    <UploadOutlined /> Click to Upload
-                                </Button>
-                            </Upload>
+                            <Col span={12} style={{textAlign: "left"}}>
+                                <Upload multiple={false} onChange={this.attachExtraFile} defaultFileList={this.getDefaultFile()}>
+                                    <Button><UploadOutlined />Attach Secondary File</Button>
+                                </Upload>
+                            </Col>
                         </Row>
                     </Col>
                 </Row>

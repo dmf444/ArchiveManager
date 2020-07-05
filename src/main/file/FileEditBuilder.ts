@@ -2,11 +2,14 @@ import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
 import {getFileDatabase, getFileUpdater} from "@main/main";
 import {ipcMain} from 'electron';
+import {FileUtils} from "@main/downloader/FileUtils";
+
 const log = require('electron-log');
 
 export class FileEditBuilder {
 
     private currentFile: FileModel;
+    private fileAdded: boolean = false;
 
     constructor(file: FileModel) {
         this.currentFile = file;
@@ -60,10 +63,15 @@ export class FileEditBuilder {
 
     public setExtraFilePath(path: string): FileEditBuilder {
         this.currentFile.fileMetadata.extraFile = path;
+        this.fileAdded = true;
         return this
     }
 
     public commitFile() {
+        if(this.fileAdded) {
+            this.currentFile.fileMetadata.extraFile = FileUtils.moveFileByPath(this.currentFile.fileMetadata.extraFile);
+            this.fileAdded = false;
+        }
         getFileDatabase().updateFile(this.currentFile);
     }
 }

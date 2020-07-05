@@ -5,6 +5,7 @@ import {FileUploadData} from "@main/file/FileUploadData";
 import {FileState} from "@main/file/FileState";
 import {FileModel} from "@main/file/FileModel";
 import {InspectResult} from "fs-jetpack/types";
+import * as path from "path";
 
 const log = require('electron-log');
 
@@ -86,6 +87,17 @@ export class FileUtils {
             file.savedLocation = file.savedLocation.replace(oldFileName, "") + file.fileName;
         }
         jetpack.move(file.savedLocation, stagingingPath + file.fileName);
+    }
+
+    public static moveFileByPath(absolutePath: string) {
+        let stagingingPath: string = this.getProcessingPath();
+        let index = absolutePath.lastIndexOf(path.sep);
+        let fileName = absolutePath.slice(index + 1);
+        log.info(fileName);
+        fileName = this.renameFileIfExists(fileName, absolutePath);
+        log.info(fileName);
+        jetpack.move(absolutePath, stagingingPath + fileName);
+        return stagingingPath + fileName;
     }
 
     private static renameFileIfExists(fileName: string, currentAbsolutePath: string,  destinationPath: string = FileUtils.getFilePath(false)): string {

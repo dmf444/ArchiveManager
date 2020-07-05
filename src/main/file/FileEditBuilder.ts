@@ -58,6 +58,11 @@ export class FileEditBuilder {
         return this;
     }
 
+    public setExtraFilePath(path: string): FileEditBuilder {
+        this.currentFile.fileMetadata.extraFile = path;
+        return this
+    }
+
     public commitFile() {
         getFileDatabase().updateFile(this.currentFile);
     }
@@ -98,4 +103,8 @@ ipcMain.on('file_edit_desc_version', function (event, arg) {
 
 ipcMain.on('file_edit_tags', function (event, arg: string[]) {
     getFileUpdater().setTags(arg);
+});
+
+ipcMain.on('file_edit_extraFile', function (event, arg: string) {
+    getFileUpdater().setExtraFilePath(arg);
 });

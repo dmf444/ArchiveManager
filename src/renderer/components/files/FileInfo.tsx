@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, DatePicker, Popconfirm} from 'antd';
+import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, DatePicker, Popconfirm, Upload} from 'antd';
 
 const { Option } = Select;
 const log = require('electron-log');
@@ -12,7 +12,7 @@ import {
     FileOutlined,
     IeOutlined,
     LeftOutlined, SaveOutlined,
-    SettingOutlined
+    SettingOutlined, UploadOutlined
 } from '@ant-design/icons/lib';
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
@@ -137,7 +137,14 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                                 <Col span={12} flex={"initial"}>
                                     <Button type="primary" htmlType={"submit"} icon={<DownloadOutlined />} style={{paddingLeft: "10px", paddingRight: "10px", width: "125px", borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>Redownload</Button>
                                 </Col>
-                        </Form>
+                            </Form>
+                        </Row>
+                        <Row>
+                            <Upload>
+                                <Button>
+                                    <UploadOutlined /> Click to Upload
+                                </Button>
+                            </Upload>
                         </Row>
                     </Col>
                 </Row>

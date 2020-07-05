@@ -1,5 +1,12 @@
 
 export class FileUploadData {
+    get extraFile(): string {
+        return this._extraFile;
+    }
+
+    set extraFile(value: string) {
+        this._extraFile = value;
+    }
     get tags(): string[] {
         return this._tags;
     }
@@ -65,8 +72,9 @@ export class FileUploadData {
     private _restrictions: number;
     private _tags: string[];
     private _date: string;
+    private _extraFile: string;
 
-    constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[], date: string) {
+    constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[], date: string, extraFile: string) {
         this._localizedName = localizedName;
         this._container = container;
         this._description = desc;
@@ -75,6 +83,7 @@ export class FileUploadData {
         this._restrictions = restriction;
         this._tags = tags;
         this._date = date;
+        this._extraFile = extraFile;
     }
 
 
@@ -87,18 +96,22 @@ export class FileUploadData {
             count: this._pageCount,
             restr: this._restrictions,
             tags: this._tags,
-            date: this._date
+            date: this._date,
+            extraFile: this._extraFile
         };
     }
 
     static fromJson(uploadDataModel: {}): FileUploadData {
         if(uploadDataModel == null) {
-            return new FileUploadData(null, null, null, null, null, null, [], "");
+            return new FileUploadData(null, null, null, null, null, null, [], "", "");
         } else {
             if(uploadDataModel['date'] == null) {
                 uploadDataModel['date'] = "";
             }
-            return new FileUploadData(uploadDataModel['localName'], uploadDataModel['container'], uploadDataModel['description'], uploadDataModel['descVersion'], uploadDataModel['count'], uploadDataModel['restr'], uploadDataModel['tags'], uploadDataModel['date']);
+            if(uploadDataModel['extraFile'] == null) {
+                uploadDataModel['extraFile'] = "";
+            }
+            return new FileUploadData(uploadDataModel['localName'], uploadDataModel['container'], uploadDataModel['description'], uploadDataModel['descVersion'], uploadDataModel['count'], uploadDataModel['restr'], uploadDataModel['tags'], uploadDataModel['date'], uploadDataModel['extraFile']);
         }
     }
 }

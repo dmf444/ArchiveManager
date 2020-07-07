@@ -64,7 +64,12 @@ export class FileEditBuilder {
     public setExtraFilePath(path: string): FileEditBuilder {
         this.currentFile.fileMetadata.extraFile = path;
         this.fileAdded = true;
-        return this
+        return this;
+    }
+
+    public clearExtraFilePath() {
+        this.currentFile.fileMetadata.extraFile = "";
+        return this;
     }
 
     public commitFile() {
@@ -115,4 +120,8 @@ ipcMain.on('file_edit_tags', function (event, arg: string[]) {
 
 ipcMain.on('file_edit_extraFile', function (event, arg: string) {
     getFileUpdater().setExtraFilePath(arg);
+});
+
+ipcMain.on('file_edit_eFRemove', function (event, arg: string) {
+    getFileUpdater().clearExtraFilePath();
 });

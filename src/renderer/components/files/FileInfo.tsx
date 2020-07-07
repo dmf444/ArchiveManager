@@ -18,6 +18,7 @@ import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {FileInfoMetadataForm} from "@/renderer/components/files/FileInfoMetadataForm";
 import path from "path";
+import {UploadFile} from "antd/lib/upload/interface";
 
 interface FileProps {
     infoClose: (event: React.MouseEvent) => void
@@ -78,11 +79,14 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
     }
 
     attachExtraFile = (thing) => {
-        //log.info(thing.file.originFileObj.path);
-        ipcRenderer.send('file_edit_extraFile', thing.file.originFileObj.path);
+        if(thing.file.status == "removed") {
+            ipcRenderer.send('file_edit_eFRemove', '');
+        } else {
+            ipcRenderer.send('file_edit_extraFile', thing.file.originFileObj.path);
+        }
     }
 
-    getDefaultFile = () => {
+    private getDefaultFile(): UploadFile[] {
         if(this.props.editingCard.fileMetadata.extraFile != null && this.props.editingCard.fileMetadata.extraFile != "") {
             let index = this.props.editingCard.fileMetadata.extraFile.lastIndexOf("\\");
             let fileName = this.props.editingCard.fileMetadata.extraFile.slice(index + 1);

@@ -1,8 +1,9 @@
 import * as React from "react";
-import {Col, DatePicker, Form, Input, Row, Select} from "antd";
+import {Col, DatePicker, Divider, Form, Input, Row, Select} from "antd";
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {FileState} from "@main/file/FileState";
+import {FileDescriptionRender} from "@/renderer/components/files/FileDescriptionRender";
 let moment = require("moment");
 if ("default" in moment) {
     moment = moment["default"];
@@ -18,7 +19,9 @@ interface FileInfoMetadataFormProps {
 }
 interface FileInfoMetadataFormState {
     options: any[],
-    tagOptions: any[]
+    tagOptions: any[],
+    descriptionVersions: any[],
+    selectedVersion: string
 }
 
 export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormProps, FileInfoMetadataFormState> {
@@ -27,18 +30,24 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         super(props);
         this.state = {
             options: [{id: 0, name: "Digital File"}],
+            descriptionVersions: [],
+            selectedVersion: this.props.editingCard.fileMetadata.descriptionVersion,
             tagOptions: []
         };
 
         this.setTagOptions = this.setTagOptions.bind(this);
         ipcRenderer.on('file_edit_get_tags_reply', this.setTagOptions);
+        this.setContainerOptions = this.setContainerOptions.bind(this);
         ipcRenderer.on('file_edit_get_containers_reply', this.setContainerOptions);
+        this.setDescriptionVersions = this.setDescriptionVersions.bind(this);
+        ipcRenderer.on('file_edit_get_desc_version_reply', this.setDescriptionVersions);
     }
 
     componentDidMount(): void {
         ipcRenderer.send('file_edit_start', this.props.editingCard.id);
         ipcRenderer.send('file_edit_get_tags', null);
         ipcRenderer.send('file_edit_get_containers', null);
+        ipcRenderer.send('file_edit_get_desc_version', null);
 
         if(this.props.editingCard.state == FileState.ACCEPTED) {
             ipcRenderer.send('file_edit_notnew', []);
@@ -49,6 +58,7 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         ipcRenderer.send('file_edit_save', []);
         ipcRenderer.removeListener('file_edit_get_tags_reply', this.setTagOptions);
         ipcRenderer.removeListener('file_edit_get_containers_reply', this.setContainerOptions);
+        ipcRenderer.removeListener('file_edit_get_desc_version_reply', this.setDescriptionVersions);
     }
 
     setContainerOptions(event, args: any[]) {
@@ -59,6 +69,10 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
 
     setTagOptions(event, args: string[]){
         this.setState({tagOptions: args});
+    }
+
+    setDescriptionVersions(event, args: any[]) {
+        this.setState({descriptionVersions: args});
     }
 
     private tagGetTimer = null;
@@ -115,18 +129,13 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         ipcRenderer.send('file_edit_container', changed);
     }
 
-    private descTimer = null;
-    descChange = (e) => {
-        clearTimeout(this.descTimer);
-        this.descTimer = setTimeout(this.sendDescChange, 750, e.target.value);
-    };
-
     sendDescChange = (value) => {
         ipcRenderer.send('file_edit_description', value);
     };
 
-    sendDescVersion = (e) => {
-        ipcRenderer.send('file_edit_desc_version', e.target.value);
+    sendDescVersion = (changed, all) => {
+        ipcRenderer.send('file_edit_desc_version', changed);
+        this.setState({selectedVersion: changed});
     }
 
     sendTagChange = (changed, all) => {
@@ -149,21 +158,40 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
         return tagOps;
     }
 
-    defaultValues = {
-        description: this.props.editingCard.fileMetadata.description,
-        file_name: this.props.editingCard.fileMetadata.localizedName,
-        page_count:this.props.editingCard.fileMetadata.pageCount,
-        restriction: this.props.editingCard.fileMetadata.restrictions,
-        year: this.getDateMoment(),
-        container_sel: this.props.editingCard.fileMetadata.container,
-        desc_vers: this.props.editingCard.fileMetadata.descriptionVersion,
-        file_tags: this.props.editingCard.fileMetadata.tags
-    };
+    private renderDescriptionOptions() {
+        let renderOptions = [];
+        if(this.state.descriptionVersions.length > 0) {
+            this.state.descriptionVersions.forEach(value => {
+               renderOptions.push(<Option value={value.version}>{value.name}</Option>);
+            });
+        }
+        return renderOptions;
+    }
+
+
+
+    private getDefaultValues() {
+        let jsonObj = JSON.parse(this.props.editingCard.fileMetadata.description);
+        let defaultValues = {
+            file_name: this.props.editingCard.fileMetadata.localizedName,
+            page_count:this.props.editingCard.fileMetadata.pageCount,
+            restriction: this.props.editingCard.fileMetadata.restrictions,
+            year: this.getDateMoment(),
+            container_sel: this.props.editingCard.fileMetadata.container,
+            desc_vers: this.props.editingCard.fileMetadata.descriptionVersion,
+            file_tags: this.props.editingCard.fileMetadata.tags
+        };
+        Object.keys(jsonObj).forEach(key => {
+           defaultValues[key] = jsonObj[key];
+        });
+
+        return defaultValues;
+    }
 
 
     render() {
         return (
-            <Form layout={"vertical"} initialValues={this.defaultValues}>
+            <Form layout={"vertical"} initialValues={this.getDefaultValues()}>
                 <Row gutter={[40, 16]}>
                     <Col span={8}>
                         <Form.Item label={"File Name"} name={"file_name"}>
@@ -205,7 +233,9 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
 
                     <Col span={8}>
                         <Form.Item label={"Description Version"} name={"desc_vers"}>
-                            <Input onChange={this.sendDescVersion}/>
+                            <Select onSelect={this.sendDescVersion}>
+                                {this.renderDescriptionOptions()}
+                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -219,13 +249,9 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                     </Col>
                 </Row>
 
-                <Row gutter={[40, 16]}>
-                    <Col span={24}>
-                        <Form.Item name={"description"}>
-                            <TextArea rows={6} placeholder="Description" onChange={this.descChange}/>
-                        </Form.Item>
-
-                    </Col>
+                <Row gutter={[40, 16]} style={{width: "100%"}}>
+                    <Divider orientation={"left"}>Description</Divider>
+                    <FileDescriptionRender version={this.state.selectedVersion} data={this.props.editingCard.fileMetadata.description} onChange={this.sendDescChange}/>
                 </Row>
             </Form>
         );

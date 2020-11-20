@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, DatePicker, Popconfirm, Upload} from 'antd';
+import {ImageRendering} from "@/renderer/components/files/ImageRendering";
 
 const { Option } = Select;
 const log = require('electron-log');
@@ -17,7 +18,6 @@ import {
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {FileInfoMetadataForm} from "@/renderer/components/files/FileInfoMetadataForm";
-import path from "path";
 import {UploadFile} from "antd/lib/upload/interface";
 
 interface FileProps {
@@ -27,7 +27,8 @@ interface FileProps {
 }
 
 interface FileInfoState {
-    options: any[]
+    options: any[],
+    imageData: string
 }
 
 export class FileInfo extends React.Component<FileProps, FileInfoState>{
@@ -50,7 +51,8 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
             </Row>
         );
         this.state = {
-            options: [<Option value={"Default Downloader"} key={"dd_001"}>Default Downloader</Option>]
+            options: [<Option value={"Default Downloader"} key={"dd_001"}>Default Downloader</Option>],
+            imageData: null
         };
 
         this.updateDownloaderOptions = this.updateDownloaderOptions.bind(this);
@@ -60,6 +62,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
 
     componentDidMount(): void {
         ipcRenderer.send('get_downloaders', []);
+        this.renderImagePreview();
     }
 
     componentWillUnmount(): void {
@@ -103,6 +106,35 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
         return null;
     }
 
+    private renderImagePreview() {
+        let clip: number = this.props.editingCard.savedLocation.lastIndexOf(".");
+        let filetype = this.props.editingCard.savedLocation.substring(clip + 1);
+        log.info(filetype.toLowerCase());
+        if(["jpg", "jpeg", "png", "gif", "tiff", "tif", "webp", "raw"].includes(filetype.toLowerCase())){
+            try {
+                ImageRendering.imageToBase64(this.props.editingCard.savedLocation).then(resp => {
+                    let middleman = filetype;
+                    if(filetype == "jpg" || filetype == "tiff" || filetype == "tif" || filetype == "webp"){
+                        middleman == "jpeg";
+                    }
+                    let fullData: string = "data:image/"+middleman+";base64," + resp;
+                    this.setState({imageData: fullData})
+                }).catch(err => {
+                    log.error(err);
+                })
+            } catch (e) {
+                log.error("failed to load image.")
+            }
+        }
+    }
+
+    private getImagePreview() {
+        if(this.state.imageData != null) {
+            return (<img src={this.state.imageData} alt={'preview'}/>);
+        } else {
+            return null;
+        }
+    }
 
 
     deleteFile = (event: React.MouseEvent) => {
@@ -126,8 +158,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                 */}
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Card style={{height: "275px"}}>
-                            File Preview (snapshot of PDF or small img)
+                        <Card style={{height: "275px"}} cover={this.getImagePreview()}>
                         </Card>
                     </Col>
 

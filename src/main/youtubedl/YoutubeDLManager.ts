@@ -75,6 +75,7 @@ export class YoutubeDLManager {
             if(!this.isWindows) {
                 fs.chmodSync(downloadItem.getSavePath(), 0o555);
             }
+            log.info("Sucess downloading YoutubeDl.");
         });
     }
 

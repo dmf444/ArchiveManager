@@ -181,9 +181,11 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
             desc_vers: this.props.editingCard.fileMetadata.descriptionVersion,
             file_tags: this.props.editingCard.fileMetadata.tags
         };
-        Object.keys(jsonObj).forEach(key => {
-           defaultValues[key] = jsonObj[key];
-        });
+        if(jsonObj != null) {
+            Object.keys(jsonObj).forEach(key => {
+                defaultValues[key] = jsonObj[key];
+            });
+        }
 
         return defaultValues;
     }
@@ -249,7 +251,7 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                     </Col>
                 </Row>
 
-                <Row gutter={[40, 16]} style={{width: "100%"}}>
+                <Row style={{width: "100%"}}>
                     <Divider orientation={"left"}>Description</Divider>
                     <FileDescriptionRender version={this.state.selectedVersion} data={this.props.editingCard.fileMetadata.description} onChange={this.sendDescChange}/>
                 </Row>

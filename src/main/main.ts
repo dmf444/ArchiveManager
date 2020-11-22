@@ -83,7 +83,8 @@ function createWindow(): void {
         icon: icon,
         webPreferences: {
             webSecurity: false,
-            devTools: process.env.NODE_ENV !== 'production'
+            devTools: process.env.NODE_ENV !== 'production',
+            nodeIntegration: true
         }
     });
     log.info("Something wrong while creating window?");

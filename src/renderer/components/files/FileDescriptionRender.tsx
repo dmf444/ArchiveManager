@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Col, Input, Form, Select, Row} from "antd";
+import {Col, Input, Form, Select, Row, Empty} from 'antd';
 import {ipcRenderer} from "electron";
 const { TextArea } = Input;
 const log = require('electron-log');
@@ -7,14 +7,14 @@ const log = require('electron-log');
 
 export class FileDescriptionRender extends React.Component<{ version: string, data: string, onChange: any }, { jsonObjEditable: any, format: any }> {
 
-    state = {
-        jsonObjEditable: null,
-        format: null
-    }
-
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            jsonObjEditable: null,
+            format: null
+        }
 
         this.updateDescriptionFormat = this.updateDescriptionFormat.bind(this);
         ipcRenderer.on('file_description_format_reply', this.updateDescriptionFormat);
@@ -34,6 +34,14 @@ export class FileDescriptionRender extends React.Component<{ version: string, da
 
     componentWillUnmount(): void {
         ipcRenderer.removeListener('file_description_format_reply', this.updateDescriptionFormat)
+    }
+
+    componentDidUpdate(prevProps: Readonly<{ version: string; data: string; onChange: any }>, prevState: Readonly<{ jsonObjEditable: any; format: any }>, snapshot?: any) {
+        if(this.props.version !== prevProps.version) {
+            if(this.props.version != null) {
+                ipcRenderer.send('file_description_format_get', this.props.version);
+            }
+        }
     }
 
     private updateDescriptionFormat(event, format) {
@@ -123,13 +131,13 @@ export class FileDescriptionRender extends React.Component<{ version: string, da
             });
             return renderedContent;
         } else {
-            return (<p>No Content</p>);
+            return (<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<span>No Description to Fill</span>} style={{width: "100%"}}/>);
         }
     }
 
     render(): React.ReactNode {
         return (
-            <Row style={{width: "100%"}}>
+            <Row gutter={[40, 16]} style={{width: "100%"}}>
                 { this.getRenderContent() }
             </Row>
         );

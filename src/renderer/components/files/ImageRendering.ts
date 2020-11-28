@@ -1,7 +1,7 @@
-var fileSystem = require('fs');
-var path = require('path');
-let decode = require('image-decode');
-let encode = require('image-encode');
+//var fileSystem = require('fs');
+//var path = require('path');
+//let decode = require('image-decode');
+//let encode = require('image-encode');
 
 /**
  * SOURCE: https://github.com/renanbastos93/image-to-base64/blob/master/image-to-base64.js
@@ -10,7 +10,7 @@ let encode = require('image-encode');
  */
 export class ImageRendering {
 
-    private static validTypeImage(image) {
+   /* private static validTypeImage(image) {
         return /(?<=\S+)\.(jpg|png|jpeg|tiff|gif|tif|webp)/gi.test(image);
     }
 
@@ -50,7 +50,7 @@ export class ImageRendering {
 
     public static imageToBase64(urlOrImage) {
         return ImageRendering.isImage(urlOrImage);
-    }
+    }*/
 
 
 

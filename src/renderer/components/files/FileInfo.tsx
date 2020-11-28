@@ -112,16 +112,18 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
         log.info(filetype.toLowerCase());
         if(["jpg", "jpeg", "png", "gif", "tiff", "tif", "webp", "raw"].includes(filetype.toLowerCase())){
             try {
-                ImageRendering.imageToBase64(this.props.editingCard.savedLocation).then(resp => {
+                /*ImageRendering.imageToBase64(this.props.editingCard.savedLocation).then(resp => {
                     let middleman = filetype;
                     if(filetype == "jpg" || filetype == "tiff" || filetype == "tif" || filetype == "webp"){
                         middleman == "jpeg";
                     }
                     let fullData: string = "data:image/"+middleman+";base64," + resp;
-                    this.setState({imageData: fullData})
+                    this.setState({imageData: fullData});
+
                 }).catch(err => {
                     log.error(err);
-                })
+                })*/
+                log.info("Heyo!");
             } catch (e) {
                 log.error("failed to load image.")
             }

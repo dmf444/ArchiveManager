@@ -1,8 +1,9 @@
 import * as React from "react";
-import {Button, Descriptions, PageHeader, Tag} from "antd";
+import {Button, Descriptions, PageHeader, Row, Tabs, Tag} from 'antd';
 import {CloudSyncOutlined} from "@ant-design/icons/lib";
 import {ipcRenderer} from "electron";
 const log = require('electron-log');
+const { TabPane } = Tabs;
 
 
 export class Info extends React.Component {
@@ -63,6 +64,10 @@ export class Info extends React.Component {
                         <div className="main" style={{width: "75%"}}>{this.renderContent()}</div>
                     </div>
                 </PageHeader>
+                <Tabs>
+                    <TabPane tab={"Archive Policies"} key={"1"} style={{textAlign: "left"}}>Hello!</TabPane>
+                    <TabPane tab={"Upload History"} key={"2"} style={{textAlign: "left"}}>Hello 2!</TabPane>
+                </Tabs>
             </div>
         );
     }

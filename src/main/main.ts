@@ -15,6 +15,7 @@ import {FileEditBuilder} from "@main/file/FileEditBuilder";
 import {sendSuccess} from "@main/NotificationBundle";
 import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
+import {FileUploader} from '@main/FileUploader';
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
@@ -305,4 +306,10 @@ ipcMain.on('file_edit_get_desc_version', function (event, arg) {
 
 ipcMain.on('file_description_format_get', function (event, version: string) {
     event.sender.send('file_description_format_reply', descFileReader.getDescriptionContent(version));
+});
+
+ipcMain.on('file_upload', function (event, id:number) {
+    fileUpdateBuilder.commitFile();
+    let uploader = new FileUploader(getFileDatabase().getFileById(id));
+    uploader.upload();
 });

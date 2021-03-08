@@ -9,11 +9,10 @@ const { TextArea } = Input;
 import {
     DeleteOutlined,
     DeliveredProcedureOutlined, DownloadOutlined,
-    EditTwoTone,
-    FileOutlined,
     IeOutlined,
-    LeftOutlined, SaveOutlined,
-    SettingOutlined, UploadOutlined
+    LeftOutlined,
+    UploadOutlined,
+    CloudUploadOutlined
 } from '@ant-design/icons/lib';
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
@@ -38,10 +37,12 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
         this.props.insertHeaderFunc(
             <Row>
                 <Col span={12}>
-                    <Button onClick={this.props.infoClose}><LeftOutlined />Go Back</Button>
+                    <Button onClick={this.props.infoClose}><LeftOutlined />Save & Return</Button>
                 </Col>
                 <Col span={3} offset={5}>
-                    <Button type="primary" icon={<SaveOutlined/>} onClick={() => ipcRenderer.send('file_edit_save', [])} block={true}>Save</Button>
+                    <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} onConfirm={() => ipcRenderer.send('file_upload', this.props.editingCard.id)}>
+                        <Button type="primary" icon={<CloudUploadOutlined />} block={true}>Upload</Button>
+                    </Popconfirm>
                 </Col>
                 <Col span={3} offset={1}>
                     <Popconfirm placement="bottomRight" title={"Are you sure you want to delete this file?"} onConfirm={this.deleteFile} okText="Yes" cancelText="No">
@@ -87,7 +88,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
         } else {
             ipcRenderer.send('file_edit_extraFile', thing.file.originFileObj.path);
         }
-    }
+    };
 
     private getDefaultFile(): UploadFile[] {
         if(this.props.editingCard.fileMetadata.extraFile != null && this.props.editingCard.fileMetadata.extraFile != "") {

@@ -57,7 +57,9 @@
     "electron-context-menu": "^2.0.1",
     "electron-updater": "4.3.1",
     "node-fetch": "2.6.1",
-    "form-data": "4.0.0"
+    "form-data": "4.0.0",
+    "formdata-node": "^2.4.0",
+    "cross-fetch": "^3.0.6"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
@@ -68,7 +70,7 @@
     "copy-pkg-json-webpack-plugin": "0.0.38",
     "cross-env": "^5.2.1",
     "css-loader": "^1.0.1",
-    "electron": "^3.1.13",
+    "electron": "9.1.0",
     "electron-builder": "^20.44.4",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",

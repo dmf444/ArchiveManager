@@ -75,13 +75,16 @@ export function getFileUpdater() {
     return fileUpdateBuilder;
 }
 
+export function getMainWindow() {
+    return mainWindow;
+}
 
 function createWindow(): void {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 820,
-        icon: icon,
+        icon: nativeImage.createFromPath(path.join(__dirname, './archivesLogo.ico')),
         webPreferences: {
             webSecurity: false,
             devTools: process.env.NODE_ENV !== 'production',
@@ -312,4 +315,8 @@ ipcMain.on('file_upload', function (event, id:number) {
     fileUpdateBuilder.commitFile();
     let uploader = new FileUploader(getFileDatabase().getFileById(id));
     uploader.upload();
+});
+
+ipcMain.on('upload_list_get', function (event, args) {
+    event.sender.send('upload_list_reply', getFileDatabase().getAllUploads());
 });

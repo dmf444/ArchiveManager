@@ -11,6 +11,7 @@ import {FileCard} from '@/renderer/components/files/FileCard';
 import {FileInfo} from './files/FileInfo';
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
+import {Uploader} from "@/renderer/components/files/Uploader";
 
 interface CardInfoProps {
     cardInfoOpen: boolean
@@ -20,7 +21,8 @@ interface CardInfoState {
     cardInfoOpen: boolean,
     allCards: FileModel[],
     newCards: FileModel[],
-    currentEditingCard: FileModel
+    currentEditingCard: FileModel,
+    uploadingPage: boolean
 }
 
 export class Files extends React.Component<{insHeader: any}, CardInfoState> {
@@ -31,7 +33,8 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
             cardInfoOpen: false,
             allCards: null,
             newCards: null,
-            currentEditingCard: null
+            currentEditingCard: null,
+            uploadingPage: false
         }
         this.openFileInfo = this.openFileInfo.bind(this);
         this.closeFileInfo = this.closeFileInfo.bind(this);
@@ -86,6 +89,14 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         return {CardInfoProps : this.state.cardInfoOpen};
     }
 
+    closeUploadingPage = (event: React.MouseEvent) => {
+        event.preventDefault();
+        this.setState({cardInfoOpen: false, uploadingPage: false});
+        this.props.insHeader(null);
+        setTimeout(this.delayedUpdate, 100);
+        return {CardInfoProps : this.state.cardInfoOpen};
+    }
+
     delayedUpdate = () => {
         ipcRenderer.send('files_get_normal', []);
         ipcRenderer.send('files_get_new', []);
@@ -102,7 +113,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
                 </Col>
             );
         }
-        return rowRenderData
+        return rowRenderData;
     }
 
     generateCards = (files?: FileModel[]) => {
@@ -138,7 +149,8 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
                     {this.generateCards(this.state.allCards)}
                 </div>
                 
-                {this.state.cardInfoOpen && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader} editingCard={FileModel.fromJson(this.state.currentEditingCard)}/>}
+                {this.state.cardInfoOpen && !this.state.uploadingPage && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader} editingCard={FileModel.fromJson(this.state.currentEditingCard)} uploadSwitch={() => {this.setState({uploadingPage: true})}}/>}
+                {this.state.uploadingPage && <Uploader headerControl={this.props.insHeader} fileId={this.state.currentEditingCard.id} resetFiles={this.closeUploadingPage}/>}
             </div>
         );
     }

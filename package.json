@@ -1,6 +1,6 @@
 {
   "name": "archives_manager",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "The file & metadata management app for archives.",
   "main": "./dist/main.bundle.js",
   "scripts": {
@@ -33,7 +33,7 @@
       "installerIcon": "./dist/public/archivesLogo.ico",
       "uninstallerIcon": "./dist/public/archivesLogo.ico"
     },
-    "buildVersion": "1.2.1"
+    "buildVersion": "2.0.0"
   },
   "author": "David Fernandes @dmf444",
   "license": "GPLv3",
@@ -57,9 +57,7 @@
     "electron-context-menu": "^2.0.1",
     "electron-updater": "4.3.1",
     "node-fetch": "2.6.1",
-    "form-data": "4.0.0",
-    "formdata-node": "^2.4.0",
-    "cross-fetch": "^3.0.6"
+    "formdata-node": "^2.4.0"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

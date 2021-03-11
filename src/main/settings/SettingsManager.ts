@@ -11,7 +11,7 @@ export class SettingsManager {
 
     constructor(database: FileDatabase) {
         this.db = database;
-        let settingImpl: ISettings[] = [database.getFileSaveConfig(), database.getDiscordConfig(), database.getWebDatabaseSettings()];
+        let settingImpl: ISettings[] = [database.getFileSaveConfig(), database.getDiscordConfig(), database.getWebDatabaseSettings(), database.getUploadConfig()];
 
         for(let setting of settingImpl){
             this.settingsList[setting.categoryName] = setting;

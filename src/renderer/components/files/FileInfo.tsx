@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, DatePicker, Popconfirm, Upload} from 'antd';
+import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, Popconfirm, Upload} from 'antd';
 import {ImageRendering} from "@/renderer/components/files/ImageRendering";
 
 const { Option } = Select;
@@ -22,7 +22,8 @@ import {UploadFile} from "antd/lib/upload/interface";
 interface FileProps {
     infoClose: (event: React.MouseEvent) => void
     insertHeaderFunc: any,
-    editingCard: FileModel
+    editingCard: FileModel,
+    uploadSwitch: () => void
 }
 
 interface FileInfoState {
@@ -40,7 +41,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                     <Button onClick={this.props.infoClose}><LeftOutlined />Save & Return</Button>
                 </Col>
                 <Col span={3} offset={5}>
-                    <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} onConfirm={() => ipcRenderer.send('file_upload', this.props.editingCard.id)}>
+                    <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} onConfirm={() => {ipcRenderer.send('file_upload', this.props.editingCard.id); this.props.uploadSwitch()}}>
                         <Button type="primary" icon={<CloudUploadOutlined />} block={true}>Upload</Button>
                     </Popconfirm>
                 </Col>

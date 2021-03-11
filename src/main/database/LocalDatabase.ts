@@ -3,6 +3,7 @@ import {FileSaveSettings} from "@main/settings/FileSaveSettings";
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {FileModel} from '@main/file/FileModel';
 import {FileState} from '@main/file/FileState';
+import {UploadSettings} from "@main/settings/UploadSettings";
 
 const log = require('electron-log');
 const low = require('lowdb');
@@ -17,7 +18,7 @@ export class FileDatabase {
         let adapter = new FileSync(filePath + '/appdb.json');
         //log.info("FileDB:" + filePath + '/appdb.json');
         this.database = low(adapter);
-        this.database.defaults({ settings: {}, files: []}).write();
+        this.database.defaults({ settings: {}, uploadhist: [], files: []}).write();
     }
 
     public addFile(file: FileModel) {
@@ -90,6 +91,20 @@ export class FileDatabase {
         }).size().value();
     }
 
+    public addNewUpload(data) {
+        let dataSpot = this.database.get('uploadhist');
+        if(dataSpot == null){
+            this.database.push({uploadhist: []}).write();
+        }
+        dataSpot = this.database.get('uploadhist');
+        dataSpot.push(data).write();
+    }
+
+    public getAllUploads() {
+        if(this.database.get('uploadhist') == null) return [];
+        return this.database.get('uploadhist').value();
+    }
+
     public getDiscordConfig() : ISettings {
         let fss = new DiscordSettings();
         return this.getSettingsOrDefault(fss);
@@ -104,6 +119,11 @@ export class FileDatabase {
     public getFileSaveConfig(): ISettings {
         let fss = new FileSaveSettings();
         return this.getSettingsOrDefault(fss);
+    }
+
+    public getUploadConfig(): ISettings {
+        let ups = new UploadSettings();
+        return this.getSettingsOrDefault(ups);
     }
 
     private getSettingsOrDefault(settingImpl: ISettings): ISettings {

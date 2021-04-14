@@ -79,6 +79,10 @@ export function getMainWindow() {
     return mainWindow;
 }
 
+export function getDescriptionReader() {
+    return descFileReader;
+}
+
 function createWindow(): void {
     // Create the browser window.
     mainWindow = new BrowserWindow({

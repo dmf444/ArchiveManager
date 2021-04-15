@@ -31,7 +31,9 @@ export class FileUploader {
         data.set('container', this.file.fileMetadata.container);
         data.set('description', this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion));
         data.set('desc_version', this.file.fileMetadata.descriptionVersion);
-        data.set('page_count', this.file.fileMetadata.pageCount);
+        if(!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
+            data.set('page_count', this.file.fileMetadata.pageCount);
+        }
         data.set('date', this.file.fileMetadata.date);
         data.set('restriction', this.file.fileMetadata.restrictions);
         this.file.fileMetadata.tags.forEach(tag => {
@@ -40,7 +42,8 @@ export class FileUploader {
 
         let urlBase = this._settings.getUrl();
         if(urlBase.slice(-1) !== "/") urlBase += "/";
-        fetch(urlBase + "api/upload.php?endpoint=document",
+        let endPoint = !this.file.fileMetadata.descriptionVersion.startsWith("1") ? "endpoint=document" : "endpoint=image";
+        fetch(urlBase + "api/upload.php?" + endPoint,
             {
                 method: "post",
                 body: data.stream,

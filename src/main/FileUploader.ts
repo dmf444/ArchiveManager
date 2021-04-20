@@ -43,7 +43,7 @@ export class FileUploader {
         let urlBase = this._settings.getUrl();
         if(urlBase.slice(-1) !== "/") urlBase += "/";
         let endPoint = !this.file.fileMetadata.descriptionVersion.startsWith("1") ? "endpoint=document" : "endpoint=image";
-        fetch(urlBase + "api/upload.php?" + endPoint,
+        /*fetch(urlBase + "api/upload.php?" + endPoint,
             {
                 method: "post",
                 body: data.stream,
@@ -55,11 +55,25 @@ export class FileUploader {
             .catch(e => {
                 this.parseResults({status: false, message: "Failed HTTP send, see logs for details"})
                 log.info('error parsing', e);
-            });
+            });*/
+        this.connect(urlBase + "api/upload.php?" + endPoint, { method: "post", body: data.stream, headers: data.headers, mode: "no-cors"});
     }
 
-    async connect(data) {
-        //let connection = await
+    async connect(url, data) {
+        let connection = await fetch(url, data);
+        let backup = connection.clone();
+        if (connection.headers.has('content-type') && connection.headers.get('content-type') === "application/json") {
+            connection.json().then(data => this.parseResults(data)).catch(e => {
+                backup.text().then(text => {
+                    this.parseResults({status: false, message: "Failed HTTP send, see logs for details"});
+                    log.info('error parsing', e);
+                    log.info('RESPONSE TEXT: ', text);
+                });
+            });
+        } else {
+            this.parseResults({status: false, message: "Failed HTTP send, see logs for details"});
+            log.info(connection.text());
+        }
     }
 
     private parseResults(data) {

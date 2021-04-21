@@ -10,7 +10,7 @@ const log = require('electron-log');
 class Images extends Model {}
 class Documents extends Model {}
 class Records extends Model {}
-class Containers extends Model {}
+class Container extends Model {}
 class Tags extends Model {
     public id!: number;
     public unique_tag!: string;
@@ -82,7 +82,7 @@ export class WebDatabase {
                     modelName: 'images'
                     // options
                 });
-                Containers.init({
+                Container.init({
                     id: {
                         type: Sequelize.INTEGER,
                         autoIncrement: true,
@@ -99,7 +99,8 @@ export class WebDatabase {
                     }
                 }, {
                    sequelize,
-                   modelName: 'containers'
+                   modelName: 'container',
+                    tableName: 'container'
                 });
                 Documents.init({
                     id: {
@@ -212,7 +213,8 @@ export class WebDatabase {
             return null;
         }
 
-        let containers = await Containers.findAll();
+
+        let containers = await Container.findAll({attributes: ['id', 'name']});
 
         let containerReply = [];
         containers.every(container => containerReply.push({id: container.id, name: container.name}));

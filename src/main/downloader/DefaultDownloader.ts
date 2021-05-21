@@ -33,4 +33,8 @@ export class DefaultDownloader implements IDownloader {
         };
     }
 
+    createdFilePostback(file): void {
+
+    }
+
 }

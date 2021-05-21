@@ -82,6 +82,11 @@ export class YtdlBuilder {
         return this;
     }
 
+    public rencodeToMp4(): YtdlBuilder {
+        this.executeArgs.push('--recode-video mp4');
+        return this;
+    }
+
 
     //Authentication options. No intent to use them, but they're here; just in case!
     public authenticated(username: string, password: string): YtdlBuilder {

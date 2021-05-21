@@ -21,4 +21,9 @@ interface IDownloader {
 
     downloadUrl(url: string, stage: boolean): Promise<downloadPromise>;
 
+    /**
+     *
+     * @param file FileModel the created file, for allowing changes to data.
+     */
+    createdFilePostback(file): void;
 }

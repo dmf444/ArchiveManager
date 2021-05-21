@@ -2,6 +2,8 @@ import * as jetpack from "fs-jetpack";
 import {FileUtils} from "@main/downloader/FileUtils";
 import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 import {InspectResult} from "fs-jetpack/types";
+import {FileModel} from "@main/file/FileModel";
+import {getFileDatabase} from "@main/main";
 const path = require('path');
 const log = require('electron-log');
 const AdmZip = require('adm-zip');
@@ -27,20 +29,11 @@ export class YouTubeDownloader implements IDownloader {
         let downloadPromise: downloadPromise;
         if (responseCode == 0) {
             let fileNames: string[] = jetpack.list(initalDirectory);
+            let videoFileName: string = this.getVideoFileName(fileNames);
+            let md5: string = this.getMd5FromFile(initalDirectory + path.sep + videoFileName);
 
-            let fileName: string = this.getVideoFileName(fileNames);
-            let md5: string = this.getMd5FromFile(initalDirectory + path.sep + fileName);
+            let [zipName, zipBasePath] = this.zipFiles(fileNames, videoFileName, initalDirectory, stage);
 
-            var zip = new AdmZip();
-            fileNames.forEach((dlFileName: string) => {
-                zip.addLocalFile(initalDirectory + path.sep + dlFileName);
-            });
-
-            let zipBasePath: string = FileUtils.getFilePath(stage);
-            let lastDot: number = fileName.lastIndexOf(".");
-            let zipName: string = fileName.substring(0, lastDot) + ".zip";
-            let zipSavePath: string = zipBasePath + path.sep + zipName;
-            zip.writeZip(zipSavePath);
 
             log.info("Video Downloaded!");
             downloadPromise = {state: "completed", fileName: zipName, filePathDir: zipBasePath, md5: md5};
@@ -76,6 +69,62 @@ export class YouTubeDownloader implements IDownloader {
             initalDirectory = FileUtils.getFilePath(true) + "video_dl_" + folderNumber;
         }
         return initalDirectory;
+    }
+
+    private zipFiles(fileNames: string[], videoFileName: string, initalDirectory: string, stage: boolean) {
+        var zip = new AdmZip();
+        fileNames.forEach((dlFileName: string) => {
+            zip.addLocalFile(initalDirectory + path.sep + dlFileName);
+        });
+
+        let zipBasePath: string = FileUtils.getFilePath(stage);
+        let lastDot: number = videoFileName.lastIndexOf(".");
+        let zipName: string = videoFileName.substring(0, lastDot) + ".zip";
+        let zipSavePath: string = zipBasePath + path.sep + zipName;
+        zip.writeZip(zipSavePath);
+        return [zipName, zipBasePath];
+    }
+
+    private getJsonFileFromZip(fileLocation: string): boolean {
+        let zip = new AdmZip(fileLocation);
+        let entries = zip.getEntries();
+        let searchEntry = null;
+        entries.forEach(zipEntry => {
+           if(zipEntry.name.endsWith(".json")) {
+               searchEntry = zipEntry;
+           }
+        });
+        if(searchEntry !== null) {
+            zip.extractEntryTo(searchEntry.entryName, FileUtils.getFilePath(true), false, true);
+            return searchEntry.name;
+        }
+        return false;
+    }
+
+    public createdFilePostback(file: FileModel): void {
+        let zipName = this.getJsonFileFromZip(file.savedLocation);
+        log.info(zipName);
+        if(zipName !== false){
+            let jsonFilePath = FileUtils.getFilePath(true) + zipName;
+            let videoJson = jetpack.read(jsonFilePath, 'json');
+
+            let archivesJson = {
+                "original_url": videoJson['webpage_url'],
+                "description": "",
+                "copyright": "",
+                "upload_date": videoJson['upload_date'],
+                "video_description": videoJson['description'],
+                "channel_name": videoJson['channel'],
+                "channel_url": videoJson['uploader_url'],
+                "original_tags": videoJson['tags']
+            };
+            let description = JSON.stringify(archivesJson);
+            file.fileMetadata.descriptionVersion = "2.1.0";
+            file.fileMetadata.description = description;
+            getFileDatabase().updateFile(file);
+
+            jetpack.remove(jsonFilePath);
+        }
     }
 
 }

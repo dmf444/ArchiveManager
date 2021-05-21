@@ -38,7 +38,8 @@ export class FileManager {
                         }
 
                         FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
-                            FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
+                            let file = FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
+                            downloader.createdFilePostback(file);
                             sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
                         });
 

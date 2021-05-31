@@ -24,7 +24,7 @@ export class YouTubeDownloader implements IDownloader {
         log.info(`Now downloading video from ${url}`)
         let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url);
         let responseCode: number = await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s")
-            .downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().executeCommand();
+            .downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().rencodeToMp4().executeCommand();
 
         let downloadPromise: downloadPromise;
         if (responseCode == 0) {

@@ -18,7 +18,7 @@ export class FileDatabase {
         let adapter = new FileSync(filePath + '/appdb.json');
         //log.info("FileDB:" + filePath + '/appdb.json');
         this.database = low(adapter);
-        this.database.defaults({ settings: {}, uploadhist: [], files: []}).write();
+        this.database.defaults({ settings: {}, uploadhist: [], downloadHistory: {}, files: []}).write();
     }
 
     public addFile(file: FileModel) {
@@ -103,6 +103,25 @@ export class FileDatabase {
     public getAllUploads() {
         if(this.database.get('uploadhist') == null) return [];
         return this.database.get('uploadhist').value();
+    }
+
+    public addNewDownload(url: string, data) {
+        let dataSpot = this.database.get('downloadHistory');
+        if(dataSpot == null){
+            this.database.push({downloadHistory: {}}).write();
+        }
+        dataSpot = this.database.get('downloadHistory').get(url);
+        if(dataSpot.value() == null) {
+            this.database.get('downloadHistory').set(url, data).write();
+        } else {
+            dataSpot.assign(data).write();
+        }
+    }
+
+    public getAllDownloads() {
+        let history = this.database.get('downloadHistory').value();
+        if(history == null) return false;
+        return history;
     }
 
     public getDiscordConfig() : ISettings {

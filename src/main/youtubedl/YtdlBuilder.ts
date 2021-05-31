@@ -1,7 +1,8 @@
-import {getYoutubeDlManager} from "@main/main";
+import {getFileDatabase, getYoutubeDlManager} from '@main/main';
 
 const path = require('path');
 const { spawn } = require('child_process');
+const log = require('electron-log');
 
 export class YtdlBuilder {
 
@@ -83,7 +84,7 @@ export class YtdlBuilder {
     }
 
     public rencodeToMp4(): YtdlBuilder {
-        this.executeArgs.push('--recode-video mp4');
+        this.executeArgs.push('-f bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
         return this;
     }
 
@@ -105,9 +106,19 @@ export class YtdlBuilder {
         } else {
             this.executeArgs.push("-o", this.outputFormat);
         }
+        this.executeArgs.push("--newline");
         this.executeArgs.push(this.downloadUrl);
 
         const youtubedl = spawn(getYoutubeDlManager().getFullApplicationPath(), this.executeArgs);
+        youtubedl.stdout.setEncoding('utf8');
+        youtubedl.stdout.on('data', (data: string) => {
+            log.info('stdout: ' + data.replace("\n", ""));
+
+            let matches = ("" + data).match(/\d+[.]?\d%/gm);
+            if(matches !== null) {
+                getFileDatabase().addNewDownload(this.downloadUrl.replace(/\./g, ","), {percent: matches[matches.length - 1]});
+            }
+        });
 
         return await new Promise((resolve, reject) => {
             youtubedl.on('close', resolve);

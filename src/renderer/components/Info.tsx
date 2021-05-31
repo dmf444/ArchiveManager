@@ -2,6 +2,7 @@ import * as React from "react";
 import {Button, Descriptions, PageHeader, Row, Table, Tabs, Tag} from 'antd';
 import {CheckCircleOutlined, CheckCircleTwoTone, CloseCircleTwoTone, CloudSyncOutlined} from "@ant-design/icons/lib";
 import {ipcRenderer} from "electron";
+import {DownloadTable} from '@/renderer/components/info/DownloadTable';
 const log = require('electron-log');
 const { TabPane } = Tabs;
 
@@ -115,6 +116,9 @@ export class Info extends React.Component {
                     <TabPane tab={"Archive Policies"} key={"1"} style={{textAlign: "left"}}>Hello!</TabPane>
                     <TabPane tab={"Upload History"} key={"2"} style={{textAlign: "left"}}>
                         <Table columns={this.columns} dataSource={this.state.uploadedFiles} />
+                    </TabPane>
+                    <TabPane tab={"Downloads"} key={"3"} style={{textAlign: "left"}}>
+                        <DownloadTable/>
                     </TabPane>
                 </Tabs>
             </div>

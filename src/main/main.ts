@@ -324,3 +324,7 @@ ipcMain.on('file_upload', function (event, id:number) {
 ipcMain.on('upload_list_get', function (event, args) {
     event.sender.send('upload_list_reply', getFileDatabase().getAllUploads());
 });
+
+ipcMain.on('download_list_get', function (event, args) {
+    event.sender.send('download_list_reply', getFileDatabase().getAllDownloads());
+});

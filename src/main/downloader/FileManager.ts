@@ -43,6 +43,8 @@ export class FileManager {
                             sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
                         });
 
+                    } else if(state == "multiple") {
+
                     } else {
                         FileUtils.createNewErrorFileEntry(url);
                         sendError("Download Failed!", `Unable to download ${url}`);

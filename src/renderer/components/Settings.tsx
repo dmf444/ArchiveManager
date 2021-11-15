@@ -2,12 +2,14 @@ import {Button, Col, Divider, Form, Input, notification, Row} from "antd";
 import * as React from 'react';
 import {ipcRenderer} from  'electron';
 import {CheckCircleOutlined} from "@ant-design/icons/lib";
+import {CodeConfirmModal} from "@/renderer/components/settings/CodeConfirmModal";
 
 
 export class Settings extends React.Component {
 
     state = {
-        data: null
+        data: null,
+        listeners: []
     };
 
     constructor(props) {
@@ -25,6 +27,23 @@ export class Settings extends React.Component {
         ipcRenderer.removeListener('setting_fields_get_reply', this.buildInternalForm);
     }
 
+    addListener = (listenFunc: any) => {
+        let data = this.state.listeners;
+        data.push(listenFunc);
+        this.setState({listeners: data});
+    }
+
+    runListeners = () => {
+        this.state.listeners.forEach(listener => {
+           listener(true);
+        });
+    }
+
+    authorizeAccount = () => {
+        ipcRenderer.send('authenitication_url_generate', 'google');
+        this.runListeners();
+    }
+
     buildInternalForm(event, args: []){
         this.setState({data: args});
     }
@@ -36,9 +55,17 @@ export class Settings extends React.Component {
             let size = Math.round((24 * setting.size) / 100);
 
 
+            let labelHeader = !setting.name.includes("<") ? setting.name : (
+                <div>
+                    <Row style={{height: "20px"}}>
+                        <p style={{margin: 0}}>{setting.name.replace("<>", "")}</p>
+                        <Button type={'link'} size={'small'} onClick={() => {this.authorizeAccount()}}>(Authorize Account)</Button>
+                    </Row>
+                </div>
+            );
             formInputs.push(
                 <Col span={size} key={"col_" + keyId + "_" + j} style={{paddingTop: 10}}>
-                    <Form.Item label={setting.name} name={setting.id} key={"formitem_" + keyId + "_" + j} style={{padding: "5px"}}>
+                    <Form.Item label={labelHeader} name={setting.id} key={"formitem_" + keyId + "_" + j} style={{padding: "5px"}}>
                         <Input defaultValue={setting.value} value={setting.value} key={"input_" + keyId + "_" + j}/>
                     </Form.Item>
                 </Col>
@@ -105,9 +132,12 @@ export class Settings extends React.Component {
 
     render() {
         return (
-            <Form name="basic" initialValues={{ remember: true }} layout={"vertical"} onFinish={this.onFinish} /*onFinishFailed={onFinishFailed}*/ >
-                {this.createForm()}
-            </Form>
+            <div>
+                <Form name="basic" initialValues={{ remember: true }} layout={"vertical"} onFinish={this.onFinish} /*onFinishFailed={onFinishFailed}*/ >
+                    {this.createForm()}
+                </Form>
+                <CodeConfirmModal registerFunction={this.addListener}/>
+            </div>
         );
     }
 

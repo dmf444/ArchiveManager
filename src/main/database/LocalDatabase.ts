@@ -4,6 +4,7 @@ import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {FileModel} from '@main/file/FileModel';
 import {FileState} from '@main/file/FileState';
 import {UploadSettings} from "@main/settings/UploadSettings";
+import {GoogleOauthSettings} from "@main/settings/GoogleOauthSettings";
 
 const log = require('electron-log');
 const low = require('lowdb');
@@ -143,6 +144,11 @@ export class FileDatabase {
     public getUploadConfig(): ISettings {
         let ups = new UploadSettings();
         return this.getSettingsOrDefault(ups);
+    }
+
+    public getGoogleConfig() : ISettings {
+        let gos = new GoogleOauthSettings();
+        return this.getSettingsOrDefault(gos);
     }
 
     private getSettingsOrDefault(settingImpl: ISettings): ISettings {

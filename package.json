@@ -57,7 +57,9 @@
     "electron-context-menu": "^2.0.1",
     "electron-updater": "4.3.1",
     "node-fetch": "2.6.1",
-    "formdata-node": "^2.4.0"
+    "formdata-node": "^2.4.0",
+    "googleapis": "89.0.0",
+    "@google-cloud/local-auth": "^1.0.1"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

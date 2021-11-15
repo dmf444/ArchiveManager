@@ -16,6 +16,8 @@ import {sendSuccess} from "@main/NotificationBundle";
 import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
+import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
+import {Authentication} from "@main/google/Authentication";
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
@@ -34,6 +36,7 @@ let dlManager: YoutubeDLManager;
 let fileUpdateBuilder: FileEditBuilder = null;
 let tray = null;
 let descFileReader: DescriptionFileReader = null;
+let googleManager: Authentication = null;
 
 
 electronDl();
@@ -81,6 +84,10 @@ export function getMainWindow() {
 
 export function getDescriptionReader() {
     return descFileReader;
+}
+
+export function getGoogleAuth() {
+    return googleManager;
 }
 
 function createWindow(): void {
@@ -164,6 +171,7 @@ app.whenReady().then(() => {
     descFileReader.initializeFolder(filePath);
     webDatabase = new WebDatabase();
     fileManager = new FileManager();
+    googleManager = new Authentication();
 
     let disc_bot = new Bot();
     disc_bot.start();
@@ -173,6 +181,8 @@ app.whenReady().then(() => {
     dlManager.getNewestDownloaderVersion();
     log.info("Launched with version:", app.getVersion());
 
+    let a = new GoogleDriveDownloader();
+    a.downloadUrl('https://drive.google.com/drive/u/0/folders/17MJLxr-D-Zc-amgelX0bEwiTPWkJF2LY', false);
 });
 
 // Quit when all windows are closed.
@@ -327,4 +337,18 @@ ipcMain.on('upload_list_get', function (event, args) {
 
 ipcMain.on('download_list_get', function (event, args) {
     event.sender.send('download_list_reply', getFileDatabase().getAllDownloads());
+});
+
+ipcMain.on('authenitication_url_generate', function (event, apiRequest: string) {
+    if(apiRequest === "google") {
+        let url = getGoogleAuth().createAuthUrl();
+        shell.openExternal(url);
+    }
+});
+
+ipcMain.on('code_verification', function (event, apiRequester: string, values) {
+    if(apiRequester === "google") {
+        log.warn(values);
+        getGoogleAuth().registerCode(values.code);
+    }
 });

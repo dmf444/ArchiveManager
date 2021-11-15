@@ -34,6 +34,9 @@ const commonConfig = {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         loader: 'ts-loader',
+        options: {
+          transpileOnly: true
+        }
       },
       {
         test: /\.(scss|css)$/,

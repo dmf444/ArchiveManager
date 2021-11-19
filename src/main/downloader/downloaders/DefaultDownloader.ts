@@ -1,6 +1,8 @@
 import DownloadItem = Electron.DownloadItem;
 import {FileUtils} from "@main/downloader/FileUtils";
 import {toggleMenu} from "@main/main";
+import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
+import {STATE} from "@main/downloader/interfaces/State";
 const {basename} = require('path');
 const log = require('electron-log');
 
@@ -27,7 +29,7 @@ export class DefaultDownloader implements IDownloader {
 
         let fileName = basename(fileDownload.getSavePath());
         return {
-            state: fileDownload.getState(),
+            state: fileDownload.getState() == "completed" ? STATE.SUCCESS : STATE.FAILED,
             fileName: fileName,
             filePathDir: filePathDir
         };

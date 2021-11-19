@@ -53,11 +53,12 @@ export class FileUtils {
         return file;
     }
 
-    public static createNewErrorFileEntry(url: string) {
+    public static createNewErrorFileEntry(url: string): FileModel {
         let metadata: FileUploadData = FileUploadData.fromJson(null);
         let fileId: number = getFileDatabase().getNextFreeFileId();
         let file = new FileModel(fileId, "", "", FileState.ERROR, url, "", metadata);
         getFileDatabase().addFile(file);
+        return file;
     }
 
     public static async queryForDuplicates(hash: string): Promise<boolean> {

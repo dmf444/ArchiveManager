@@ -1,12 +1,16 @@
+import {STATE} from "@main/downloader/interfaces/State";
 
-type downloadPromise = {
-    state: string,
+
+export type downloadPromise = {
+    state: STATE,
     fileName: string,
     filePathDir: string,
-    md5?: string
+    md5?: string,
+    url?: string,
+    multiItem?: downloadPromise[]
 }
 
-interface IDownloader {
+export interface IDownloader {
 
     /**
      * Localized name; should not look like programmer garbage.

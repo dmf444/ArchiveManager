@@ -18,6 +18,7 @@ import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
 import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
 import {Authentication} from "@main/google/Authentication";
+import {GmailUrlDecoder} from "@main/google/GmailUrlDecoder";
 const contextMenu = require('electron-context-menu');
 const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
@@ -170,8 +171,9 @@ app.whenReady().then(() => {
     descFileReader = new DescriptionFileReader();
     descFileReader.initializeFolder(filePath);
     webDatabase = new WebDatabase();
-    fileManager = new FileManager();
     googleManager = new Authentication();
+    fileManager = new FileManager();
+
 
     let disc_bot = new Bot();
     disc_bot.start();
@@ -181,8 +183,7 @@ app.whenReady().then(() => {
     dlManager.getNewestDownloaderVersion();
     log.info("Launched with version:", app.getVersion());
 
-    let a = new GoogleDriveDownloader();
-    a.downloadUrl('https://drive.google.com/drive/u/0/folders/17MJLxr-D-Zc-amgelX0bEwiTPWkJF2LY', false);
+
 });
 
 // Quit when all windows are closed.
@@ -348,7 +349,6 @@ ipcMain.on('authenitication_url_generate', function (event, apiRequest: string) 
 
 ipcMain.on('code_verification', function (event, apiRequester: string, values) {
     if(apiRequester === "google") {
-        log.warn(values);
         getGoogleAuth().registerCode(values.code);
     }
 });

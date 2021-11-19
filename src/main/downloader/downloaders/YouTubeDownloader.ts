@@ -4,6 +4,8 @@ import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 import {InspectResult} from "fs-jetpack/types";
 import {FileModel} from "@main/file/FileModel";
 import {getFileDatabase} from "@main/main";
+import {STATE} from "@main/downloader/interfaces/State";
+import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 const path = require('path');
 const log = require('electron-log');
 const AdmZip = require('adm-zip');
@@ -36,10 +38,10 @@ export class YouTubeDownloader implements IDownloader {
 
 
             log.info("Video Downloaded!");
-            downloadPromise = {state: "completed", fileName: zipName, filePathDir: zipBasePath, md5: md5};
+            downloadPromise = {state: STATE.SUCCESS, fileName: zipName, filePathDir: zipBasePath, md5: md5};
         } else {
             log.error("Failed to download video file!");
-            downloadPromise = {state: "error", fileName: "", filePathDir: ""};
+            downloadPromise = {state: STATE.FAILED, fileName: "", filePathDir: ""};
         }
 
         jetpack.remove(initalDirectory);

@@ -1,10 +1,13 @@
-import {DefaultDownloader} from "@main/downloader/DefaultDownloader";
+import {DefaultDownloader} from "@main/downloader/downloaders/DefaultDownloader";
 import {FileUtils} from "@main/downloader/FileUtils";
 import {getFileDatabase} from "@main/main";
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
-import {YouTubeDownloader} from "@main/downloader/YouTubeDownloader";
+import {YouTubeDownloader} from "@main/downloader/downloaders/YouTubeDownloader";
 import {sendError, sendSuccess} from "@main/NotificationBundle";
+import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
+import {STATE} from "@main/downloader/interfaces/State";
+import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
 
 const log = require('electron-log');
 
@@ -15,6 +18,7 @@ export class FileManager {
 
     constructor() {
         this.downloaders.push(new YouTubeDownloader());
+        this.downloaders.push(new GoogleDriveDownloader());
         //Alway add this as last downloader
         this.downloaders.push(new DefaultDownloader());
     }
@@ -25,30 +29,8 @@ export class FileManager {
             let downloader: IDownloader = this.downloaders[i];
             if(downloader.acceptsUrl(url)) {
                 downloader.downloadUrl(url, stage).then((downloadPromise: downloadPromise) => {
-                    let state = downloadPromise.state;
-                    let filePathDir = downloadPromise.filePathDir;
-                    let fileName = downloadPromise.fileName;
-                    if(state == "completed") {
-                        let filePath = filePathDir + fileName;
-
-                        //Get file MD5
-                        let hashCheck: string = downloadPromise.md5;
-                        if (hashCheck == null) {
-                            hashCheck = FileUtils.getFileHash(filePath);
-                        }
-
-                        FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
-                            let file = FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
-                            downloader.createdFilePostback(file);
-                            sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
-                        });
-
-                    } else if(state == "multiple") {
-
-                    } else {
-                        FileUtils.createNewErrorFileEntry(url);
-                        sendError("Download Failed!", `Unable to download ${url}`);
-                    }
+                    log.warn(downloadPromise);
+                    this.downloadFileCallback(downloadPromise, downloader, url, stage);
                 });
                 break;
             }
@@ -67,29 +49,67 @@ export class FileManager {
         let staged:boolean = file.savedLocation.startsWith(FileUtils.getFilePath(true));
 
         downloader.downloadUrl(file.url, staged).then((downloadPromise: downloadPromise) => {
-            if (downloadPromise.state == "completed") {
-                let filePath = downloadPromise.filePathDir + downloadPromise.fileName;
+            this.downloadFileCallback(downloadPromise, downloader, file.url, staged, file);
+        });
+    }
 
-                //Get file MD5
-                let hashCheck: string = downloadPromise.md5;
-                if (hashCheck == null) {
-                    hashCheck = FileUtils.getFileHash(filePath);
+    private downloadFileCallback(uploadResults: downloadPromise, downloader: IDownloader, url: string, stage: boolean, fileModel: FileModel = null) {
+        let state = uploadResults.state;
+        log.warn("Promise Resolved Caller: " + uploadResults.multiItem);
+        if(state == STATE.SUCCESS) {
+            let webUrl = uploadResults.url != null ? uploadResults.url : url;
+            this.singleDownloadCallback(uploadResults, downloader, webUrl, stage, fileModel);
+
+        } else if(state == STATE.MULTIPLE && uploadResults.multiItem != null) {
+
+            uploadResults.multiItem.forEach((downloadData: downloadPromise) => {
+                log.warn("Calling Each");
+                if(downloadData.state == STATE.FAILED){
+                    const fileModel = FileUtils.createNewErrorFileEntry(downloadData.url);
+                    downloader.createdFilePostback(fileModel);
+                    sendError("Download Failed!", `Unable to download ${downloadData.url}`);
+                    return;
                 }
+                let webUrl = downloadData.url != null ? downloadData.url : url;
+                this.singleDownloadCallback(downloadData, downloader, webUrl, stage, fileModel);
+            });
 
-                FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
-                    file.fileName = downloadPromise.fileName;
-                    file.savedLocation = filePath;
-                    file.md5 = hashCheck;
-                    if(contains){
-                        file.state = FileState.DUPLICATE;
-                    }
-                    getFileDatabase().updateFile(file);
-                });
-
+        } else {
+            if(fileModel != null) {
+                fileModel.state = FileState.ERROR;
+                getFileDatabase().updateFile(fileModel);
             } else {
-                file.state = FileState.ERROR;
-                getFileDatabase().updateFile(file);
+                FileUtils.createNewErrorFileEntry(url);
             }
+            sendError("Download Failed!", `Unable to download ${url}`);
+        }
+    }
+
+    private singleDownloadCallback(uploadResults: downloadPromise, downloader: IDownloader, url: string, stage: boolean, fileModel: FileModel = null) {
+        let filePathDir = uploadResults.filePathDir;
+        let fileName = uploadResults.fileName;
+        let filePath = filePathDir + fileName;
+
+        //Get file MD5
+        let hashCheck: string = uploadResults.md5;
+        if (hashCheck == null) {
+            hashCheck = FileUtils.getFileHash(filePath);
+        }
+
+        FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
+            if(fileModel != null) {
+                fileModel.fileName = uploadResults.fileName;
+                fileModel.savedLocation = filePath;
+                fileModel.md5 = hashCheck;
+                if(contains){
+                    fileModel.state = FileState.DUPLICATE;
+                }
+                getFileDatabase().updateFile(fileModel);
+            } else {
+                let file = FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
+                downloader.createdFilePostback(file);
+            }
+            sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
         });
     }
 

@@ -48,7 +48,7 @@ export class GmailUrlDecoder {
 
         hash = hash.replace('thread-f:', '');
         const conversion: string = converter.decToHex(hash);
-        return conversion.substring(2);
+        return conversion.substring(2).toUpperCase();
     }
 
 

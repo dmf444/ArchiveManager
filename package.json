@@ -60,7 +60,8 @@
     "formdata-node": "^2.4.0",
     "googleapis": "89.0.0",
     "@google-cloud/local-auth": "^1.0.1",
-    "hex2dec": "1.1.2"
+    "hex2dec": "1.1.2",
+    "mime": "3.0.0"
   },
   "devDependencies": {
     "@types/react-router": "^4.4.5",

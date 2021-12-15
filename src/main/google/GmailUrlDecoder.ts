@@ -51,6 +51,13 @@ export class GmailUrlDecoder {
         return conversion.substring(2).toUpperCase();
     }
 
+    parseFullUrl(url: string) {
+        let parts = url.match('https?:\\/\\/mail.google.com\\/.*\\/(.*)');
+        if(parts.length == 0) return null;
+
+        return this.parseUrlEncoding(parts[1]);
+    }
+
 
     private transliterate(subject, inputAlphabet, outputAlphabet) {
         if (!outputAlphabet) throw Error('rd');

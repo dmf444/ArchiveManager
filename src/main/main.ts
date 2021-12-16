@@ -16,11 +16,8 @@ import {sendSuccess} from "@main/NotificationBundle";
 import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
-import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
 import {Authentication} from "@main/google/Authentication";
-import {GmailUrlDecoder} from "@main/google/GmailUrlDecoder";
 const contextMenu = require('electron-context-menu');
-const icon = require('@public/archivesLogo.ico');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
 

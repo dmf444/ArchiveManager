@@ -14,7 +14,6 @@ export class Authentication {
         'https://www.googleapis.com/auth/drive.readonly',
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.metadata',
         'https://www.googleapis.com/auth/gmail.labels'
     ];
 

@@ -8,6 +8,7 @@ import {sendError, sendSuccess} from "@main/NotificationBundle";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 import {STATE} from "@main/downloader/interfaces/State";
 import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
+import {GmailDownloader} from "@main/downloader/downloaders/GmailDownloader";
 
 const log = require('electron-log');
 
@@ -19,6 +20,7 @@ export class FileManager {
     constructor() {
         this.downloaders.push(new YouTubeDownloader());
         this.downloaders.push(new GoogleDriveDownloader());
+        this.downloaders.push(new GmailDownloader());
         //Alway add this as last downloader
         this.downloaders.push(new DefaultDownloader());
     }

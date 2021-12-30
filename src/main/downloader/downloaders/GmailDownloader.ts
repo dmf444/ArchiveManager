@@ -1,5 +1,5 @@
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
-import {getEventsDispatcher, getGoogleAuth} from "@main/main";
+import {getEventsDispatcher, getFileDatabase, getGoogleAuth} from "@main/main";
 import {gmail_v1, google} from "googleapis";
 import {notificationPackage} from "@main/Events";
 import log from "electron-log";
@@ -7,7 +7,13 @@ import {GmailUrlDecoder} from "@main/google/GmailUrlDecoder";
 import Schema$MessagePart = gmail_v1.Schema$MessagePart;
 import {FileUtils} from "@main/downloader/FileUtils";
 import * as jetpack from "fs-jetpack";
+import fetch from 'node-fetch';
+import http from 'http';
+import https from 'https';
+import {STATE} from "@main/downloader/interfaces/State";
+import * as path from "path";
 const mime = require('mime');
+const AdmZip = require('adm-zip');
 
 
 
@@ -33,7 +39,55 @@ export class GmailDownloader implements IDownloader {
 
 
     createdFilePostback(file): void {
+        if(this.extractJsonFileFromZip(file.savedLocation)) {
+            let jsonFilePath = FileUtils.getFilePath(true) + "original_data.json";
+            let emailJson = jetpack.read(jsonFilePath, 'json');
 
+            let headers = emailJson["messages"][0]["payload"]["headers"];
+            let date = Date.parse(this.parseData("Date", headers));
+            let description = {
+                "description": "",
+                "date": !isNaN(date) ? date : "0",
+                "from": this.parseData("From", headers),
+                "subject": this.parseData("Subject", headers),
+                "snippet": emailJson["messages"][0]["snippet"],
+                "labels": emailJson["messages"][0]["labelIds"]
+            };
+
+            let descriptionFinal = JSON.stringify(description);
+            file.fileMetadata.descriptionVersion = "5.0.0";
+            file.fileMetadata.description = descriptionFinal;
+            getFileDatabase().updateFile(file);
+
+            jetpack.remove(jsonFilePath);
+        }
+    }
+
+    private parseData(keyTag: string, values: any) {
+        for(let data of values) {
+            if(data.name == keyTag) {
+                return data.value;
+            }
+        }
+        return "";
+    }
+
+    private async removeTempFolders(path: string, depth = 0) {
+        if (jetpack.exists(path) !== false && depth < 2) {
+            try {
+                jetpack.remove(path);
+            } catch (e) {
+                log.warn(`Attempt to remove temporary folder failed. ${path}`);
+                await this.sleep(1000);
+                await this.removeTempFolders(path, depth + 1);
+            }
+        }
+    }
+
+    private async sleep(ms) {
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+        });
     }
 
 
@@ -44,11 +98,21 @@ export class GmailDownloader implements IDownloader {
 
             await this.downloadFromGoogle(path, threadId);
 
-            this.postSetup();
+            let finalPath = FileUtils.getFilePath(stage);
+            let fileName = this.postSetup(threadId, path, finalPath);
+
+            await this.removeTempFolders(path);
+
+
+            if(fileName != null) {
+                return {state: STATE.SUCCESS, fileName: fileName, filePathDir: finalPath};
+            } else {
+                return {state: STATE.FAILED, fileName: '', filePathDir: ''};
+            }
 
         }
 
-        return Promise.resolve(undefined);
+        return {state: STATE.FAILED, fileName: '', filePathDir: ''};
     }
 
     /**
@@ -76,11 +140,34 @@ export class GmailDownloader implements IDownloader {
                     }
                 }
             }
+        } else {
+            log.error("ERROR: " + googleResponse.status);
         }
     }
 
-    private postSetup() {
+    /**
+     * Anything done after the content of the email has been downloaded. Used here for zipping the files.
+     * @param threadId the gmail thread ID
+     * @param downloadPath the temporary folder made by the downloader
+     * @param finalPath the destination path of the zip file
+     * @private
+     * @return the zip file name
+     */
+    private postSetup(threadId: string, downloadPath: string, finalPath: string): string {
+            var zip = new AdmZip();
+            let fileNames = jetpack.list(downloadPath);
+            if(fileNames != null) {
 
+                fileNames.forEach((dlFileName: string) => {
+                    zip.addLocalFile(downloadPath + path.sep + dlFileName);
+                });
+
+                let zipName: string = `${threadId}.zip`;
+                let zipSavePath: string = finalPath + path.sep + zipName;
+                zip.writeZip(zipSavePath);
+                return zipName;
+
+            }
     }
 
 
@@ -95,16 +182,99 @@ export class GmailDownloader implements IDownloader {
     public async handlePart(path: string, messageId: string, part: Schema$MessagePart) {
         if(part.filename !== "") {
             if(part.body.attachmentId) {
-                //let resp = await this.gmail.users.messages.attachments.get({id: part.body.attachmentId, messageId: messageId, userId: 'me'});
+                let resp = await this.gmail.users.messages.attachments.get({id: part.body.attachmentId, messageId: messageId, userId: 'me'});
+
                 // Download and save file.
+                if(resp.data.data) {
+                    let attachBuffer = Buffer.from(resp.data.data, 'base64');
+                    let name = part.filename;
+                    if(!name.includes(".")) {
+                        name = `${name}.${mime.getExtension(part.filename)}`;
+                    }
+
+                    jetpack.file(path + name, {content: attachBuffer});
+                }
             }
         } else {
 
             let buff = Buffer.from(part.body.data, 'base64');
             let text = buff.toString('utf-8');
+
+            if(part.mimeType == mime.getType('html')) {
+                text = await this.parseHtmlPage(text, path);
+            }
+
             let ext = mime.getExtension(part.mimeType);
             jetpack.file(path + part.body.data.substr(-7).toUpperCase() + '.' + ext, {content: text});
         }
+    }
+
+    /**
+     * If any part of the Message is an HTML document, we need to preserve it for posterity.
+     * Running a simple URL Regex, find any URLs, call the endpoint, and download it to disk.
+     *
+     * Replace the original content of the email with references to the downloaded content.
+     * @param htmlContent from google's api, the MessagePart decoded content
+     * @param path the download path for the files
+     * @private
+     */
+    private async parseHtmlPage(htmlContent: string, path: string): Promise<string> {
+        //HTML LINKs
+        let regex = new RegExp('(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"^\']{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"^\']{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s^\"^\']{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s^\"^\']{2,})', 'gi')
+        let urls = htmlContent.match(regex);
+
+        let data = {};
+
+        for(const url of urls) {
+            let response = await this.connectForDownload(url, path);
+            if(response != null) {
+                data[url] = response[1];
+            }
+        }
+
+        //TODO: An email should never have a relative link in content, only a CID. This should be implemented however for the site downloader.
+        //Relative Link
+        //\.\.?\/[^\n"?:*<>|]+\.[A-z0-9]+
+
+        for(let [url, repVal] of Object.entries(data)) {
+            htmlContent = htmlContent.replace(url, "./" + repVal);
+        }
+
+        return Promise.resolve(htmlContent);
+    }
+
+    async connectForDownload(url: string, path: string): Promise<[string, string]> {
+        const agentSSL = new https.Agent({rejectUnauthorized: false});
+        const agent = new http.Agent();
+        let connection = await fetch(url, {agent: (parsedUrl => {
+                if(parsedUrl.protocol === "http:"){
+                    return agent
+                }
+                return agentSSL;
+            })
+        });
+
+        if (connection.headers.has('content-type') && !connection.headers.get('content-type').includes(mime.getType('html'))) {
+            let fileName = (Math.random() + 1).toString(36).substring(3);
+            if(connection.headers.has('content-disposition')) {
+                let contentDispo: string = connection.headers.get('content-disposition');
+                let searchResult = contentDispo.search("filename=");
+                if(searchResult > -1){
+                    let wordstart = searchResult + 9;
+                    let uncleanName = contentDispo.substring(wordstart);
+                    fileName = contentDispo.substring(wordstart, wordstart + uncleanName.lastIndexOf("."));
+
+                }
+            }
+            let ext = mime.getExtension(connection.headers.get('content-type'));
+            let fullName = fileName + "." + ext;
+
+            let fileStream = jetpack.createWriteStream(path + fullName);
+            await connection.body.pipe(fileStream);
+
+            return [url, fullName];
+        }
+        return null;
     }
 
 
@@ -125,9 +295,16 @@ export class GmailDownloader implements IDownloader {
             initalDirectory = baseDir + "email_" + folderNumber;
             folderNumber++;
         } while (jetpack.exists(initalDirectory) != false);
-        return initalDirectory;
+        return initalDirectory + path.sep;
     }
 
-    //https://cloud.google.com/appengine/docs/standard/php/mail/mail-with-headers-attachments
+    private extractJsonFileFromZip(fileLocation: string): boolean {
+        let zip = new AdmZip(fileLocation);
+        if(zip.getEntry("original_data.json")) {
+            zip.extractEntryTo("original_data.json", FileUtils.getFilePath(true), false, true);
+            return true;
+        }
+        return false;
+    }
 
 }

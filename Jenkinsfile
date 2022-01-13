@@ -12,7 +12,14 @@ pipeline {
           sh 'npm install'
           sh 'npm run prod'
           sh 'npm run build:win'
-
+      }
+    }
+    stage('Artifact') {
+      steps {
+        archiveArtifacts './out/*.exe'
+        archiveArtifacts './out/*.exe.blockmap'
+        archiveArtifacts './out/*.yml'
+        archiveArtifacts './out/*.yaml'
       }
     }
   }

@@ -70,6 +70,7 @@
     "acorn": "^6.4.0",
     "ajv": "^6.10.2",
     "copy-pkg-json-webpack-plugin": "0.0.38",
+    "copy-webpack-plugin": "^6.4.1",
     "cross-env": "^5.2.1",
     "css-loader": "^1.0.1",
     "electron": "9.1.0",

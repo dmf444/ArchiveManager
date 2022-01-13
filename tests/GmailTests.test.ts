@@ -117,7 +117,7 @@ describe('Gmail Parse Checks', () => {
 
 
     afterAll(() => {
-        //jetpack.remove("./temp_test");
+        jetpack.remove("./temp_test");
     });
 
 });

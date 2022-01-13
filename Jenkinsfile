@@ -16,10 +16,10 @@ pipeline {
     }
     stage('Artifact') {
       steps {
-        archiveArtifacts './out/*.exe'
-        archiveArtifacts './out/*.exe.blockmap'
-        archiveArtifacts './out/*.yml'
-        archiveArtifacts './out/*.yaml'
+        archiveArtifacts 'out/*.exe'
+        archiveArtifacts 'out/*.exe.blockmap'
+        archiveArtifacts 'out/*.yml'
+        archiveArtifacts 'out/*.yaml'
       }
     }
   }

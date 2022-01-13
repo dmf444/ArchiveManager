@@ -16,10 +16,8 @@ pipeline {
     }
     stage('Artifact') {
       steps {
-        archiveArtifacts 'out/*.exe'
-        archiveArtifacts 'out/*.exe.blockmap'
-        archiveArtifacts 'out/*.yml'
-        archiveArtifacts 'out/*.yaml'
+        archiveArtifacts artifacts: 'out/*.exe', 'out/*.exe.blockmap', 'out/*.yml'
+        archiveArtifacts artifacts: 'out/*.yaml', allowEmptyArchive: true
       }
     }
   }

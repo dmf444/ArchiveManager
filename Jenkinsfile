@@ -9,10 +9,9 @@ pipeline {
   stages {
     stage('Build Windows') {
       steps {
-          sh 'mkdir npm-cache'
-          sh 'npm install --cache npm-cache'
-          sh 'npm prod'
-          sh 'npm build:win'
+          sh 'npm install'
+          sh 'npm run prod'
+          sh 'npm run build:win'
 
       }
     }

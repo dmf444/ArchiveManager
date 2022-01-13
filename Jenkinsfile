@@ -2,6 +2,7 @@ pipeline {
   agent {
     docker {
       image 'electronuserland/builder:wine'
+      args '-u 0:0'
     }
 
   }
@@ -15,6 +16,10 @@ pipeline {
 
       }
     }
-
+  }
+  post {
+    always {
+      sh "chmod -R a+rw \$PWD/"
+    }
   }
 }

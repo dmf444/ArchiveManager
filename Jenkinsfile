@@ -16,7 +16,7 @@ pipeline {
     }
     stage('Artifact') {
       steps {
-        archiveArtifacts artifacts: 'out/*.exe', 'out/*.exe.blockmap', 'out/*.yml'
+        archiveArtifacts artifacts: 'out/*.exe, out/*.exe.blockmap, out/*.yml'
         archiveArtifacts artifacts: 'out/*.yaml', allowEmptyArchive: true
       }
     }

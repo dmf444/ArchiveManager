@@ -68,7 +68,7 @@
     "@types/react-router-dom": "^4.3.5",
     "@types/jest": "^27.0.3",
     "acorn": "^6.4.0",
-    "ajv": "^6.10.2",
+    "ajv": "^6.12.3",
     "copy-pkg-json-webpack-plugin": "0.0.38",
     "copy-webpack-plugin": "^6.4.1",
     "cross-env": "^5.2.1",

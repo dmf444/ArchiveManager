@@ -10,12 +10,14 @@ export class YtdlBuilder {
     private executeArgs: string[];
     private outputFormat: string;
     private outputPath: string;
+    private downloaderPath: string;
 
-    constructor(url: string) {
+    constructor(url: string, downloaderPath: string) {
         this.downloadUrl = url;
         this.executeArgs = [];
         this.outputFormat = "%(title)s.%(ext)s";
         this.outputPath = null;
+        this.downloaderPath = downloaderPath;
     }
 
     public downloadPlaylists(): YtdlBuilder {
@@ -88,6 +90,11 @@ export class YtdlBuilder {
         return this;
     }
 
+    public convertThumbnail(conversion: 'jpg' | 'png' | 'webp' = 'jpg'): YtdlBuilder {
+        this.executeArgs.push(`--convert-thumbnails "${conversion}"`);
+        return this;
+    }
+
 
     //Authentication options. No intent to use them, but they're here; just in case!
     public authenticated(username: string, password: string): YtdlBuilder {
@@ -102,14 +109,14 @@ export class YtdlBuilder {
 
     public async executeCommand(): Promise<number> {
         if (this.outputPath != null) {
-            this.executeArgs.push("-o", this.outputPath + this.outputFormat);
+            this.executeArgs.push("-o", `"${this.outputPath}${this.outputFormat}"`);
         } else {
-            this.executeArgs.push("-o", this.outputFormat);
+            this.executeArgs.push("-o", `"${this.outputFormat}"`);
         }
         this.executeArgs.push("--newline");
         this.executeArgs.push(this.downloadUrl);
 
-        const youtubedl = spawn(getYoutubeDlManager().getFullApplicationPath(), this.executeArgs);
+        const youtubedl = spawn(this.downloaderPath, this.executeArgs);
         youtubedl.stdout.setEncoding('utf8');
         youtubedl.stdout.on('data', (data: string) => {
             log.info('stdout: ' + data.replace("\n", ""));
@@ -118,6 +125,9 @@ export class YtdlBuilder {
             if(matches !== null) {
                 getFileDatabase().addNewDownload(this.downloadUrl.replace(/\./g, ","), {percent: matches[matches.length - 1]});
             }
+        });
+        youtubedl.stderr.on('data', (data: string) => {
+            log.info('stderr: ' + data);
         });
 
         return await new Promise((resolve, reject) => {

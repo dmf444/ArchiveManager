@@ -17,6 +17,7 @@ import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
 import {Authentication} from "@main/google/Authentication";
+import {YoutubeDlpManager} from '@main/youtubedl/YoutubeDlpManager';
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -31,6 +32,7 @@ var events = new EventDispatcher<notificationPackage>();
 let webDatabase: WebDatabase;
 let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
+let dlpManager: YoutubeDlpManager;
 let fileUpdateBuilder: FileEditBuilder = null;
 let tray = null;
 let descFileReader: DescriptionFileReader = null;
@@ -70,6 +72,10 @@ export function getFileManager() {
 
 export function getYoutubeDlManager() {
     return dlManager;
+}
+
+export function getYoutubeDlpManager() {
+    return dlpManager;
 }
 
 export function getFileUpdater() {
@@ -176,8 +182,11 @@ app.whenReady().then(() => {
     disc_bot.start();
     bot = disc_bot;
 
-    dlManager = new YoutubeDLManager(filePath);
-    dlManager.getNewestDownloaderVersion();
+    //dlManager = new YoutubeDLManager(filePath);
+    //dlManager.getNewestDownloaderVersion();
+
+    dlpManager = new YoutubeDlpManager(filePath);
+    dlpManager.getNewestDownloaderVersion();
     log.info("Launched with version:", app.getVersion());
 
 

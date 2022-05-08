@@ -9,6 +9,7 @@ import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloa
 import {STATE} from "@main/downloader/interfaces/State";
 import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
 import {GmailDownloader} from "@main/downloader/downloaders/GmailDownloader";
+import {YtdlpDownloader} from '@main/downloader/downloaders/YtdlpDownloader';
 
 const log = require('electron-log');
 
@@ -18,7 +19,7 @@ export class FileManager {
     private downloaders: IDownloader[] = [];
 
     constructor() {
-        this.downloaders.push(new YouTubeDownloader());
+        this.downloaders.push(new YtdlpDownloader());
         this.downloaders.push(new GoogleDriveDownloader());
         this.downloaders.push(new GmailDownloader());
         //Alway add this as last downloader

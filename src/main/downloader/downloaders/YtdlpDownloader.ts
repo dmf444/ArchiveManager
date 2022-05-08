@@ -3,15 +3,15 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 import {InspectResult} from "fs-jetpack/types";
 import {FileModel} from "@main/file/FileModel";
-import {getFileDatabase, getYoutubeDlManager} from '@main/main';
+import {getFileDatabase, getYoutubeDlManager, getYoutubeDlpManager} from '@main/main';
 import {STATE} from "@main/downloader/interfaces/State";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 const path = require('path');
 const log = require('electron-log');
 const AdmZip = require('adm-zip');
 
-export class YouTubeDownloader implements IDownloader {
-    downloaderName: string = "Youtube Downloader";
+export class YtdlpDownloader implements IDownloader {
+    downloaderName: string = "YT-DLP Downloader";
 
     acceptsUrl(url: string): boolean {
         let regex = new RegExp("https?:\\/\\/(www.)?youtu(\\.)?be(.com)?\\/(watch\\?v=)?");
@@ -24,7 +24,7 @@ export class YouTubeDownloader implements IDownloader {
         jetpack.dir(initalDirectory, {empty: true});
 
         log.info(`Now downloading video from ${url}`)
-        let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url, getYoutubeDlManager().getFullApplicationPath());
+        let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url, getYoutubeDlpManager().getFullApplicationPath());
         let responseCode: number = await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s")
             .downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().rencodeToMp4().executeCommand();
 
@@ -52,7 +52,7 @@ export class YouTubeDownloader implements IDownloader {
         let name = "";
         files.forEach((fileName: string) => {
             if(!(fileName.endsWith(".json") || fileName.endsWith(".description") || fileName.endsWith(".jpeg") || fileName.endsWith(".jpg") || fileName.endsWith(".gif") || fileName.endsWith(".png"))) {
-               name = fileName;
+                name = fileName;
             }
         });
         return name;
@@ -75,6 +75,7 @@ export class YouTubeDownloader implements IDownloader {
 
     private zipFiles(fileNames: string[], videoFileName: string, initalDirectory: string, stage: boolean) {
         var zip = new AdmZip();
+        log.info("fileNms:", fileNames);
         fileNames.forEach((dlFileName: string) => {
             zip.addLocalFile(initalDirectory + path.sep + dlFileName);
         });
@@ -92,9 +93,9 @@ export class YouTubeDownloader implements IDownloader {
         let entries = zip.getEntries();
         let searchEntry = null;
         entries.forEach(zipEntry => {
-           if(zipEntry.name.endsWith(".json")) {
-               searchEntry = zipEntry;
-           }
+            if(zipEntry.name.endsWith(".json")) {
+                searchEntry = zipEntry;
+            }
         });
         if(searchEntry !== null) {
             zip.extractEntryTo(searchEntry.entryName, FileUtils.getFilePath(true), false, true);

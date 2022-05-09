@@ -1,4 +1,4 @@
-import {getFileDatabase, getYoutubeDlManager} from '@main/main';
+import {getFileDatabase} from '@main/main';
 
 const path = require('path');
 const { spawn } = require('child_process');
@@ -91,7 +91,8 @@ export class YtdlBuilder {
     }
 
     public convertThumbnail(conversion: 'jpg' | 'png' | 'webp' = 'jpg'): YtdlBuilder {
-        this.executeArgs.push(`--convert-thumbnails "${conversion}"`);
+        this.executeArgs.push('--convert-thumbnails');
+        this.executeArgs.push(conversion);
         return this;
     }
 
@@ -109,7 +110,7 @@ export class YtdlBuilder {
 
     public async executeCommand(): Promise<number> {
         if (this.outputPath != null) {
-            this.executeArgs.push("-o", `"${this.outputPath}${this.outputFormat}"`);
+            this.executeArgs.push("-o", `${this.outputPath}${this.outputFormat}`);
         } else {
             this.executeArgs.push("-o", `"${this.outputFormat}"`);
         }

@@ -3,7 +3,7 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 import {InspectResult} from "fs-jetpack/types";
 import {FileModel} from "@main/file/FileModel";
-import {getFileDatabase, getYoutubeDlManager, getYoutubeDlpManager} from '@main/main';
+import {getFileDatabase, getYoutubeDlpManager} from '@main/main';
 import {STATE} from "@main/downloader/interfaces/State";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 const path = require('path');
@@ -25,7 +25,7 @@ export class YtdlpDownloader implements IDownloader {
 
         log.info(`Now downloading video from ${url}`)
         let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url, getYoutubeDlpManager().getFullApplicationPath());
-        let responseCode: number = await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s")
+        let responseCode: number = await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s").convertThumbnail()
             .downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().rencodeToMp4().executeCommand();
 
         let downloadPromise: downloadPromise;
@@ -75,7 +75,6 @@ export class YtdlpDownloader implements IDownloader {
 
     private zipFiles(fileNames: string[], videoFileName: string, initalDirectory: string, stage: boolean) {
         var zip = new AdmZip();
-        log.info("fileNms:", fileNames);
         fileNames.forEach((dlFileName: string) => {
             zip.addLocalFile(initalDirectory + path.sep + dlFileName);
         });

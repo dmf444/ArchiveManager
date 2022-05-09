@@ -70,9 +70,6 @@ export function getFileManager() {
     return fileManager;
 }
 
-export function getYoutubeDlManager() {
-    return dlManager;
-}
 
 export function getYoutubeDlpManager() {
     return dlpManager;
@@ -182,8 +179,7 @@ app.whenReady().then(() => {
     disc_bot.start();
     bot = disc_bot;
 
-    //dlManager = new YoutubeDLManager(filePath);
-    //dlManager.getNewestDownloaderVersion();
+
 
     dlpManager = new YoutubeDlpManager(filePath);
     dlpManager.getNewestDownloaderVersion();

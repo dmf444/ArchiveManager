@@ -3,7 +3,7 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {YtdlBuilder} from "@main/youtubedl/YtdlBuilder";
 import {InspectResult} from "fs-jetpack/types";
 import {FileModel} from "@main/file/FileModel";
-import {getFileDatabase, getYoutubeDlManager} from '@main/main';
+import {getFileDatabase} from '@main/main';
 import {STATE} from "@main/downloader/interfaces/State";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 const path = require('path');
@@ -24,9 +24,9 @@ export class YouTubeDownloader implements IDownloader {
         jetpack.dir(initalDirectory, {empty: true});
 
         log.info(`Now downloading video from ${url}`)
-        let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url, getYoutubeDlManager().getFullApplicationPath());
-        let responseCode: number = await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s")
-            .downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().rencodeToMp4().executeCommand();
+        //let youtubeBuilder: YtdlBuilder = new YtdlBuilder(url, getYoutubeDlManager().getFullApplicationPath());
+        let responseCode: number = 1;//await youtubeBuilder.setFilePath(initalDirectory).setOutputTemplate("%(title)s_%(id)s.%(ext)s")
+            //.downloadThumbnail().downloadJsonInfo().downloadDescription().downloadAnnotations().normalizeFileNames().rencodeToMp4().executeCommand();
 
         let downloadPromise: downloadPromise;
         if (responseCode == 0) {

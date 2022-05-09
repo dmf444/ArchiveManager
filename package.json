@@ -51,7 +51,7 @@
     "lowdb": "1.0.0",
     "pg-hstore": "^2.3.3",
     "electron-log": "^4.1.2",
-    "electron-dl": "^3.0.0",
+    "electron-dl": "3.3.1",
     "fs-jetpack": "^2.2.3",
     "adm-zip": "^0.4.14",
     "electron-context-menu": "^2.0.1",

@@ -227,7 +227,13 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
                     </Col>
                     <Col span={8}>
                         <Form.Item label={"Container"} name={"container_sel"}>
-                            <Select onChange={this.sendContainerChange}>
+                            <Select onChange={this.sendContainerChange}
+                                    showSearch={true}
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                            >
                                 {this.renderContainerOptions()}
                             </Select>
                         </Form.Item>

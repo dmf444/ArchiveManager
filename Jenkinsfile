@@ -9,21 +9,25 @@ pipeline {
   stages {
     stage('Build Windows') {
       steps {
-          sh 'npm install'
-          sh 'npm run prod'
-          sh 'npm run build:win'
+        sh 'npm install'
+        sh 'npm run verup'
+        sh 'npm run prod'
+        sh 'npm run build:win'
       }
     }
+
     stage('Artifact') {
       steps {
-        archiveArtifacts artifacts: 'out/*.exe, out/*.exe.blockmap, out/*.yml'
-        archiveArtifacts artifacts: 'out/*.yaml', allowEmptyArchive: true
+        archiveArtifacts 'out/*.exe, out/*.exe.blockmap, out/*.yml'
+        archiveArtifacts(artifacts: 'out/*.yaml', allowEmptyArchive: true)
       }
     }
+
   }
   post {
     always {
-      sh "chmod -R a+rw \$PWD/"
+      sh 'chmod -R a+rw $PWD/'
     }
+
   }
 }

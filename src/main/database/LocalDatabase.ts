@@ -5,6 +5,7 @@ import {FileModel} from '@main/file/FileModel';
 import {FileState} from '@main/file/FileState';
 import {UploadSettings} from "@main/settings/UploadSettings";
 import {GoogleOauthSettings} from "@main/settings/GoogleOauthSettings";
+import {GroupModel} from '@main/group/GroupModel';
 
 const log = require('electron-log');
 const low = require('lowdb');
@@ -19,7 +20,7 @@ export class FileDatabase {
         let adapter = new FileSync(filePath + '/appdb.json');
         //log.info("FileDB:" + filePath + '/appdb.json');
         this.database = low(adapter);
-        this.database.defaults({ settings: {}, uploadhist: [], downloadHistory: {}, files: []}).write();
+        this.database.defaults({ settings: {}, uploadhist: [], downloadHistory: {}, files: [], groups: []}).write();
     }
 
     public addFile(file: FileModel) {
@@ -76,6 +77,7 @@ export class FileDatabase {
         return b.value();
     }
 
+    //TODO: Add groups to this
     public isFileUnique(md5Hash: string) {
         return this.database.get('files').filter(i => {
             return i.md5 == md5Hash;
@@ -90,6 +92,38 @@ export class FileDatabase {
         return this.database.get('files').filter(i => {
             return i.state == "ERROR" || i.state == "WARN";
         }).size().value();
+    }
+
+    public addGroup(group: GroupModel) {
+        let model = this.database.get('groups').find({id: group.id});
+        let modelValue = model.value();
+        if(modelValue == null || modelValue == []) {
+            this.database.get('groups').push(group.toJson()).write();
+        } else {
+            model.assign(group.toJson()).write();
+        }
+    }
+
+    public removeGroup(group: GroupModel) {
+        this.database.get('groups').remove({id: group.id}).write();
+    }
+
+    public updateGroup(group: GroupModel) {
+        this.database.get('groups').find({id: group.id}).assign(group.toJson()).write();
+    }
+
+    public getGroupById(id: number): GroupModel {
+        let model = this.database.get('groups').find({id: id}).value();
+        return GroupModel.fromJson(model);
+    }
+
+    public getNextFreeGroupId(): number{
+        let highestModel = this.database.get('groups').orderBy('id', 'desc').take(1);
+        if(highestModel.size().value() != 0) {
+            return highestModel.value()[0]['id'] + 1;
+        } else {
+            return 0;
+        }
     }
 
     public addNewUpload(data) {

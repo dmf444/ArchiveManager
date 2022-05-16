@@ -5,7 +5,7 @@ import {FileModel} from '@main/file/FileModel';
 import {FileState} from '@main/file/FileState';
 import {UploadSettings} from "@main/settings/UploadSettings";
 import {GoogleOauthSettings} from "@main/settings/GoogleOauthSettings";
-import {GroupModel} from '@main/group/GroupModel';
+import {GroupModel} from '@main/group/models/GroupModel';
 
 const log = require('electron-log');
 const low = require('lowdb');

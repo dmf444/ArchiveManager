@@ -354,3 +354,7 @@ ipcMain.on('code_verification', function (event, apiRequester: string, values) {
         getGoogleAuth().registerCode(values.code);
     }
 });
+
+ipcMain.on('import_directory', function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
+   log.info(args);
+});

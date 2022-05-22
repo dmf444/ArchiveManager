@@ -220,12 +220,13 @@ export class GmailDownloader implements IDownloader {
      */
     private async parseHtmlPage(htmlContent: string, path: string): Promise<string> {
         //HTML LINKs
-        let regex = new RegExp('(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"^\']{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"^\']{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s^\"^\']{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s^\"^\']{2,})', 'gi')
+        let regex = new RegExp('(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"^<>\']{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s^\"<>^\']{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s^\"^\']{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s^\"<>^\']{2,})', 'gi')
         let urls = htmlContent.match(regex);
 
         let data = {};
 
         for(const url of urls) {
+            if(!url.startsWith("http")) { continue; }
             let response = await this.connectForDownload(url, path);
             if(response != null) {
                 data[url] = response[1];
@@ -246,7 +247,13 @@ export class GmailDownloader implements IDownloader {
     async connectForDownload(url: string, path: string): Promise<[string, string]> {
         const agentSSL = new https.Agent({rejectUnauthorized: false});
         const agent = new http.Agent();
-        let connection = await fetch(url, {agent: (parsedUrl => {
+        let connection = await fetch(url, {
+            redirect: 'follow',
+            follow: 5,
+            headers: {
+                'Accept-Encoding': "*"
+            },
+            agent: (parsedUrl => {
                 if(parsedUrl.protocol === "http:"){
                     return agent
                 }

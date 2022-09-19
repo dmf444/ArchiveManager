@@ -18,6 +18,7 @@ import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
 import {Authentication} from "@main/google/Authentication";
 import {YoutubeDlpManager} from '@main/youtubedl/YoutubeDlpManager';
+import {GroupManager} from "@main/group/GroupManager";
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -46,7 +47,7 @@ export function getEventsDispatcher() {
     return events;
 }
 
-export function getFileDatabase() {
+export function getFileDatabase(): FileDatabase | null {
     return db;
 }
 
@@ -356,5 +357,9 @@ ipcMain.on('code_verification', function (event, apiRequester: string, values) {
 });
 
 ipcMain.on('import_directory', function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
-   log.info(args);
+   GroupManager.importGroup(args);
+});
+
+ipcMain.on('group_get_content', function (event, args: number) {
+   event.sender.send('group_get_content_reply', getFileDatabase().getGroupById(args));
 });

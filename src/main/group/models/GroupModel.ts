@@ -2,12 +2,27 @@ import {FileModel} from '@main/file/FileModel';
 import {IJsonSerializable} from '@main/database/IJsonSerializable';
 
 export class GroupModel implements IJsonSerializable<GroupModel> {
+    public getName(): string {
+        return this._name;
+    }
+    set name(value: string) {
+        this._name = value;
+    }
+
     get id(): number {
         return this._id;
     }
 
     set id(value: number) {
         this._id = value;
+    }
+
+    public addFileModel(model: FileModel) {
+        this._fileModels.push(model)
+    }
+
+    public getFiles(): FileModel[] {
+        return this._fileModels;
     }
 
     private _id: number;

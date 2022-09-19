@@ -14,13 +14,31 @@ const FileSync = require('lowdb/adapters/FileSync');
 
 export class FileDatabase {
     private database;
+    private defaultEmptyType = {
+        settings: {},
+        uploadhist: [],
+        downloadHistory: {},
+        files: [],
+        groups: []
+    }
 
     constructor(filePath: string) {
         log.info(filePath);
         let adapter = new FileSync(filePath + '/appdb.json');
         //log.info("FileDB:" + filePath + '/appdb.json');
         this.database = low(adapter);
-        this.database.defaults({ settings: {}, uploadhist: [], downloadHistory: {}, files: [], groups: []}).write();
+        this.database.defaults(this.defaultEmptyType).write();
+    }
+
+    public accessDataPoint(dataPoint: string) {
+        let dataSpot = this.database.get(dataPoint);
+        if(dataSpot == null) {
+            let emptyDataset = {};
+            emptyDataset[dataPoint] = this.defaultEmptyType[dataPoint];
+            this.database.push(emptyDataset).write();
+            dataSpot = this.database.get(dataPoint);
+        }
+        return dataSpot;
     }
 
     public addFile(file: FileModel) {
@@ -95,10 +113,11 @@ export class FileDatabase {
     }
 
     public addGroup(group: GroupModel) {
-        let model = this.database.get('groups').find({id: group.id});
+        let dataSet = this.accessDataPoint('groups');
+        let model = dataSet.find({id: group.id});
         let modelValue = model.value();
         if(modelValue == null || modelValue == []) {
-            this.database.get('groups').push(group.toJson()).write();
+            dataSet.push(group.toJson()).write();
         } else {
             model.assign(group.toJson()).write();
         }

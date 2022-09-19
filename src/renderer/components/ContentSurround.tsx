@@ -14,6 +14,7 @@ import {CheckCircleOutlined, InfoCircleOutlined} from "@ant-design/icons/lib";
 import {ArgsProps} from "antd/lib/notification";
 import {notificationBundle} from "@main/NotificationBundle";
 import {Info} from "@/renderer/components/Info";
+import {Group} from "@/renderer/components/group/Group";
 
 const { Content, Footer, Sider, Header } = Layout;
 
@@ -21,7 +22,7 @@ export class ContentSurround extends React.Component{
 
     state = {
         collapsed: false,
-        currentSelection: 'Home',
+        currentSelection: 'Group',
         headerBarContent: null
     };
 
@@ -105,6 +106,7 @@ export class ContentSurround extends React.Component{
                             {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
                             {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
                             {this.state.currentSelection == 'Info' && <Info />}
+                            <Group insHeader={this.insertHeader}/>
                         </div>
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>

@@ -2,7 +2,7 @@ import {FileModel} from '@main/file/FileModel';
 import * as fs from 'fs';
 import {getDescriptionReader, getFileDatabase, getFileManager, getMainWindow, getSettingsManager} from "@main/main";
 import {UploadSettings} from "@main/settings/UploadSettings";
-import fetch from 'node-fetch';
+import fetch, {Headers} from 'node-fetch';
 const FormData = require('formdata-node');
 const log = require('electron-log');
 
@@ -56,7 +56,13 @@ export class FileUploader {
                 this.parseResults({status: false, message: "Failed HTTP send, see logs for details"})
                 log.info('error parsing', e);
             });*/
-        this.connect(urlBase + "api/upload.php?" + endPoint, { method: "post", body: data.stream, headers: data.headers, mode: "no-cors"});
+        let headers = data.headers;
+        if(this._settings.getUsername() !== '') {
+            headers = new Headers();
+            headers.append('Content-Type', data.headers["Content-Type"]);
+            headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
+        }
+        this.connect(urlBase + "api/upload.php?" + endPoint, { method: "post", body: data.stream, headers: headers, mode: "no-cors"});
     }
 
     async connect(url, data) {
@@ -65,7 +71,7 @@ export class FileUploader {
         if (connection.headers.has('content-type') && connection.headers.get('content-type') === "application/json") {
             connection.json().then(data => this.parseResults(data)).catch(e => {
                 backup.text().then(text => {
-                    this.parseResults({status: false, message: "Failed HTTP send, see logs for details"});
+                    this.parseResults({status: false, message: "Failed HTTP send, see logs for details - " + backup.status});
                     log.info('error parsing', e);
                     log.info('RESPONSE TEXT: ', text);
                 });

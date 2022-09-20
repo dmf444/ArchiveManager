@@ -2,7 +2,7 @@ import {FileModel} from '@main/file/FileModel';
 import * as fs from 'fs';
 import {getDescriptionReader, getFileDatabase, getFileManager, getMainWindow, getSettingsManager} from "@main/main";
 import {UploadSettings} from "@main/settings/UploadSettings";
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 const FormData = require('formdata-node');
 const log = require('electron-log');
 

@@ -18,6 +18,9 @@ import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
 import {Authentication} from "@main/google/Authentication";
 import {YoutubeDlpManager} from '@main/youtubedl/YoutubeDlpManager';
+import {IWebDatabase} from "@main/database/IWebDatabase";
+import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
+import {WebDatabaseHttp} from "@main/database/WebDatabaseHttp";
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -29,7 +32,7 @@ var bot: Bot;
 var db = null;
 var settings: SettingsManager;
 var events = new EventDispatcher<notificationPackage>();
-let webDatabase: WebDatabase;
+let webDatabase: IWebDatabase;
 let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
 let dlpManager: YoutubeDlpManager;
@@ -170,7 +173,14 @@ app.whenReady().then(() => {
     settings = new SettingsManager(db);
     descFileReader = new DescriptionFileReader();
     descFileReader.initializeFolder(filePath);
-    webDatabase = new WebDatabase();
+
+    let uploadSetting: WebDatabaseSettings = <WebDatabaseSettings>getSettingsManager().getSettings("remotedb");
+    if(uploadSetting.hostAddr != "" && uploadSetting.databaseName != "" && uploadSetting.username != "") {
+        webDatabase = new WebDatabase();
+    } else {
+        webDatabase = new WebDatabaseHttp();
+    }
+
     googleManager = new Authentication();
     fileManager = new FileManager();
 

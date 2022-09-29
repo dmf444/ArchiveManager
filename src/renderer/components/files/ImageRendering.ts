@@ -3,6 +3,9 @@
 //let decode = require('image-decode');
 //let encode = require('image-encode');
 
+import log from "electron-log";
+import {RcFile} from "antd/es/upload";
+
 /**
  * SOURCE: https://github.com/renanbastos93/image-to-base64/blob/master/image-to-base64.js
  *
@@ -48,8 +51,15 @@ export class ImageRendering {
         }
     }
 
-    public static imageToBase64(urlOrImage) {
-        return ImageRendering.isImage(urlOrImage);
+    public static async imageToBase64(urlOrImage): Promise<string> {
+        log.info(urlOrImage);
+        return new Promise<string>((resolve, reject) => {
+            let reader = new FileReader();
+            let file: File = new File()
+            reader.readAsDataURL(urlOrImage);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+        });
     }*/
 
 

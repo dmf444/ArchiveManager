@@ -39,7 +39,7 @@ export class Group extends React.Component<{ insHeader: any }, groupState> {
     }
 
     public shouldShowGroup() {
-        return this.state.editingFile != null && !this.state.isUploading;
+        return this.state.group != null && !this.state.isUploading && this.state.editingFile == null;
     }
 
     public render() {

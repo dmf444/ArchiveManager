@@ -22,8 +22,9 @@ export class ContentSurround extends React.Component{
 
     state = {
         collapsed: false,
-        currentSelection: 'Group',
-        headerBarContent: null
+        currentSelection: 'Home',
+        headerBarContent: null,
+        editingContent: { id: null, type: null }
     };
 
     constructor(props) {
@@ -59,7 +60,7 @@ export class ContentSurround extends React.Component{
     };
 
     changeToFiles = () => {
-        this.setState({ currentSelection: 'Files', headerBarContent: null });
+        this.setState({ currentSelection: 'Files', headerBarContent: null, editingContent: { id: null, type: null } });
     }
 
     changeToSettings = () => {
@@ -72,6 +73,13 @@ export class ContentSurround extends React.Component{
 
     insertHeader = (header: any) => {
         this.setState({headerBarContent: header});
+    }
+
+    updateEditingType = (type: 'group' | 'file', id: number) => {
+        this.setState({editingContent: {id: id, type: type}});
+        if(type == 'group') {
+            this.setState({currentSelection: 'Group'});
+        }
     }
 
     render() {
@@ -103,10 +111,10 @@ export class ContentSurround extends React.Component{
                     <Content style={{ margin: '24px 16px 0', overflow: 'initial' }} >
                         <div className='site-layout-background' style={{ padding: 24, textAlign: 'center' }}>
                             {this.state.currentSelection == 'Home' && <Home {...this.props} />}
-                            {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader}/>}
+                            {this.state.currentSelection == 'Files' && <Files insHeader={this.insertHeader} setEditing={this.updateEditingType}/>}
                             {this.state.currentSelection == 'Settings' && <Settings {...this.props} />}
                             {this.state.currentSelection == 'Info' && <Info />}
-                            <Group insHeader={this.insertHeader}/>
+                            {this.state.currentSelection == 'Group' && <Group insHeader={this.insertHeader} groupId={this.state.editingContent.id} openFilePage={this.changeToFiles}/>}
                         </div>
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>DMF Productions ©2020 Created by DMF & PO</Footer>

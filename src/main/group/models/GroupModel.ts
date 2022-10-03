@@ -25,16 +25,56 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         return this._fileModels;
     }
 
+    public getYear(): string {
+        return this._year;
+    }
+
+    public setYear(year: string): void {
+        this._year = year;
+    }
+
+    public getContainer(): number {
+        return this._container;
+    }
+
+    public setContainer(container: number): void {
+        this._container = container;
+    }
+
+    public getTags(): string[] {
+        return this._tags;
+    }
+
+    public setTags(tags: string[]): void {
+        this._tags = tags;
+    }
+
+    public getDescription(): string {
+        return this._desc;
+    }
+
+    public setDescription(desc: string): void {
+        this._desc = desc;
+    }
+
+    public getRestriction(): number {
+        return this._restrictions;
+    }
+
+    public setRestriction(restriction: number) {
+        this._restrictions = restriction;
+    }
+
     private _id: number;
     private _name: string;
-    private _year: number;
+    private _year: string;
     private _container: number;
     private _restrictions: number;
     private _tags: string[];
     private _desc: string;
     private _fileModels: FileModel[];
 
-    constructor(id: number, name: string, year: number, container: number, restriction: number, tags: string[], desc: string, models: FileModel[]) {
+    constructor(id: number, name: string, year: string, container: number, restriction: number, tags: string[], desc: string, models: FileModel[]) {
         this._id = id;
         this._name = name;
         this._year = year;

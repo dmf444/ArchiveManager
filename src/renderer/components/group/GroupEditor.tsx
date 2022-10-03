@@ -7,17 +7,20 @@ import {RestrictionSelection} from "@/renderer/components/common/RestrictionSele
 import {TagSelection} from "@/renderer/components/common/TagSelection";
 import {FileColumns} from "@/renderer/components/common/FileColumns";
 import {GroupModel} from "@main/group/models/GroupModel";
+import log from 'electron-log';
+import {FileModel} from '@main/file/FileModel';
+import moment from 'moment';
 const { TextArea } = Input;
 
 
-export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel }, {}> {
+export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel, openFilePage: () => void }, {}> {
 
     constructor(props) {
         super(props);
         this.props.insHeader(
             <Row>
                 <Col span={12}>
-                    <Button /*onClick={this.props.infoClose}*/><LeftOutlined />Save & Return</Button>
+                    <Button onClick={this.props.openFilePage}><LeftOutlined />Save & Return</Button>
                 </Col>
                 <Col span={3} offset={5}>
                     <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} /*onConfirm={() => {ipcRenderer.send('file_upload', this.props.editingCard.id); this.props.uploadSwitch()}}*/>
@@ -33,6 +36,14 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
         );
     }
 
+    componentDidMount() {
+        ipcRenderer.send('group_start_editing', this.props.groupModel.id);
+    }
+
+    componentWillUnmount() {
+        ipcRenderer.send('group_save_editing', '')
+    }
+
     private getFiles() {
         if (this.props.groupModel == null) return [];
         return this.props.groupModel.getFiles();
@@ -43,12 +54,34 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
     private onInputChange(e) {
         //log.info(name, e.target.value);
         clearTimeout(this.textTimer);
-        this.textTimer = setTimeout(this.updateText.bind(this), 750, e.target.value);
+        this.textTimer = setTimeout(this.updateText.bind(this), 750, e.target.value, 'group_edit_description');
     }
 
-    private updateText(text: string) {
-        ipcRenderer.send('group_edit_description', text);
+    private nameTimer = null;
+    private onNameChange(e) {
+        clearTimeout(this.nameTimer);
+        this.nameTimer = setTimeout(this.updateText.bind(this), 750, e.target.value, 'group_edit_name');
     }
+
+    private updateText(text: string, target: string) {
+        ipcRenderer.send(target, text);
+    }
+
+    sendDateChange = (date, dateString: string) => {
+        ipcRenderer.send('group_edit_date', dateString);
+    };
+
+    openFolder = (e) => {
+        if(this.props.groupModel.getFiles().length > 0) {
+            let fileMdoel = FileModel.fromJson({});
+            Object.assign(fileMdoel, this.props.groupModel.getFiles()[0]);
+            ipcRenderer.send('shell_open_file', fileMdoel.savedLocation);
+        }
+    }
+
+    getDateMoment = () => {
+        return this.props.groupModel.getYear() == "" ? null : moment(this.props.groupModel.getYear(), "YYYY");
+    };
 
     public render() {
         return (
@@ -58,15 +91,23 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
                         <Typography.Title style={{ marginBottom: 0 }}>Group #{this.props.groupModel.id}</Typography.Title>
                     </Col>
                     <Col span={12} style={{display:"flex", justifyContent: "flex-end", alignItems: 'center'}}>
-                        <Button>Open Folder</Button>
+                        <Button onClick={this.openFolder}>Open Folder</Button>
                     </Col>
                 </Row>
-                <Form layout={"vertical"}>
+                <Form layout={"vertical"} initialValues={{
+                    file_name: this.props.groupModel.getName(),
+                    year: this.getDateMoment(),
+                    container_sel: this.props.groupModel.getContainer(),
+                    description: this.props.groupModel.getDescription(),
+                    restriction: this.props.groupModel.getRestriction(),
+                    file_tags: this.props.groupModel.getTags()
+
+                }}>
                     <Divider orientation={ "left" }>Group Info</Divider>
                     <Row gutter={[40, 16]}>
                         <Col span={8}>
                             <Form.Item label={"File Name"} name={"file_name"}>
-                                <Input placeholder={"file_name.info"} /* onChange={this.fileNameChange} *//>
+                                <Input placeholder={"file_name.info"} onChange={event => this.onNameChange(event)}/>
                             </Form.Item>
                         </Col>
                     </Row>
@@ -75,7 +116,7 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
                     <Row gutter={[40, 16]}>
                         <Col span={8}>
                             <Form.Item label={"File Year"} name={"year"}>
-                                <DatePicker picker="year" style={{width: "100%"}} /* onChange={this.sendDateChange} */ />
+                                <DatePicker picker="year" style={{width: "100%"}} onChange={this.sendDateChange} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>

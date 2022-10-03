@@ -9,7 +9,12 @@ type groupState = {
     group: GroupModel,
     editingFile: number
 }
-export class Group extends React.Component<{ insHeader: any }, groupState> {
+type groupProps = {
+    insHeader: (headerContent: React.ReactNode) => void,
+    groupId: number,
+    openFilePage: () => void
+}
+export class Group extends React.Component<groupProps, groupState> {
 
     state = {
         isUploading: false,
@@ -25,7 +30,7 @@ export class Group extends React.Component<{ insHeader: any }, groupState> {
     }
 
     componentDidMount(): void {
-        ipcRenderer.send('group_get_content', 0);
+        ipcRenderer.send('group_get_content', this.props.groupId);
     }
 
     componentWillUnmount(): void {
@@ -33,7 +38,7 @@ export class Group extends React.Component<{ insHeader: any }, groupState> {
     }
 
     updateGroup(event, args: GroupModel){
-        let group = new GroupModel(-1, '', -1, -1, -1, [], '', []);
+        let group = new GroupModel(-1, '', '', -1, -1, [], '', []);
         Object.assign(group, args);
         this.setState({group: group});
     }
@@ -45,7 +50,7 @@ export class Group extends React.Component<{ insHeader: any }, groupState> {
     public render() {
         return (
             <div>
-                {this.shouldShowGroup() && <GroupEditor groupModel={this.state.group} insHeader={this.props.insHeader}/>}
+                {this.shouldShowGroup() && <GroupEditor groupModel={this.state.group} insHeader={this.props.insHeader} openFilePage={this.props.openFilePage}/>}
             </div>
         );
     }

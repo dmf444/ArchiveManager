@@ -12,6 +12,8 @@ import {FileInfo} from './files/FileInfo';
 import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {Uploader} from "@/renderer/components/files/Uploader";
+import {GroupModel} from '@main/group/models/GroupModel';
+import {FileColumns} from '@/renderer/components/common/FileColumns';
 
 interface CardInfoProps {
     cardInfoOpen: boolean
@@ -19,14 +21,14 @@ interface CardInfoProps {
 
 interface CardInfoState {
     cardInfoOpen: boolean,
-    allCards: FileModel[],
+    allCards: (FileModel|GroupModel)[],
     newCards: FileModel[],
     currentEditingCard: FileModel,
     uploadingPage: boolean
 }
 
-export class Files extends React.Component<{insHeader: any}, CardInfoState> {
-    
+export class Files extends React.Component<{insHeader: any, setEditing: (type: 'group' | 'file', id: number) => void}, CardInfoState> {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -42,6 +44,7 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         ipcRenderer.on('files_get_normal_reply', this.updateAllCardsState);
         this.updateNewCardState = this.updateNewCardState.bind(this);
         ipcRenderer.on('files_get_new_reply', this.updateNewCardState);
+
     }
 
     componentDidMount(): void {
@@ -54,11 +57,18 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
         ipcRenderer.removeListener('files_get_new_reply', this.updateNewCardState);
     }
 
-    updateAllCardsState(event, args: FileModel[]){
+    updateAllCardsState(event, args: (FileModel|GroupModel)[]){
         this.setState({allCards: args});
     }
 
-    setEditingFile = (file: FileModel) => {
+    setEditingFile = (file: FileModel|GroupModel) => {
+        if(file instanceof GroupModel) {
+            this.props.setEditing('group', file.id);
+            return;
+        }
+        if(!(file instanceof FileModel)){
+            FileModel.fromJson(file);
+        }
         this.setState({currentEditingCard: file});
     }
 
@@ -77,7 +87,9 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
 
     openFileInfo = (event: React.MouseEvent) => {
         event.preventDefault();
-        this.setState({cardInfoOpen: true});
+        if(this.state.currentEditingCard != null) {
+            this.setState({cardInfoOpen: true});
+        }
         return {CardInfoProps : this.state.cardInfoOpen};
     }
 
@@ -141,15 +153,15 @@ export class Files extends React.Component<{insHeader: any}, CardInfoState> {
     }
 
     render() {
-        return( 
+        return(
             <div className="filesComp">
                 <div className="files" style={{ display: !this.state.cardInfoOpen ? "block" : "none"}}>
                     {this.generateNew()}
                     <Divider orientation={'left'}>Files</Divider>
-                    {this.generateCards(this.state.allCards)}
+                    <FileColumns fileCardList={this.state.allCards} deleteFileHandler={this.removeFileFromUI} openEditorCallback={this.openFileInfo} setActiveCardCallback={this.setEditingFile}/>
                 </div>
-                
-                {this.state.cardInfoOpen && !this.state.uploadingPage && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader} editingCard={FileModel.fromJson(this.state.currentEditingCard)} uploadSwitch={() => {this.setState({uploadingPage: true})}}/>}
+
+                {this.state.cardInfoOpen && !this.state.uploadingPage && <FileInfo infoClose={this.closeFileInfo} insertHeaderFunc={this.props.insHeader} editingCard={this.state.currentEditingCard} uploadSwitch={() => {this.setState({uploadingPage: true})}}/>}
                 {this.state.uploadingPage && <Uploader headerControl={this.props.insHeader} fileId={this.state.currentEditingCard.id} resetFiles={this.closeUploadingPage}/>}
             </div>
         );

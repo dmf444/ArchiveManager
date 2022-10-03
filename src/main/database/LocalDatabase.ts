@@ -145,6 +145,10 @@ export class FileDatabase {
         }
     }
 
+    public getAllGroups(): GroupModel[] {
+        return this.database.get('groups').value();
+    }
+
     public addNewUpload(data) {
         let dataSpot = this.database.get('uploadhist');
         if(dataSpot == null){

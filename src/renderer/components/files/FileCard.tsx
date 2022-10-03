@@ -61,7 +61,7 @@ export class FileCard extends React.Component<FileProps, {}>{
 
     getActionButton = () => {
         if(this.props.cardInfo instanceof FileModel) {
-            let cardinal: any = FileState[this.props.cardInfo.state];
+            let cardinal: number = this.props.cardInfo.state;
             if(cardinal === FileState.DUPLICATE.valueOf()) {
                 return <DeleteTwoTone style={{fontSize: "2em"}} onClick={this.deleteFile}/>;
             } else if(cardinal == FileState.NEW.valueOf() && this.props.cardInfo.url != ""){
@@ -73,7 +73,7 @@ export class FileCard extends React.Component<FileProps, {}>{
 
     getCardStyle = () => {
         if(this.props.cardInfo instanceof FileModel) {
-            let cardinal: any = FileState[this.props.cardInfo.state];
+            let cardinal: number = this.props.cardInfo.state;
             if (cardinal === FileState.DUPLICATE.valueOf()) {
                 return {width: "100%", borderColor: "purple"};
             } else if (cardinal === FileState.ERROR.valueOf()) {

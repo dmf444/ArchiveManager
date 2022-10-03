@@ -19,6 +19,9 @@ import {FileUploader} from '@main/FileUploader';
 import {Authentication} from "@main/google/Authentication";
 import {YoutubeDlpManager} from '@main/youtubedl/YoutubeDlpManager';
 import {GroupManager} from "@main/group/GroupManager";
+import {FileModel} from '@main/file/FileModel';
+import {GroupModel} from '@main/group/models/GroupModel';
+import {GroupEditBuilder} from '@main/group/controller/GroupEditBuilder';
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -35,6 +38,7 @@ let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
 let dlpManager: YoutubeDlpManager;
 let fileUpdateBuilder: FileEditBuilder = null;
+let groupUpdateBuilder: GroupEditBuilder = null;
 let tray = null;
 let descFileReader: DescriptionFileReader = null;
 let googleManager: Authentication = null;
@@ -78,6 +82,10 @@ export function getYoutubeDlpManager() {
 
 export function getFileUpdater() {
     return fileUpdateBuilder;
+}
+
+export function getGroupUpdater() {
+    return groupUpdateBuilder;
 }
 
 export function getMainWindow() {
@@ -237,7 +245,8 @@ ipcMain.on('files_get_new', function(event, arg) {
 });
 
 ipcMain.on('files_get_normal', function(event, arg) {
-    event.sender.send('files_get_normal_reply', db.getNonNewFiles());
+    let data: (FileModel|GroupModel)[] = db.getNonNewFiles().concat(db.getAllGroups());
+    event.sender.send('files_get_normal_reply', data);
 });
 
 ipcMain.on('homepage_url_add', function (event, arg) {
@@ -362,4 +371,13 @@ ipcMain.on('import_directory', function (event, args: {type: "grouped" | "indivi
 
 ipcMain.on('group_get_content', function (event, args: number) {
    event.sender.send('group_get_content_reply', getFileDatabase().getGroupById(args));
+});
+
+ipcMain.on('group_start_editing', function (event, arg) {
+    groupUpdateBuilder = new GroupEditBuilder(getFileDatabase().getGroupById(arg));
+});
+
+ipcMain.on('group_save_editing', function (event, arg) {
+    groupUpdateBuilder.commit();
+    sendSuccess("File Saved!", "Successfully saved the file metadata.");
 });

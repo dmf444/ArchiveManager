@@ -22,6 +22,7 @@ import {GroupManager} from "@main/group/GroupManager";
 import {FileModel} from '@main/file/FileModel';
 import {GroupModel} from '@main/group/models/GroupModel';
 import {GroupEditBuilder} from '@main/group/controller/GroupEditBuilder';
+import * as fs from 'fs';
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -380,4 +381,9 @@ ipcMain.on('group_start_editing', function (event, arg) {
 ipcMain.on('group_save_editing', function (event, arg) {
     groupUpdateBuilder.commit();
     sendSuccess("File Saved!", "Successfully saved the file metadata.");
+});
+
+ipcMain.on("chooseFile", (event, arg) => {
+    const base64 = fs.readFileSync(arg).toString('base64');
+    event.sender.send("chooseFile", base64);
 });

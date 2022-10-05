@@ -67,9 +67,9 @@ export class Files extends React.Component<{insHeader: any, setEditing: (type: '
             return;
         }
         if(!(file instanceof FileModel)){
-            FileModel.fromJson(file);
+            let info = FileModel.fromJson(file);
+            this.setState({currentEditingCard: info});
         }
-        this.setState({currentEditingCard: file});
     }
 
     updateNewCardState(event, args: FileModel[]) {

@@ -258,7 +258,11 @@ ipcMain.on('status_box_discord_get', function(event, arg) {
 });
 
 ipcMain.on('status_box_webdb_get', function(event, arg) {
-    event.sender.send('status_box_webdb_reply', webDatabase.isConnected());
+    event.sender.send('status_box_webdb_reply', webDatabase.isConnected() && webDatabase instanceof WebDatabase);
+});
+
+ipcMain.on('status_box_remotedb_get', function(event, arg) {
+    event.sender.send('status_box_remotedb_reply', webDatabase.isConnected() && webDatabase instanceof WebDatabaseHttp);
 });
 
 ipcMain.on('file_delete', function(event, arg) {

@@ -1,6 +1,7 @@
 import {getEventsDispatcher, getSettingsManager, reloadWebDatabase} from "@main/main";
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {notificationPackage} from "@main/Events";
+import {IWebDatabase} from "@main/database/IWebDatabase";
 
 
 const {Sequelize, Model, Op} = require('sequelize');
@@ -18,7 +19,7 @@ class Tags extends Model {
 
 }
 
-export class WebDatabase {
+export class WebDatabase implements IWebDatabase {
 
     private connected: boolean = false;
 

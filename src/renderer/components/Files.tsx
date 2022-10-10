@@ -61,15 +61,16 @@ export class Files extends React.Component<{insHeader: any, setEditing: (type: '
         this.setState({allCards: args});
     }
 
-    setEditingFile = (file: FileModel|GroupModel) => {
+    setEditingFile = (file: FileModel|GroupModel, callbackFunc: () => void = null) => {
         if(file instanceof GroupModel) {
             this.props.setEditing('group', file.id);
             return;
         }
         if(!(file instanceof FileModel)){
             let info = FileModel.fromJson(file);
-            this.setState({currentEditingCard: info});
+            this.setState({currentEditingCard: info}, callbackFunc);
         }
+        this.setState({currentEditingCard: file}, callbackFunc);
     }
 
     updateNewCardState(event, args: FileModel[]) {
@@ -114,49 +115,12 @@ export class Files extends React.Component<{insHeader: any, setEditing: (type: '
         ipcRenderer.send('files_get_new', []);
     }
 
-    buildColumns(startIndex: number, files?: FileModel[]) {
-        var rowRenderData = [];
-        let models: FileModel[] = files.slice(startIndex, startIndex+3);
-        for(let i = 0; i < models.length; i++) {
-            let keyBase: string = "row" + startIndex + "_col" + i;
-            rowRenderData.push(
-                <Col span={8} key={keyBase + "_column"}>
-                    <FileCard infoOpen={this.openFileInfo} filterFile={this.removeFileFromUI} cardInfo={models[i]} key={keyBase + "_card"} setCardEditing={this.setEditingFile}/>
-                </Col>
-            );
-        }
-        return rowRenderData;
-    }
-
-    generateCards = (files?: FileModel[]) => {
-        var fileRenderData = [];
-        if(files != null){
-            for (let i = 0; i < files.length; i=i+3){
-                fileRenderData.push(
-                    <Row gutter={[8,8]} key={"row" + i}>
-                        {this.buildColumns(i, files)}
-                    </Row>
-                );
-            }
-        }
-
-        return fileRenderData;
-    }
-
-    generateNew = () => {
-        var fileRenderData = [];
-        if(this.state.newCards != null){
-            fileRenderData.push(<Divider key={"new_files"} orientation={'left'}>New</Divider>);
-            fileRenderData.push(this.generateCards(this.state.newCards));
-        }
-        return fileRenderData;
-    }
-
     render() {
         return(
             <div className="filesComp">
                 <div className="files" style={{ display: !this.state.cardInfoOpen ? "block" : "none"}}>
-                    {this.generateNew()}
+                    <Divider key={"new_files"} orientation={'left'}>New</Divider>
+                    <FileColumns fileCardList={this.state.newCards} deleteFileHandler={this.removeFileFromUI} openEditorCallback={this.openFileInfo} setActiveCardCallback={this.setEditingFile}/>
                     <Divider orientation={'left'}>Files</Divider>
                     <FileColumns fileCardList={this.state.allCards} deleteFileHandler={this.removeFileFromUI} openEditorCallback={this.openFileInfo} setActiveCardCallback={this.setEditingFile}/>
                 </div>

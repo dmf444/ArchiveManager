@@ -3,16 +3,19 @@ import {FileState} from "@main/file/FileState";
 import {getFileDatabase, getFileUpdater} from "@main/main";
 import {ipcMain} from 'electron';
 import {FileUtils} from "@main/downloader/FileUtils";
+import {GroupModel} from "@main/group/models/GroupModel";
 
 const log = require('electron-log');
 
 export class FileEditBuilder {
 
     private currentFile: FileModel;
+    private groupParent: GroupModel;
     private fileAdded: boolean = false;
 
-    constructor(file: FileModel) {
+    constructor(file: FileModel, groupParent: GroupModel = null) {
         this.currentFile = file;
+        this.groupParent = groupParent;
     }
 
 
@@ -77,7 +80,12 @@ export class FileEditBuilder {
             this.currentFile.fileMetadata.extraFile = FileUtils.moveFileByPath(this.currentFile.fileMetadata.extraFile);
             this.fileAdded = false;
         }
-        getFileDatabase().updateFile(this.currentFile);
+        if(this.groupParent == null) {
+            getFileDatabase().updateFile(this.currentFile);
+        } else {
+            this.groupParent.replaceFileModel(this.currentFile);
+            getFileDatabase().updateGroup(this.groupParent);
+        }
     }
 }
 

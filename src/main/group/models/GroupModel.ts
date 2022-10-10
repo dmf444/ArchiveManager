@@ -65,6 +65,22 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         this._restrictions = restriction;
     }
 
+    public replaceFileModel(fileModel: FileModel) {
+        for(let i = 0; i < this._fileModels.length; i++){
+            let model: FileModel = this._fileModels[i];
+            if(model.id == fileModel.id) {
+                this._fileModels[i] = fileModel;
+                return;
+            }
+        }
+    }
+
+    public findFileById(fileModelId: number) {
+        return this._fileModels.find((fileModel) => {
+            return fileModel.id == fileModelId;
+        })
+    }
+
     private _id: number;
     private _name: string;
     private _year: string;

@@ -6,6 +6,10 @@ export class FileModel {
     get fileMetadata(): FileUploadData {
         return this._fileMetadata;
     }
+    set fileMetadata(meta: FileUploadData)  {
+        this._fileMetadata = meta;
+    }
+
     get md5(): string {
         return this._md5;
     }

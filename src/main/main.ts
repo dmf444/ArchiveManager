@@ -300,7 +300,12 @@ ipcMain.on('file_redownload', function (event, arg) {
 });
 
 ipcMain.on('file_edit_start', function (event, arg) {
-    fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
+    if(arg.length == 2) {
+        let group: GroupModel = getFileDatabase().getGroupById(arg[0]);
+        fileUpdateBuilder = new FileEditBuilder(group.findFileById(arg[1]), group);
+    } else {
+        fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
+    }
 });
 
 ipcMain.on('file_edit_save', function (event, arg) {
@@ -380,10 +385,14 @@ ipcMain.on('group_start_editing', function (event, arg) {
 
 ipcMain.on('group_save_editing', function (event, arg) {
     groupUpdateBuilder.commit();
-    sendSuccess("File Saved!", "Successfully saved the file metadata.");
+    sendSuccess("Group Info Saved!", "Successfully saved the group metadata.");
 });
 
 ipcMain.on("chooseFile", (event, arg) => {
-    const base64 = fs.readFileSync(arg).toString('base64');
-    event.sender.send("chooseFile", base64);
+    let clip: number = arg.lastIndexOf(".");
+    let filetype = arg.substring(clip + 1);
+    if(["jpg", "jpeg", "png", "gif", "webp"].includes(filetype.toLowerCase())) {
+        const base64 = fs.readFileSync(arg).toString('base64');
+        event.sender.send("chooseFile", base64);
+    }
 });

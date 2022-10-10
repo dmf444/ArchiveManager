@@ -13,7 +13,7 @@ import moment from 'moment';
 const { TextArea } = Input;
 
 
-export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel, openFilePage: () => void }, {}> {
+export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel, openFilePage: () => void, openFileEditor: (model: FileModel|GroupModel, callbackFn: () => void) => void }, {}> {
 
     constructor(props) {
         super(props);
@@ -80,8 +80,10 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
     }
 
     getDateMoment = () => {
-        return this.props.groupModel.getYear() == "" ? null : moment(this.props.groupModel.getYear(), "YYYY");
+        return this.props.groupModel.getYear() == "" || this.props.groupModel.getYear() == null ? null : moment(this.props.groupModel.getYear(), "YYYY");
     };
+
+
 
     public render() {
         return (
@@ -143,7 +145,7 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
                 </Form>
 
                 <Divider orientation={"left"}>Files</Divider>
-                { this.getFiles().length > 0 && <FileColumns fileCardList={this.getFiles()} deleteFileHandler={() => {}} openEditorCallback={() => {}} setActiveCardCallback={() => {}}/> }
+                { this.getFiles().length > 0 && <FileColumns fileCardList={this.getFiles()} deleteFileHandler={() => {}} openEditorCallback={() => {}} setActiveCardCallback={this.props.openFileEditor}/> }
                 { this.getFiles().length == 0 && <Empty description={"No files are attached to this group."}/> }
             </div>
         );

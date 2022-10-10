@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, Popconfirm, Upload} from 'antd';
+import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, Popconfirm, Upload, Empty} from 'antd';
 import {ImageRendering} from "@/renderer/components/files/ImageRendering";
 
 const { Option } = Select;
@@ -23,7 +23,8 @@ interface FileProps {
     infoClose: (event: React.MouseEvent) => void
     insertHeaderFunc: any,
     editingCard: FileModel,
-    uploadSwitch: () => void
+    uploadSwitch: () => void,
+    grouped: boolean
 }
 
 interface FileInfoState {
@@ -33,25 +34,39 @@ interface FileInfoState {
 
 export class FileInfo extends React.Component<FileProps, FileInfoState>{
 
+    static defaultProps = {
+        uploadSwitch: () => {},
+        grouped: false
+    }
+
     constructor(props) {
         super(props);
-        this.props.insertHeaderFunc(
-            <Row>
-                <Col span={12}>
-                    <Button onClick={this.props.infoClose}><LeftOutlined />Save & Return</Button>
-                </Col>
+        let adds = [];
+        if(!this.props.grouped) {
+            adds.push(
                 <Col span={3} offset={5}>
                     <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} onConfirm={() => {ipcRenderer.send('file_upload', this.props.editingCard.id); this.props.uploadSwitch()}}>
                         <Button type="primary" icon={<CloudUploadOutlined />} block={true}>Upload</Button>
                     </Popconfirm>
                 </Col>
+            );
+            adds.push(
                 <Col span={3} offset={1}>
                     <Popconfirm placement="bottomRight" title={"Are you sure you want to delete this file?"} onConfirm={this.deleteFile} okText="Yes" cancelText="No">
                         <Button type={"primary"} danger={true}><DeleteOutlined />Delete File</Button>
                     </Popconfirm>
                 </Col>
+            );
+        }
+        let base = (
+            <Row>
+                <Col span={12}>
+                    <Button onClick={this.props.infoClose}><LeftOutlined />Save & Return</Button>
+                </Col>
+                { adds }
             </Row>
         );
+        this.props.insertHeaderFunc(base);
         this.state = {
             options: [<Option value={"Default Downloader"} key={"dd_001"}>Default Downloader</Option>],
             imageData: null
@@ -67,11 +82,11 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
     componentDidMount(): void {
         ipcRenderer.send('get_downloaders', []);
         ipcRenderer.send('chooseFile', this.props.editingCard.savedLocation);
-        //this.renderImagePreview();
     }
 
     componentWillUnmount(): void {
         ipcRenderer.removeListener('get_downloaders_reply', this.updateDownloaderOptions);
+        ipcRenderer.removeListener('chooseFile', this.renderImagePreview);
     }
 
     updateDownloaderOptions(event, args: string[]){
@@ -114,8 +129,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
     renderImagePreview(event, base64) {
         let clip: number = this.props.editingCard.savedLocation.lastIndexOf(".");
         let filetype = this.props.editingCard.savedLocation.substring(clip + 1);
-        log.info(filetype.toLowerCase());
-        if(["jpg", "jpeg", "png", "gif", "tiff", "tif", "webp", "raw"].includes(filetype.toLowerCase())){
+        if(["jpg", "jpeg", "png", "gif", "webp"].includes(filetype.toLowerCase())){
             let middleman = filetype;
             if(filetype == "jpg" || filetype == "tiff" || filetype == "tif" || filetype == "webp"){
                 middleman = "jpeg";
@@ -127,9 +141,17 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
 
     private getImagePreview() {
         if(this.state.imageData != null) {
-            return (<img src={this.state.imageData} alt={'preview'}/>);
+            return (
+                <div style={{height: "100%", width: "100%", position: "absolute", display: "flex", justifyContent: 'center', alignItems: "center", backgroundColor: "#333333", borderRadius: "9px"}}>
+                    <img src={this.state.imageData} alt={'preview'} style={{ maxHeight: "100%", maxWidth: "100%", position: "absolute", objectFit: "contain"}}/>
+                </div>
+            );
         } else {
-            return null;
+            return (
+                <div style={{height: "100%", width: "100%", position: "absolute", display: "flex", justifyContent: 'center', alignItems: "center", backgroundColor: "#333333", borderRadius: "9px"}}>
+                    <Empty description={false} />
+                </div>
+            );
         }
     }
 
@@ -180,32 +202,37 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                             </Col>
                         </Row>
 
-                        <Row gutter={[0, 16]}>
-                            <Form layout={"inline"} style={{width: "100%"}} initialValues={{ remember: true }} onFinish={this.redownloadForm}>
-                                <Col span={12}>
-                                    <Form.Item name={"downloader"}>
-                                        <Select style={{borderTopRightRadius: 0, borderBottomRightRadius: 0}} placeholder="Select a downloader">
-                                            {this.state.options}
-                                        </Select>
-                                    </Form.Item>
+                        {!this.props.grouped && this.props.editingCard.url != '' &&
+                            <Row gutter={[0, 16]}>
+                                <Form layout={"inline"} style={{width: "100%"}} initialValues={{ remember: true }} onFinish={this.redownloadForm}>
+                                    <Col span={12}>
+                                        <Form.Item name={"downloader"}>
+                                            <Select style={{borderTopRightRadius: 0, borderBottomRightRadius: 0}} placeholder="Select a downloader">
+                                                {this.state.options}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12} flex={"initial"}>
+                                        <Button type="primary" htmlType={"submit"} icon={<DownloadOutlined />} style={{paddingLeft: "10px", paddingRight: "10px", width: "125px", borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>Redownload</Button>
+                                    </Col>
+                                </Form>
+                            </Row>
+                        }
+                        {!this.props.grouped &&
+                            <Row gutter={[0, 16]}>
+                                <Col span={12} style={{textAlign: "left"}}>
+                                    <Upload multiple={false} onChange={this.attachExtraFile}
+                                            defaultFileList={this.getDefaultFile()}>
+                                        <Button><UploadOutlined/>Attach Secondary File</Button>
+                                    </Upload>
                                 </Col>
-                                <Col span={12} flex={"initial"}>
-                                    <Button type="primary" htmlType={"submit"} icon={<DownloadOutlined />} style={{paddingLeft: "10px", paddingRight: "10px", width: "125px", borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>Redownload</Button>
-                                </Col>
-                            </Form>
-                        </Row>
-                        <Row>
-                            <Col span={12} style={{textAlign: "left"}}>
-                                <Upload multiple={false} onChange={this.attachExtraFile} defaultFileList={this.getDefaultFile()}>
-                                    <Button><UploadOutlined />Attach Secondary File</Button>
-                                </Upload>
-                            </Col>
-                        </Row>
+                            </Row>
+                        }
                     </Col>
                 </Row>
 
                 <Divider orientation="left" style={{fontSize: "20px"}}>File Info</Divider>
-                <FileInfoMetadataForm editingCard={this.props.editingCard}/>
+                <FileInfoMetadataForm editingCard={this.props.editingCard} grouped={this.props.grouped}/>
             </div>
         );
     }

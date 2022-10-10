@@ -22,7 +22,7 @@ interface FileProps {
     infoOpen: (event: React.MouseEvent) => void,
     filterFile: (file: FileModel) => void,
     cardInfo: FileModel|GroupModel,
-    setCardEditing: (model: FileModel|GroupModel) => void
+    setCardEditing: (model: FileModel|GroupModel, callbackFn: () => void) => void
 }
 
 export class FileCard extends React.Component<FileProps, {}>{
@@ -68,7 +68,7 @@ export class FileCard extends React.Component<FileProps, {}>{
                 return <DownloadOutlined style={{fontSize: "2em", color: "#1890ff"}} onClick={this.downloadFile}/>;
             }
         }
-        return <EditTwoTone style={{fontSize: "2em"}} onClick={this.props.infoOpen}/>;
+        return <EditTwoTone style={{fontSize: "2em"}} onClick={this.clickHandler}/>;
     }
 
     getCardStyle = () => {
@@ -104,8 +104,8 @@ export class FileCard extends React.Component<FileProps, {}>{
     }
 
     clickHandler = (event) => {
-        this.props.setCardEditing(this.props.cardInfo);
-        this.props.infoOpen(event);
+        this.props.setCardEditing(this.props.cardInfo, () => { this.props.infoOpen(event) });
+        //this.props.infoOpen(event);
     }
 
     shortendName = () => {

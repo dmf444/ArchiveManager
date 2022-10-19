@@ -1,8 +1,9 @@
 import * as React from "react";
-import {Button, Descriptions, PageHeader, Row, Table, Tabs, Tag} from 'antd';
+import {Button, Descriptions, Empty, PageHeader, Row, Space, Table, Tabs, Tag} from 'antd';
 import {CheckCircleOutlined, CheckCircleTwoTone, CloseCircleTwoTone, CloudSyncOutlined} from "@ant-design/icons/lib";
 import {ipcRenderer} from "electron";
 import {DownloadTable} from '@/renderer/components/info/DownloadTable';
+import {FolderOpenOutlined} from "@ant-design/icons";
 const log = require('electron-log');
 const { TabPane } = Tabs;
 
@@ -37,6 +38,10 @@ export class Info extends React.Component {
 
     updateClicked = () => {
         ipcRenderer.send('info_update_request', '');
+    }
+
+    folderClicked = () => {
+        ipcRenderer.send('open_config_folder', '');
     }
 
     updateVersionInfo = (event, args) => {
@@ -105,7 +110,10 @@ export class Info extends React.Component {
                     backIcon={false}
                     title="Information"
                     extra={[
-                        <Button key="1" type="primary" onClick={this.updateClicked}><CloudSyncOutlined />Check For Updates</Button>
+                        <Space>
+                            <Button key="1" type="primary" onClick={this.updateClicked}><CloudSyncOutlined />Check For Updates</Button>
+                            <Button key={'2'} type={"default"} onClick={this.folderClicked}><FolderOpenOutlined/>Open Config Folder</Button>
+                        </Space>
                     ]}
                 >
                     <div className="content">
@@ -113,7 +121,9 @@ export class Info extends React.Component {
                     </div>
                 </PageHeader>
                 <Tabs>
-                    <TabPane tab={"Archive Policies"} key={"1"} style={{textAlign: "left"}}>Hello!</TabPane>
+                    <TabPane tab={"Archive Policies"} key={"1"} style={{textAlign: "left"}}>
+                        <Empty/>
+                    </TabPane>
                     <TabPane tab={"Upload History"} key={"2"} style={{textAlign: "left"}}>
                         <Table columns={this.columns} dataSource={this.state.uploadedFiles} />
                     </TabPane>

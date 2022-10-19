@@ -65,6 +65,22 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         this._restrictions = restriction;
     }
 
+    public getGroupId(): string {
+        return this._groupId;
+    }
+
+    public setGroupId(groupId: string): void {
+        this._groupId = groupId;
+    }
+
+    public getRootFolder(): string {
+        return this._groupPath;
+    }
+
+    public setRootFolder(folderPath: string): void {
+        this._groupPath = folderPath;
+    }
+
     public replaceFileModel(fileModel: FileModel) {
         for(let i = 0; i < this._fileModels.length; i++){
             let model: FileModel = this._fileModels[i];
@@ -73,6 +89,12 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
                 return;
             }
         }
+    }
+    public removeFileModel(fileModel: FileModel) {
+        let index = this._fileModels.findIndex((element) => {
+            return element.id == fileModel.id;
+        });
+        this._fileModels.slice(index, 1);
     }
 
     public findFileById(fileModelId: number) {
@@ -89,8 +111,10 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
     private _tags: string[];
     private _desc: string;
     private _fileModels: FileModel[];
+    private _groupId: string;
+    private _groupPath: string;
 
-    constructor(id: number, name: string, year: string, container: number, restriction: number, tags: string[], desc: string, models: FileModel[]) {
+    constructor(id: number, name: string, year: string, container: number, restriction: number, tags: string[], desc: string, models: FileModel[], groupId: string, groupPath: string) {
         this._id = id;
         this._name = name;
         this._year = year;
@@ -99,6 +123,8 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         this._tags = tags;
         this._desc = desc;
         this._fileModels = models;
+        this._groupId = (groupId === '' || groupId === null) ? null : groupId;
+        this._groupPath = groupPath;
     }
 
     static fromJson(modelJson: {}): GroupModel {
@@ -106,7 +132,7 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         modelJson['fileModels'].forEach((jsonObj) => {
             fileModels.push(FileModel.fromJson(jsonObj));
         });
-        return new GroupModel(modelJson['id'], modelJson['name'], modelJson['year'], modelJson['container'], modelJson['restriction'], modelJson['tags'], modelJson['desc'], fileModels);
+        return new GroupModel(modelJson['id'], modelJson['name'], modelJson['year'], modelJson['container'], modelJson['restriction'], modelJson['tags'], modelJson['desc'], fileModels, modelJson['group_id'], modelJson['group_path']);
     }
 
     toJson() {
@@ -122,7 +148,9 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
             restriction: this._restrictions,
             tags: this._tags,
             desc: this._desc,
-            fileModels: fileModelJson
+            fileModels: fileModelJson,
+            group_id: this._groupId,
+            group_path: this._groupPath
         };
     }
 

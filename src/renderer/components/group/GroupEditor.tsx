@@ -13,7 +13,7 @@ import moment from 'moment';
 const { TextArea } = Input;
 
 
-export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel, openFilePage: () => void, openFileEditor: (model: FileModel|GroupModel, callbackFn: () => void) => void }, {}> {
+export class GroupEditor extends React.Component<{ insHeader: any, groupModel: GroupModel, openFilePage: () => void, openFileEditor: (model: FileModel|GroupModel, callbackFn: () => void) => void, openGroupUploader: () => void }, {}> {
 
     constructor(props) {
         super(props);
@@ -23,12 +23,12 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
                     <Button onClick={this.props.openFilePage}><LeftOutlined />Save & Return</Button>
                 </Col>
                 <Col span={3} offset={5}>
-                    <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} /*onConfirm={() => {ipcRenderer.send('file_upload', this.props.editingCard.id); this.props.uploadSwitch()}}*/>
-                        <Button type="primary" icon={<CloudUploadOutlined />} block={true} disabled={true}>Upload</Button>
+                    <Popconfirm title={"Are you sure you want to upload the file?"} placement={"bottom"} onConfirm={() => {this.props.openGroupUploader()}}>
+                        <Button type="primary" icon={<CloudUploadOutlined />} block={true}>Upload</Button>
                     </Popconfirm>
                 </Col>
                 <Col span={3} offset={1}>
-                    <Popconfirm placement="bottomRight" title={"Are you sure you want to delete this file?"} /*onConfirm={this.deleteFile}*/ okText="Yes" cancelText="No">
+                    <Popconfirm placement="bottomRight" title={"Are you sure you want to delete this file?"} onConfirm={this.deleteGroup} okText="Yes" cancelText="No">
                         <Button type={"primary"} danger={true}><DeleteOutlined />Delete File</Button>
                     </Popconfirm>
                 </Col>
@@ -42,6 +42,11 @@ export class GroupEditor extends React.Component<{ insHeader: any, groupModel: G
 
     componentWillUnmount() {
         ipcRenderer.send('group_save_editing', '')
+    }
+
+    deleteGroup = () => {
+        ipcRenderer.send('group_delete', this.props.groupModel.id);
+        this.props.openFilePage();
     }
 
     private getFiles() {

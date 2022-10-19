@@ -4,6 +4,7 @@ import {getFileDatabase, getFileUpdater} from "@main/main";
 import {ipcMain} from 'electron';
 import {FileUtils} from "@main/downloader/FileUtils";
 import {GroupModel} from "@main/group/models/GroupModel";
+import {FileUploadData} from "@main/file/FileUploadData";
 
 const log = require('electron-log');
 
@@ -83,6 +84,14 @@ export class FileEditBuilder {
         if(this.groupParent == null) {
             getFileDatabase().updateFile(this.currentFile);
         } else {
+            if(this.currentFile.fileMetadata !== FileUploadData.fromJson({})) {
+                this.setNormalState();
+            } else {
+                if(this.currentFile.state == FileState.NORMAL) {
+                    this.currentFile.state = FileState.NEW;
+                }
+            }
+
             this.groupParent.replaceFileModel(this.currentFile);
             getFileDatabase().updateGroup(this.groupParent);
         }

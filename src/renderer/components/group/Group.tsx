@@ -4,6 +4,7 @@ import {GroupModel} from "@main/group/models/GroupModel";
 import {ipcRenderer} from "electron";
 import {FileInfo} from "@/renderer/components/files/FileInfo";
 import {FileModel} from "@main/file/FileModel";
+import {UploaderGroup} from "@/renderer/components/group/UploaderGroup";
 
 
 type groupState = {
@@ -40,7 +41,7 @@ export class Group extends React.Component<groupProps, groupState> {
     }
 
     updateGroup(event, args: GroupModel){
-        let group = new GroupModel(-1, '', '', -1, -1, [], '', []);
+        let group = new GroupModel(-1, '', '', -1, -1, [], '', [], '', null);
         Object.assign(group, args);
         this.setState({group: group});
     }
@@ -56,6 +57,11 @@ export class Group extends React.Component<groupProps, groupState> {
         this.setState({editingFile: file});
     }
 
+    confirmUploadAndSwitch = () => {
+        ipcRenderer.send('file_upload', this.props.groupId);
+        this.setState({isUploading: true});
+    }
+
     public shouldShowGroup() {
         return this.state.group != null && !this.state.isUploading && this.state.editingFile == null;
     }
@@ -63,8 +69,9 @@ export class Group extends React.Component<groupProps, groupState> {
     public render() {
         return (
             <div>
-                {this.shouldShowGroup() && <GroupEditor groupModel={this.state.group} insHeader={this.props.insHeader} openFilePage={this.props.openFilePage} openFileEditor={this.openFileAndChangePage}/>}
+                {this.shouldShowGroup() && <GroupEditor groupModel={this.state.group} insHeader={this.props.insHeader} openFilePage={this.props.openFilePage} openFileEditor={this.openFileAndChangePage} openGroupUploader={this.confirmUploadAndSwitch}/>}
                 { this.state.editingFile != null && <FileInfo infoClose={this.closeFileAndUpdate} insertHeaderFunc={this.props.insHeader} editingCard={this.state.editingFile} grouped={true} /> }
+                { this.state.isUploading && <UploaderGroup headerControl={this.props.insHeader} groupId={this.props.groupId} resetFiles={this.props.openFilePage}/> }
             </div>
         );
     }

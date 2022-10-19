@@ -7,8 +7,8 @@ const FormData = require('formdata-node');
 const log = require('electron-log');
 
 export class FileUploader {
-    private file: FileModel;
-    private _settings: UploadSettings;
+    protected file: FileModel;
+    protected _settings: UploadSettings;
 
     constructor(file) {
         this.file = file;
@@ -39,6 +39,9 @@ export class FileUploader {
         this.file.fileMetadata.tags.forEach(tag => {
             data.append('tags[]', tag);
         });
+        if(this.getGroup() != null) {
+            data.set('group_id', this.getGroup());
+        }
 
         let urlBase = this._settings.getUrl();
         if(urlBase.slice(-1) !== "/") urlBase += "/";
@@ -82,7 +85,7 @@ export class FileUploader {
         }
     }
 
-    private parseResults(data) {
+    protected parseResults(data) {
         let date = new Date();
         let uploadAttempt = { intid: this.file.id, name: this.file.fileName, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes() };
         let window = getMainWindow();
@@ -108,6 +111,10 @@ export class FileUploader {
             }
         });
         return JSON.stringify(json);
+    }
+
+    protected getGroup(): string {
+        return null;
     }
 
 }

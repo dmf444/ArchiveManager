@@ -304,6 +304,10 @@ ipcMain.on('shell_open_file', function(event, arg) {
     shell.showItemInFolder(arg);
 });
 
+ipcMain.on('open_config_folder', function (event, args) {
+    shell.showItemInFolder(app.getPath('userData') + path.sep + "appdb.json");
+})
+
 ipcMain.on('get_downloaders', function (event, arg) {
     event.sender.send('get_downloaders_reply', getFileManager().getDownloaders());
 });
@@ -400,6 +404,14 @@ ipcMain.on('group_start_editing', function (event, arg) {
 ipcMain.on('group_save_editing', function (event, arg) {
     groupUpdateBuilder.commit();
     sendSuccess("Group Info Saved!", "Successfully saved the group metadata.");
+});
+
+ipcMain.on('group_delete', function(event, arg) {
+    GroupManager.deleteGroup(getFileDatabase().getGroupById(arg));
+});
+
+ipcMain.on('group_upload', function (event, args) {
+    GroupManager.uploadGroup(getFileDatabase().getGroupById(args));
 });
 
 ipcMain.on("chooseFile", (event, arg) => {

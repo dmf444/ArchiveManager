@@ -5,6 +5,7 @@ import {ipcRenderer} from "electron";
 import {FileInfo} from "@/renderer/components/files/FileInfo";
 import {FileModel} from "@main/file/FileModel";
 import {UploaderGroup} from "@/renderer/components/group/UploaderGroup";
+import log from "electron-log";
 
 
 type groupState = {
@@ -48,7 +49,6 @@ export class Group extends React.Component<groupProps, groupState> {
 
     closeFileAndUpdate = () => {
         ipcRenderer.send('file_edit_save');
-        ipcRenderer.send('group_get_content', this.props.groupId);
         this.setState({editingFile: null});
     }
 
@@ -58,7 +58,7 @@ export class Group extends React.Component<groupProps, groupState> {
     }
 
     confirmUploadAndSwitch = () => {
-        ipcRenderer.send('file_upload', this.props.groupId);
+        ipcRenderer.send('group_upload', this.props.groupId);
         this.setState({isUploading: true});
     }
 

@@ -45,7 +45,7 @@ export class TagSelection extends React.Component<{ ipcSendEventName: string }, 
     };
 
     sendTagChange = (changed, all) => {
-        ipcRenderer.send('file_edit_tags', changed);
+        ipcRenderer.send(this.props.ipcSendEventName, changed);
     }
 
     private renderTagOptions() {

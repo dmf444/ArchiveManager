@@ -1,6 +1,7 @@
 import {GroupModel} from '@main/group/models/GroupModel';
 import {getFileDatabase, getFileUpdater, getGroupUpdater} from '@main/main';
 import {ipcMain} from 'electron';
+import log from "electron-log";
 
 export class GroupEditBuilder {
     private group: GroupModel;
@@ -43,6 +44,10 @@ export class GroupEditBuilder {
 
     public commit() {
         getFileDatabase().updateGroup(this.group);
+    }
+
+    public getGroup(): GroupModel {
+        return this.group;
     }
 }
 

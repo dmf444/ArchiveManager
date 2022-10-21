@@ -10,10 +10,12 @@ import jetpack from "fs-jetpack";
 export class GroupUploader extends FileUploader {
     private group: GroupModel;
     private groupId: string;
+    private failedFile: boolean;
 
     constructor(file: FileModel, group: GroupModel) {
         super(file);
         this.group = group;
+        this.failedFile = false;
     }
 
     public getGroupId(): string {
@@ -44,15 +46,14 @@ export class GroupUploader extends FileUploader {
         let urlBase = this._settings.getUrl();
         if(urlBase.slice(-1) !== "/") urlBase += "/";
 
-        let connection = await fetch(urlBase + 'endpoint=group', { method: "post", body: data.stream, headers: headers });
+        let connection = await fetch(`${urlBase}api/upload.php?endpoint=group`, { method: "post", body: data.stream, headers: headers });
         if(connection.status === 200) {
-            connection.json().then((json => {
-                if(json.uid == -1){
-                    this.groupId = null;
-                }else {
-                    this.groupId = json.uid;
-                }
-            }));
+            let json = await connection.json();
+            if(json.uid == -1){
+                this.groupId = null;
+            }else {
+                this.groupId = json.uid;
+            }
         }
         if(this.groupId == null) await this.preFlight(++depth);
         return this.groupId !== null;
@@ -60,7 +61,7 @@ export class GroupUploader extends FileUploader {
 
     protected parseResults(data) {
         let date = new Date();
-        let uploadAttempt = { intid: `G${this.groupId}/${this.file.id}`, name: this.file.fileName, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes() };
+        let uploadAttempt = { intid: `G${this.group.id}/${this.file.id}`, name: this.file.fileName, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes() };
         let window = getMainWindow();
 
         if(data.success) {
@@ -73,12 +74,17 @@ export class GroupUploader extends FileUploader {
             uploadAttempt['status'] = 'reject';
             uploadAttempt['errors'] = data.message;
             if(window != null) window.webContents.send('status_update', 0);
+            this.failedFile = true;
         }
         getFileDatabase().addNewUpload(uploadAttempt);
     }
 
     protected getGroup(): string {
         return this.groupId;
+    }
+
+    public hasFailedFile(){
+        return this.failedFile;
     }
 
 

@@ -320,7 +320,7 @@ ipcMain.on('file_redownload', function (event, arg) {
 ipcMain.on('file_edit_start', function (event, arg) {
     if(arg.length == 2) {
         let group: GroupModel = getFileDatabase().getGroupById(arg[0]);
-        fileUpdateBuilder = new FileEditBuilder(group.findFileById(arg[1]), group);
+        fileUpdateBuilder = new FileEditBuilder(group.findFileById(arg[1]), group.id);
     } else {
         fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
     }
@@ -403,6 +403,7 @@ ipcMain.on('group_start_editing', function (event, arg) {
 
 ipcMain.on('group_save_editing', function (event, arg) {
     groupUpdateBuilder.commit();
+    event.sender.send('group_get_content_reply', groupUpdateBuilder.getGroup());
     sendSuccess("Group Info Saved!", "Successfully saved the group metadata.");
 });
 

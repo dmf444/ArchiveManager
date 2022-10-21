@@ -85,12 +85,12 @@ export class GroupManager {
             }
 
             let uploader = new GroupUploader(mergedFile, group);
-            if (group.getGroupId() === null) {
+            if (group.getGroupId() == null) {
                 let groupMade = await uploader.preFlight();
                 if(!groupMade) {
                     deleteGroup = false;
                     let date = new Date();
-                    let uploadAttempt = { intid: `G${group}`, name: `this.file.fileName`, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes(), errors: ['Unable to create group id'], status: 'reject' };
+                    let uploadAttempt = { intid: `G${group.id}`, name: `this.file.fileName`, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes(), errors: ['Unable to create group id'], status: 'reject' };
                     getFileDatabase().addNewUpload(uploadAttempt);
                     if(window != null) window.webContents.send('status_update', -1);
                     break;
@@ -100,13 +100,13 @@ export class GroupManager {
             }
             uploader.setGroupId(group.getGroupId());
 
-            uploader.upload();
+            await uploader.upload();
 
-
+            if(uploader.hasFailedFile()) deleteGroup = false;
         }
 
         if(deleteGroup) {
-            GroupManager.deleteGroup(group);
+            GroupManager.deleteGroup(group, true);
         }
     }
 
@@ -123,31 +123,36 @@ export class GroupManager {
             file.fileMetadata.restrictions = group.getRestriction();
         }
 
-        file.fileMetadata.tags.concat(group.getTags());
+        file.fileMetadata.tags = file.fileMetadata.tags.concat(group.getTags());
 
         let sub = file.savedLocation.lastIndexOf('.');
-        let desc = getDescriptionReader().getDefaultVersion(file.savedLocation.substring(sub))
+        let desc = getDescriptionReader().getDefaultVersion(file.savedLocation.substring(sub + 1))
         if(desc == null && file.state == FileState.NEW) {
             return null;
         } else {
             if(file.fileMetadata.descriptionVersion == null) {
-                file.fileMetadata.descriptionVersion = desc[0];
                 let jsonMap = {};
 
-                desc[1].fields.forEach((key, value) => {
+                for(let [key, value] of Object.entries(desc[1].fields)) {
                     if(value == 'text' || value == 'textarea') {
                         jsonMap[key] = ''
                     } else if(value == 'select') {
                         jsonMap[key] = []
                     }
-                });
+                }
                 if(jsonMap['description'] == '') {
                     jsonMap['description'] = group.getDescription();
                 }
                 file.fileMetadata.description = JSON.stringify(jsonMap);
+                file.fileMetadata.descriptionVersion = desc[0];
+
             } else {
+                let fields = getDescriptionReader().getDescriptionContent(file.fileMetadata.descriptionVersion);
                 let data = JSON.parse(file.fileMetadata.description);
                 if('description' in data && data['description'] == '') {
+                    data['description'] = group.getDescription();
+                    file.fileMetadata.description = JSON.stringify(data);
+                } else if('description' in fields) {
                     data['description'] = group.getDescription();
                     file.fileMetadata.description = JSON.stringify(data);
                 }

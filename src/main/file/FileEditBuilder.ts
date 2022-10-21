@@ -11,12 +11,12 @@ const log = require('electron-log');
 export class FileEditBuilder {
 
     private currentFile: FileModel;
-    private groupParent: GroupModel;
+    private groupParentId: number;
     private fileAdded: boolean = false;
 
-    constructor(file: FileModel, groupParent: GroupModel = null) {
+    constructor(file: FileModel, groupParent: number = null) {
         this.currentFile = file;
-        this.groupParent = groupParent;
+        this.groupParentId = groupParent;
     }
 
 
@@ -81,7 +81,7 @@ export class FileEditBuilder {
             this.currentFile.fileMetadata.extraFile = FileUtils.moveFileByPath(this.currentFile.fileMetadata.extraFile);
             this.fileAdded = false;
         }
-        if(this.groupParent == null) {
+        if(this.groupParentId == null) {
             getFileDatabase().updateFile(this.currentFile);
         } else {
             if(this.currentFile.fileMetadata !== FileUploadData.fromJson({})) {
@@ -92,8 +92,9 @@ export class FileEditBuilder {
                 }
             }
 
-            this.groupParent.replaceFileModel(this.currentFile);
-            getFileDatabase().updateGroup(this.groupParent);
+            let group: GroupModel = getFileDatabase().getGroupById(this.groupParentId);
+            group.replaceFileModel(this.currentFile);
+            getFileDatabase().updateGroup(group);
         }
     }
 }

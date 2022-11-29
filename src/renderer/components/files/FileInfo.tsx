@@ -109,10 +109,27 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
         }
     };
 
-    private getDefaultFile(): UploadFile[] {
-        if(this.props.editingCard.fileMetadata.extraFile != null && this.props.editingCard.fileMetadata.extraFile != "") {
-            let index = this.props.editingCard.fileMetadata.extraFile.lastIndexOf("\\");
-            let fileName = this.props.editingCard.fileMetadata.extraFile.slice(index + 1);
+    private getExtraFile(): UploadFile[] {
+        return this.getDefaultFile(this.props.editingCard.fileMetadata.extraFile);
+    }
+
+    attachCoverImage = (thing) => {
+        if(thing.file.status == "removed") {
+            ipcRenderer.send('file_edit_cover_image', 'remove');
+        } else {
+            ipcRenderer.send('file_edit_cover_image', thing.file.originFileObj.path);
+        }
+    };
+
+    private getCoverFile(): UploadFile[] {
+        return this.getDefaultFile(this.props.editingCard.fileMetadata.coverImage);
+    }
+
+
+    private getDefaultFile(fileType: string): UploadFile[] {
+        if(fileType != null && fileType != "") {
+            let index = fileType.lastIndexOf("\\");
+            let fileName = fileType.slice(index + 1);
             return [
                 {
                     uid: '1',
@@ -193,21 +210,21 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                             </Col>
                         </Row>
 
-                        <Row gutter={[0, 16]}>
-                            <Col span={11}>
+                        <Row gutter={[8, 16]}>
+                            <Col span={12}>
                                 <Button type="primary" icon={<DeliveredProcedureOutlined />} block={true} style={{paddingLeft: "10px", paddingRight: "10px"}} onClick={this.sendFileBrowser}>Open File</Button>
                             </Col>
-                            <Col span={11} offset={1}>
+                            <Col span={12}>
                                 <Button type="primary" icon={<IeOutlined />} block={true} style={{paddingLeft: "10px", paddingRight: "10px"}} onClick={this.sendOpenBrowser}>Open File In Browser</Button>
                             </Col>
                         </Row>
 
                         {!this.props.grouped && this.props.editingCard.url != '' &&
-                            <Row gutter={[0, 16]}>
+                            <Row gutter={[8, 16]}>
                                 <Form layout={"inline"} style={{width: "100%"}} initialValues={{ remember: true }} onFinish={this.redownloadForm}>
                                     <Col span={12}>
-                                        <Form.Item name={"downloader"}>
-                                            <Select style={{borderTopRightRadius: 0, borderBottomRightRadius: 0}} placeholder="Select a downloader">
+                                        <Form.Item name={"downloader"} style={{marginRight: 0}}>
+                                            <Select style={{borderTopRightRadius: 0, borderBottomRightRadius: 0, width: "100%"}} placeholder="Select a downloader">
                                                 {this.state.options}
                                             </Select>
                                         </Form.Item>
@@ -219,11 +236,15 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                             </Row>
                         }
                         {!this.props.grouped &&
-                            <Row gutter={[0, 16]}>
-                                <Col span={12} style={{textAlign: "left"}}>
-                                    <Upload multiple={false} onChange={this.attachExtraFile}
-                                            defaultFileList={this.getDefaultFile()}>
+                            <Row gutter={[8, 16]} style={{paddingTop: "35px"}}>
+                                <Col span={12} style={{textAlign: "center"}}>
+                                    <Upload multiple={false} onChange={this.attachExtraFile} defaultFileList={this.getExtraFile()} style={{textAlign: "center"}}>
                                         <Button><UploadOutlined/>Attach Secondary File</Button>
+                                    </Upload>
+                                </Col>
+                                <Col span={12} style={{textAlign: "center"}}>
+                                    <Upload multiple={false} onChange={this.attachCoverImage} defaultFileList={this.getCoverFile()} style={{textAlign: "center"}}>
+                                        <Button><UploadOutlined/>Upload Custom Thumbnail</Button>
                                     </Upload>
                                 </Col>
                             </Row>

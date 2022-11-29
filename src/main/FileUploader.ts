@@ -25,6 +25,9 @@ export class FileUploader {
         if (this.file.fileMetadata.extraFile != null && this.file.fileMetadata.extraFile !== "") {
             data.set('cached_file', fs.createReadStream(this.file.fileMetadata.extraFile));
         }
+        if (this.file.fileMetadata.coverImage != null && this.file.fileMetadata.coverImage !== "") {
+            data.set('custom_preview', fs.createReadStream(this.file.fileMetadata.coverImage));
+        }
 
         let saveName = this.file.fileMetadata.localizedName == null ? this.file.fileName : this.file.fileMetadata.localizedName;
         data.set('save_name', saveName);

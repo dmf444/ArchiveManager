@@ -13,6 +13,7 @@ export class FileEditBuilder {
     private currentFile: FileModel;
     private groupParentId: number;
     private fileAdded: boolean = false;
+    private coverAdded: boolean = false;
 
     constructor(file: FileModel, groupParent: number = null) {
         this.currentFile = file;
@@ -76,10 +77,25 @@ export class FileEditBuilder {
         return this;
     }
 
+    public setCoverFilePath(path: string): FileEditBuilder {
+        this.currentFile.fileMetadata.coverImage = path;
+        this.coverAdded = true;
+        return this;
+    }
+
+    public clearCoverFilePath() {
+        this.currentFile.fileMetadata.coverImage = "";
+        return this;
+    }
+
     public commitFile() {
         if(this.fileAdded) {
             this.currentFile.fileMetadata.extraFile = FileUtils.moveFileByPath(this.currentFile.fileMetadata.extraFile);
             this.fileAdded = false;
+        }
+        if (this.coverAdded) {
+            this.currentFile.fileMetadata.coverImage = FileUtils.moveFileByPath(this.currentFile.fileMetadata.coverImage);
+            this.coverAdded = false;
         }
         if(this.groupParentId == null) {
             getFileDatabase().updateFile(this.currentFile);
@@ -142,4 +158,12 @@ ipcMain.on('file_edit_extraFile', function (event, arg: string) {
 
 ipcMain.on('file_edit_eFRemove', function (event, arg: string) {
     getFileUpdater().clearExtraFilePath();
+});
+
+ipcMain.on('file_edit_cover_image', function (event, arg: string) {
+    if(arg === 'remove') {
+        getFileUpdater().clearCoverFilePath();
+    } else {
+        getFileUpdater().setCoverFilePath(arg);
+    }
 });

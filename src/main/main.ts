@@ -21,6 +21,11 @@ import {YoutubeDlpManager} from '@main/youtubedl/YoutubeDlpManager';
 import {IWebDatabase} from "@main/database/IWebDatabase";
 import {WebDatabaseSettings} from "@main/settings/WebDatabaseSettings";
 import {WebDatabaseHttp} from "@main/database/WebDatabaseHttp";
+import {GroupManager} from "@main/group/GroupManager";
+import {FileModel} from '@main/file/FileModel';
+import {GroupModel} from '@main/group/models/GroupModel';
+import {GroupEditBuilder} from '@main/group/controller/GroupEditBuilder';
+import * as fs from 'fs';
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -37,6 +42,7 @@ let fileManager: FileManager;
 let dlManager: YoutubeDLManager;
 let dlpManager: YoutubeDlpManager;
 let fileUpdateBuilder: FileEditBuilder = null;
+let groupUpdateBuilder: GroupEditBuilder = null;
 let tray = null;
 let descFileReader: DescriptionFileReader = null;
 let googleManager: Authentication = null;
@@ -49,7 +55,7 @@ export function getEventsDispatcher() {
     return events;
 }
 
-export function getFileDatabase() {
+export function getFileDatabase(): FileDatabase | null {
     return db;
 }
 
@@ -80,6 +86,10 @@ export function getYoutubeDlpManager() {
 
 export function getFileUpdater() {
     return fileUpdateBuilder;
+}
+
+export function getGroupUpdater() {
+    return groupUpdateBuilder;
 }
 
 export function getMainWindow() {
@@ -246,7 +256,8 @@ ipcMain.on('files_get_new', function(event, arg) {
 });
 
 ipcMain.on('files_get_normal', function(event, arg) {
-    event.sender.send('files_get_normal_reply', db.getNonNewFiles());
+    let data: (FileModel|GroupModel)[] = db.getNonNewFiles().concat(db.getAllGroups());
+    event.sender.send('files_get_normal_reply', data);
 });
 
 ipcMain.on('homepage_url_add', function (event, arg) {
@@ -293,6 +304,10 @@ ipcMain.on('shell_open_file', function(event, arg) {
     shell.showItemInFolder(arg);
 });
 
+ipcMain.on('open_config_folder', function (event, args) {
+    shell.showItemInFolder(app.getPath('userData') + path.sep + "appdb.json");
+})
+
 ipcMain.on('get_downloaders', function (event, arg) {
     event.sender.send('get_downloaders_reply', getFileManager().getDownloaders());
 });
@@ -303,7 +318,12 @@ ipcMain.on('file_redownload', function (event, arg) {
 });
 
 ipcMain.on('file_edit_start', function (event, arg) {
-    fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
+    if(arg.length == 2) {
+        let group: GroupModel = getFileDatabase().getGroupById(arg[0]);
+        fileUpdateBuilder = new FileEditBuilder(group.findFileById(arg[1]), group.id);
+    } else {
+        fileUpdateBuilder = new FileEditBuilder(getFileDatabase().getFileById(arg));
+    }
 });
 
 ipcMain.on('file_edit_save', function (event, arg) {
@@ -366,5 +386,40 @@ ipcMain.on('authenitication_url_generate', function (event, apiRequest: string) 
 ipcMain.on('code_verification', function (event, apiRequester: string, values) {
     if(apiRequester === "google") {
         getGoogleAuth().registerCode(values.code);
+    }
+});
+
+ipcMain.on('import_directory', function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
+   GroupManager.importGroup(args);
+});
+
+ipcMain.on('group_get_content', function (event, args: number) {
+   event.sender.send('group_get_content_reply', getFileDatabase().getGroupById(args));
+});
+
+ipcMain.on('group_start_editing', function (event, arg) {
+    groupUpdateBuilder = new GroupEditBuilder(getFileDatabase().getGroupById(arg));
+});
+
+ipcMain.on('group_save_editing', function (event, arg) {
+    groupUpdateBuilder.commit();
+    event.sender.send('group_get_content_reply', groupUpdateBuilder.getGroup());
+    sendSuccess("Group Info Saved!", "Successfully saved the group metadata.");
+});
+
+ipcMain.on('group_delete', function(event, arg) {
+    GroupManager.deleteGroup(getFileDatabase().getGroupById(arg));
+});
+
+ipcMain.on('group_upload', function (event, args) {
+    GroupManager.uploadGroup(getFileDatabase().getGroupById(args));
+});
+
+ipcMain.on("chooseFile", (event, arg) => {
+    let clip: number = arg.lastIndexOf(".");
+    let filetype = arg.substring(clip + 1);
+    if(["jpg", "jpeg", "png", "gif", "webp"].includes(filetype.toLowerCase())) {
+        const base64 = fs.readFileSync(arg).toString('base64');
+        event.sender.send("chooseFile", base64);
     }
 });

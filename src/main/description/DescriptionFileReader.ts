@@ -3,8 +3,8 @@ import {app} from "electron";
 const path = require('path');
 const log = require('electron-log');
 
-type descType = {name: string, fields};
-type writtenFileContent = {name: string, version: string, fields};
+type descType = {name: string, fields: any, fileTypes: string[] | null};
+type writtenFileContent = {name: string, version: string, fields: any, fileTypes: string[] | null};
 export class DescriptionFileReader {
 
     private versions: Map<string, descType>;
@@ -14,7 +14,7 @@ export class DescriptionFileReader {
         log.info(descFolderPath);
         if(jetpack.exists(descFolderPath) !== "dir") {
             jetpack.dir(descFolderPath);
-            jetpack.file(descFolderPath + path.sep + "default_0_0_0.json", {content: {name: "Null", version: "0.0.0", fields: null}, jsonIndent: 4});
+            jetpack.file(descFolderPath + path.sep + "default_0_0_0.json", {content: {name: "Null", version: "0.0.0", fields: null, fileTypes: null}, jsonIndent: 4});
 
         }
         this.readFiles();
@@ -29,7 +29,8 @@ export class DescriptionFileReader {
         let fileNames: string[] = jetpack.list(descFolderPath);
         fileNames.forEach(fileName => {
             let content: writtenFileContent = jetpack.read(descFolderPath + path.sep + fileName, 'json');
-            this.versions.set(content.version, {name: content.version + " (" + content.name + ")", fields: content.fields});
+            let types = content.fileTypes ? content.fileTypes : null;
+            this.versions.set(content.version, {name: content.version + " (" + content.name + ")", fields: content.fields, fileTypes: types});
         });
     }
 
@@ -38,6 +39,16 @@ export class DescriptionFileReader {
             return this.versions.get(version).fields;
         }
         return null;
+    }
+
+    public getDefaultVersion(fileType: string): [string, descType] | null {
+        let desc: [string, descType] = null;
+        this.versions.forEach((value, key) => {
+           if(value.fileTypes && value.fileTypes.includes(fileType)) {
+               desc = [key, this.versions.get(key)];
+           }
+        });
+        return desc;
     }
 
     public getAllVersions() {

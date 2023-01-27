@@ -1,5 +1,12 @@
 
 export class FileUploadData {
+    get coverImage(): string {
+        return this._coverImage;
+    }
+
+    set coverImage(value: string) {
+        this._coverImage = value;
+    }
     get extraFile(): string {
         return this._extraFile;
     }
@@ -73,8 +80,9 @@ export class FileUploadData {
     private _tags: string[];
     private _date: string;
     private _extraFile: string;
+    private _coverImage: string;
 
-    constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[], date: string, extraFile: string) {
+    constructor(localizedName: string, container: number, desc: string, descVers: string, count: number, restriction: number, tags: string[], date: string, extraFile: string, coverImage: string) {
         this._localizedName = localizedName;
         this._container = container;
         this._description = desc;
@@ -84,6 +92,7 @@ export class FileUploadData {
         this._tags = tags;
         this._date = date;
         this._extraFile = extraFile;
+        this._coverImage = coverImage;
     }
 
 
@@ -97,13 +106,14 @@ export class FileUploadData {
             restr: this._restrictions,
             tags: this._tags,
             date: this._date,
-            extraFile: this._extraFile
+            extraFile: this._extraFile,
+            coverImage: this._coverImage
         };
     }
 
     static fromJson(uploadDataModel: {}): FileUploadData {
         if(uploadDataModel == null) {
-            return new FileUploadData(null, null, null, null, null, null, [], "", "");
+            return new FileUploadData(null, null, null, null, null, null, [], "", "", "");
         } else {
             if(uploadDataModel['date'] == null) {
                 uploadDataModel['date'] = "";
@@ -111,7 +121,10 @@ export class FileUploadData {
             if(uploadDataModel['extraFile'] == null) {
                 uploadDataModel['extraFile'] = "";
             }
-            return new FileUploadData(uploadDataModel['localName'], uploadDataModel['container'], uploadDataModel['description'], uploadDataModel['descVersion'], uploadDataModel['count'], uploadDataModel['restr'], uploadDataModel['tags'], uploadDataModel['date'], uploadDataModel['extraFile']);
+            if(uploadDataModel['coverImage'] == null) {
+                uploadDataModel['coverImage'] = "";
+            }
+            return new FileUploadData(uploadDataModel['localName'], uploadDataModel['container'], uploadDataModel['description'], uploadDataModel['descVersion'], uploadDataModel['count'], uploadDataModel['restr'], uploadDataModel['tags'], uploadDataModel['date'], uploadDataModel['extraFile'], uploadDataModel['coverImage']);
         }
     }
 }

@@ -3,16 +3,21 @@ import {FileState} from "@main/file/FileState";
 import {getFileDatabase, getFileUpdater} from "@main/main";
 import {ipcMain} from 'electron';
 import {FileUtils} from "@main/downloader/FileUtils";
+import {GroupModel} from "@main/group/models/GroupModel";
+import {FileUploadData} from "@main/file/FileUploadData";
 
 const log = require('electron-log');
 
 export class FileEditBuilder {
 
     private currentFile: FileModel;
+    private groupParentId: number;
     private fileAdded: boolean = false;
+    private coverAdded: boolean = false;
 
-    constructor(file: FileModel) {
+    constructor(file: FileModel, groupParent: number = null) {
         this.currentFile = file;
+        this.groupParentId = groupParent;
     }
 
 
@@ -72,12 +77,41 @@ export class FileEditBuilder {
         return this;
     }
 
+    public setCoverFilePath(path: string): FileEditBuilder {
+        this.currentFile.fileMetadata.coverImage = path;
+        this.coverAdded = true;
+        return this;
+    }
+
+    public clearCoverFilePath() {
+        this.currentFile.fileMetadata.coverImage = "";
+        return this;
+    }
+
     public commitFile() {
         if(this.fileAdded) {
             this.currentFile.fileMetadata.extraFile = FileUtils.moveFileByPath(this.currentFile.fileMetadata.extraFile);
             this.fileAdded = false;
         }
-        getFileDatabase().updateFile(this.currentFile);
+        if (this.coverAdded) {
+            this.currentFile.fileMetadata.coverImage = FileUtils.moveFileByPath(this.currentFile.fileMetadata.coverImage);
+            this.coverAdded = false;
+        }
+        if(this.groupParentId == null) {
+            getFileDatabase().updateFile(this.currentFile);
+        } else {
+            if(this.currentFile.fileMetadata !== FileUploadData.fromJson({})) {
+                this.setNormalState();
+            } else {
+                if(this.currentFile.state == FileState.NORMAL) {
+                    this.currentFile.state = FileState.NEW;
+                }
+            }
+
+            let group: GroupModel = getFileDatabase().getGroupById(this.groupParentId);
+            group.replaceFileModel(this.currentFile);
+            getFileDatabase().updateGroup(group);
+        }
     }
 }
 
@@ -124,4 +158,12 @@ ipcMain.on('file_edit_extraFile', function (event, arg: string) {
 
 ipcMain.on('file_edit_eFRemove', function (event, arg: string) {
     getFileUpdater().clearExtraFilePath();
+});
+
+ipcMain.on('file_edit_cover_image', function (event, arg: string) {
+    if(arg === 'remove') {
+        getFileUpdater().clearCoverFilePath();
+    } else {
+        getFileUpdater().setCoverFilePath(arg);
+    }
 });

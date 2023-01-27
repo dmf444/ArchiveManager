@@ -7,23 +7,26 @@ const FormData = require('formdata-node');
 const log = require('electron-log');
 
 export class FileUploader {
-    private file: FileModel;
-    private _settings: UploadSettings;
+    protected file: FileModel;
+    protected _settings: UploadSettings;
 
     constructor(file) {
         this.file = file;
         this._settings = <UploadSettings>getSettingsManager().getSettings("upload");
     }
 
-    public upload() {
+    public async upload() {
         let data = new FormData();
 
 
-        if(this.file.savedLocation != null){
+        if (this.file.savedLocation != null) {
             data.set('original_file', fs.createReadStream(this.file.savedLocation), this.file.fileName);
         }
-        if(this.file.fileMetadata.extraFile != null && this.file.fileMetadata.extraFile !== "") {
+        if (this.file.fileMetadata.extraFile != null && this.file.fileMetadata.extraFile !== "") {
             data.set('cached_file', fs.createReadStream(this.file.fileMetadata.extraFile));
+        }
+        if (this.file.fileMetadata.coverImage != null && this.file.fileMetadata.coverImage !== "") {
+            data.set('custom_preview', fs.createReadStream(this.file.fileMetadata.coverImage));
         }
 
         let saveName = this.file.fileMetadata.localizedName == null ? this.file.fileName : this.file.fileMetadata.localizedName;
@@ -31,7 +34,7 @@ export class FileUploader {
         data.set('container', this.file.fileMetadata.container);
         data.set('description', this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion));
         data.set('desc_version', this.file.fileMetadata.descriptionVersion);
-        if(!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
+        if (!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
             data.set('page_count', this.file.fileMetadata.pageCount);
         }
         data.set('date', this.file.fileMetadata.date);
@@ -39,9 +42,12 @@ export class FileUploader {
         this.file.fileMetadata.tags.forEach(tag => {
             data.append('tags[]', tag);
         });
+        if (this.getGroup() != null) {
+            data.set('group_id', this.getGroup());
+        }
 
         let urlBase = this._settings.getUrl();
-        if(urlBase.slice(-1) !== "/") urlBase += "/";
+        if (urlBase.slice(-1) !== "/") urlBase += "/";
         let endPoint = !this.file.fileMetadata.descriptionVersion.startsWith("1") ? "endpoint=document" : "endpoint=image";
         /*fetch(urlBase + "api/upload.php?" + endPoint,
             {
@@ -57,12 +63,12 @@ export class FileUploader {
                 log.info('error parsing', e);
             });*/
         let headers = data.headers;
-        if(this._settings.getUsername() !== '') {
+        if (this._settings.getUsername() !== '') {
             headers = new Headers();
             headers.append('Content-Type', data.headers["Content-Type"]);
             headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
         }
-        this.connect(urlBase + "api/upload.php?" + endPoint, { method: "post", body: data.stream, headers: headers, mode: "no-cors"});
+        await this.connect(urlBase + "api/upload.php?" + endPoint, {method: "post", body: data.stream, headers: headers, mode: "no-cors"});
     }
 
     async connect(url, data) {
@@ -82,7 +88,7 @@ export class FileUploader {
         }
     }
 
-    private parseResults(data) {
+    protected parseResults(data) {
         let date = new Date();
         let uploadAttempt = { intid: this.file.id, name: this.file.fileName, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes() };
         let window = getMainWindow();
@@ -108,6 +114,10 @@ export class FileUploader {
             }
         });
         return JSON.stringify(json);
+    }
+
+    protected getGroup(): string {
+        return null;
     }
 
 }

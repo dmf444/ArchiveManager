@@ -4,6 +4,7 @@ import {FileModel} from "@main/file/FileModel";
 import {ipcRenderer} from "electron";
 import {FileState} from "@main/file/FileState";
 import {FileDescriptionRender} from "@/renderer/components/files/FileDescriptionRender";
+import {FileUploadData} from "@main/file/FileUploadData";
 let moment = require("moment");
 if ("default" in moment) {
     moment = moment["default"];
@@ -15,7 +16,8 @@ const { Option } = Select;
 const log = require('electron-log');
 
 interface FileInfoMetadataFormProps {
-    editingCard: FileModel
+    editingCard: FileModel,
+    grouped: boolean
 }
 interface FileInfoMetadataFormState {
     options: any[],
@@ -28,6 +30,12 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
 
     constructor(props) {
         super(props);
+        if(!(this.props.editingCard.fileMetadata instanceof FileUploadData)) {
+            let meta = FileUploadData.fromJson({});
+            Object.assign(meta, this.props.editingCard.fileMetadata);
+            this.props.editingCard.fileMetadata = meta;
+        }
+
         this.state = {
             options: [{id: 0, name: "Digital File"}],
             descriptionVersions: [],
@@ -44,7 +52,9 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     }
 
     componentDidMount(): void {
-        ipcRenderer.send('file_edit_start', this.props.editingCard.id);
+        if(!this.props.grouped) {
+            ipcRenderer.send('file_edit_start', this.props.editingCard.id);
+        }
         ipcRenderer.send('file_edit_get_tags', null);
         ipcRenderer.send('file_edit_get_containers', null);
         ipcRenderer.send('file_edit_get_desc_version', null);
@@ -55,7 +65,9 @@ export class FileInfoMetadataForm extends React.Component<FileInfoMetadataFormPr
     }
 
     componentWillUnmount(): void {
-        ipcRenderer.send('file_edit_save', []);
+        if(!this.props.grouped) {
+            ipcRenderer.send('file_edit_save', []);
+        }
         ipcRenderer.removeListener('file_edit_get_tags_reply', this.setTagOptions);
         ipcRenderer.removeListener('file_edit_get_containers_reply', this.setContainerOptions);
         ipcRenderer.removeListener('file_edit_get_desc_version_reply', this.setDescriptionVersions);

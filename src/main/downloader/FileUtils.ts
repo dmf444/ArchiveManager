@@ -79,15 +79,21 @@ export class FileUtils {
      *
      * NOTE: This function can change the file name! Make sure that after using it, you save the fileModel back to the database.
      * @param file file you wish to move
+     * @param copyFile whether to copy the file or directly move it. defaults to moving.
      */
-    public static moveFileToIngestion(file: FileModel) {
+    public static moveFileToIngestion(file: FileModel, copyFile: boolean = false) {
         let stagingingPath: string = this.getProcessingPath();
         let oldFileName = file.fileName;
         file.fileName = this.renameFileIfExists(file.fileName, file.savedLocation);
         if(oldFileName != file.fileName) {
             file.savedLocation = file.savedLocation.replace(oldFileName, "") + file.fileName;
         }
-        jetpack.move(file.savedLocation, stagingingPath + file.fileName);
+        if(copyFile) {
+            jetpack.copy(file.savedLocation, stagingingPath + file.fileName);
+        } else{
+            jetpack.move(file.savedLocation, stagingingPath + file.fileName);
+        }
+
     }
 
     public static moveFileByPath(absolutePath: string) {

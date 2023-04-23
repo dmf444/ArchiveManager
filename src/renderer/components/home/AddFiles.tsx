@@ -151,13 +151,13 @@ export class AddFiles extends React.Component {
                     </Row>
                     <Row>
                         <Col span={7} offset={7}>
+                            <Form.Item name='file_copy' valuePropName="checked">
+                                <Checkbox>Copy File(s)</Checkbox>
+                            </Form.Item>
                             <Form.Item>
                                 <Button size="large" type="primary" htmlType="submit" block={true}>
                                     Submit
                                 </Button>
-                            </Form.Item>
-                            <Form.Item name='file_copy' valuePropName="checked">
-                                <Checkbox>Copy File(s)</Checkbox>
                             </Form.Item>
                         </Col>
                     </Row>

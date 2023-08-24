@@ -3,13 +3,13 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {getFileDatabase} from "@main/main";
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
-import {YouTubeDownloader} from "@main/downloader/downloaders/YouTubeDownloader";
 import {sendError, sendSuccess} from "@main/NotificationBundle";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 import {STATE} from "@main/downloader/interfaces/State";
 import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
 import {GmailDownloader} from "@main/downloader/downloaders/GmailDownloader";
 import {YtdlpDownloader} from '@main/downloader/downloaders/YtdlpDownloader';
+import {GroupManager} from "@main/group/GroupManager";
 
 const log = require('electron-log');
 
@@ -67,7 +67,7 @@ export class FileManager {
 
             uploadResults.multiItem.forEach((downloadData: downloadPromise) => {
                 log.warn("Calling Each");
-                if(downloadData.state == STATE.FAILED){
+                if (downloadData.state == STATE.FAILED) {
                     const fileModel = FileUtils.createNewErrorFileEntry(downloadData.url);
                     downloader.createdFilePostback(fileModel);
                     sendError("Download Failed!", `Unable to download ${downloadData.url}`);
@@ -76,6 +76,24 @@ export class FileManager {
                 let webUrl = downloadData.url != null ? downloadData.url : url;
                 this.singleDownloadCallback(downloadData, downloader, webUrl, stage, fileModel);
             });
+
+        } else if(state == STATE.GROUP && uploadResults.multiItem != null) {
+            let groupFiles = [];
+
+            uploadResults.multiItem.forEach((item) => {
+                groupFiles.push({
+                    fileName: item.fileName,
+                    filePath: item.filePathDir,
+                    relativePath: ""
+                });
+            });
+
+            GroupManager.importGroup({
+                type: "grouped",
+                path: uploadResults.filePathDir,
+                files: groupFiles
+            }, downloader);
+            downloader.createdFilePostback(uploadResults.filePathDir);
 
         } else {
             if(fileModel != null) {

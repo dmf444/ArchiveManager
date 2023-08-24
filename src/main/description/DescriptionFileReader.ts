@@ -44,7 +44,8 @@ export class DescriptionFileReader {
     public getDefaultVersion(fileType: string): [string, descType] | null {
         let desc: [string, descType] = null;
         this.versions.forEach((value, key) => {
-           if(value.fileTypes && value.fileTypes.includes(fileType)) {
+           if(value.fileTypes && (value.fileTypes.includes(fileType) || value.fileTypes.includes("*"))) {
+               if(value.fileTypes.includes("*") && desc != null) return;
                desc = [key, this.versions.get(key)];
            }
         });

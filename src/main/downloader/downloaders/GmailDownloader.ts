@@ -12,6 +12,7 @@ import http from 'http';
 import https from 'https';
 import {STATE} from "@main/downloader/interfaces/State";
 import * as path from "path";
+import {FileModel} from "@main/file/FileModel";
 const mime = require('mime');
 const AdmZip = require('adm-zip');
 
@@ -38,9 +39,13 @@ export class GmailDownloader implements IDownloader {
     }
 
 
-    createdFilePostback(file): void {
-        if(this.extractJsonFileFromZip(file.savedLocation)) {
-            let jsonFilePath = FileUtils.getFilePath(true) + "original_data.json";
+    async createdFilePostback(file: FileModel | string): Promise<void> {
+        log.info(file)
+        if (typeof file === "string") {
+            await this.removeTempFolders(file);
+        } else if(file.fileName.endsWith(".html")) {
+            const folderPath = file.savedLocation.substring(0, file.savedLocation.lastIndexOf(path.sep) + 1);
+            let jsonFilePath = folderPath + "original_data.json";
             let emailJson = jetpack.read(jsonFilePath, 'json');
 
             let headers = emailJson["messages"][0]["payload"]["headers"];
@@ -55,11 +60,8 @@ export class GmailDownloader implements IDownloader {
             };
 
             let descriptionFinal = JSON.stringify(description);
-            file.fileMetadata.descriptionVersion = "5.0.0";
+            file.fileMetadata.descriptionVersion = "5.1.0";
             file.fileMetadata.description = descriptionFinal;
-            getFileDatabase().updateFile(file);
-
-            jetpack.remove(jsonFilePath);
         }
     }
 
@@ -75,6 +77,7 @@ export class GmailDownloader implements IDownloader {
     private async removeTempFolders(path: string, depth = 0) {
         if (jetpack.exists(path) !== false && depth < 2) {
             try {
+                await this.sleep(2000);
                 jetpack.remove(path);
             } catch (e) {
                 log.warn(`Attempt to remove temporary folder failed. ${path}`);
@@ -98,21 +101,28 @@ export class GmailDownloader implements IDownloader {
 
             await this.downloadFromGoogle(path, threadId);
 
-            let finalPath = FileUtils.getFilePath(stage);
-            let fileName = this.postSetup(threadId, path, finalPath);
+            const tree = jetpack.inspectTree(path);
 
-            await this.removeTempFolders(path);
-
-
-            if(fileName != null) {
-                return {state: STATE.SUCCESS, fileName: fileName, filePathDir: finalPath};
-            } else {
-                return {state: STATE.FAILED, fileName: '', filePathDir: ''};
-            }
-
+            return { state: STATE.GROUP, fileName: '', filePathDir: path, multiItem: this.treeCollapse(tree, path) };
         }
 
         return {state: STATE.FAILED, fileName: '', filePathDir: ''};
+    }
+
+    private treeCollapse(treeInspect, rootPath): downloadPromise[] {
+        const files = [];
+
+        if(treeInspect.children.length > 0) {
+            treeInspect.children.forEach((child) => {
+               if(child.type == 'file') {
+                   files.push({ fileName: child.name, filePathDir: `${rootPath}${child.name}`})
+               } else {
+                   files.push(this.treeCollapse(child, `${rootPath}${child.name}${path.sep}`));
+               }
+            });
+        }
+
+        return files;
     }
 
     /**
@@ -145,30 +155,6 @@ export class GmailDownloader implements IDownloader {
         }
     }
 
-    /**
-     * Anything done after the content of the email has been downloaded. Used here for zipping the files.
-     * @param threadId the gmail thread ID
-     * @param downloadPath the temporary folder made by the downloader
-     * @param finalPath the destination path of the zip file
-     * @private
-     * @return the zip file name
-     */
-    private postSetup(threadId: string, downloadPath: string, finalPath: string): string {
-            var zip = new AdmZip();
-            let fileNames = jetpack.list(downloadPath);
-            if(fileNames != null) {
-
-                fileNames.forEach((dlFileName: string) => {
-                    zip.addLocalFile(downloadPath + path.sep + dlFileName);
-                });
-
-                let zipName: string = `${threadId}.zip`;
-                let zipSavePath: string = finalPath + path.sep + zipName;
-                zip.writeZip(zipSavePath);
-                return zipName;
-
-            }
-    }
 
 
     /**
@@ -200,12 +186,14 @@ export class GmailDownloader implements IDownloader {
             let buff = Buffer.from(part.body.data, 'base64');
             let text = buff.toString('utf-8');
 
+            let title = part.body.data.substr(-7).toUpperCase();
             if(part.mimeType == mime.getType('html')) {
                 text = await this.parseHtmlPage(text, path);
+                title = `root-${title}`;
             }
 
             let ext = mime.getExtension(part.mimeType);
-            jetpack.file(path + part.body.data.substr(-7).toUpperCase() + '.' + ext, {content: text});
+            jetpack.file(path + title + '.' + ext, {content: text});
         }
     }
 
@@ -226,7 +214,7 @@ export class GmailDownloader implements IDownloader {
         let data = {};
 
         for(const url of urls) {
-            if(!url.startsWith("http")) { continue; }
+            if(!url.startsWith("http") || url in data) { continue; }
             let response = await this.connectForDownload(url, path);
             if(response != null) {
                 data[url] = response[1];
@@ -247,39 +235,51 @@ export class GmailDownloader implements IDownloader {
     async connectForDownload(url: string, path: string): Promise<[string, string]> {
         const agentSSL = new https.Agent({rejectUnauthorized: false});
         const agent = new http.Agent();
-        let connection = await fetch(url, {
-            redirect: 'follow',
-            follow: 5,
-            headers: {
-                'Accept-Encoding': "*"
-            },
-            agent: (parsedUrl => {
-                if(parsedUrl.protocol === "http:"){
-                    return agent
-                }
-                return agentSSL;
-            })
-        });
+        try {
+            let connection = await fetch(url, {
+                redirect: 'follow',
+                follow: 20,
+                headers: {
+                    'Accept-Encoding': "*"
+                },
+                agent: (parsedUrl => {
+                    if(parsedUrl.protocol === "http:"){
+                        return agent
+                    }
+                    return agentSSL;
+                })
+            });
 
-        if (connection.headers.has('content-type') && !connection.headers.get('content-type').includes(mime.getType('html'))) {
-            let fileName = (Math.random() + 1).toString(36).substring(3);
-            if(connection.headers.has('content-disposition')) {
-                let contentDispo: string = connection.headers.get('content-disposition');
-                let searchResult = contentDispo.search("filename=");
-                if(searchResult > -1){
-                    let wordstart = searchResult + 9;
-                    let uncleanName = contentDispo.substring(wordstart);
-                    fileName = contentDispo.substring(wordstart, wordstart + uncleanName.lastIndexOf("."));
+            if (connection.headers.has('content-type') && !connection.headers.get('content-type').includes(mime.getType('html'))) {
+                let fileName = (Math.random() + 1).toString(36).substring(3);
+                if(connection.headers.has('content-disposition')) {
+                    let contentDispo: string = connection.headers.get('content-disposition');
+                    let searchResult = contentDispo.search("filename=");
+                    if(searchResult > -1){
+                        let wordstart = searchResult + 9;
+                        let uncleanName = contentDispo.substring(wordstart);
+                        fileName = contentDispo.substring(wordstart, wordstart + uncleanName.lastIndexOf("."));
 
+                    }
                 }
+                let ext = mime.getExtension(connection.headers.get('content-type'));
+                let fullName = fileName + "." + ext;
+
+                let fileStream = jetpack.createWriteStream(path + fullName);
+                connection.body.pipe(fileStream);
+
+                await new Promise((resolve, reject) => {
+                   fileStream.on("close", () => {
+                       log.info(fullName, url, fileStream.bytesWritten);
+                       resolve();
+                   });
+                });
+
+                return [url, fullName];
             }
-            let ext = mime.getExtension(connection.headers.get('content-type'));
-            let fullName = fileName + "." + ext;
 
-            let fileStream = jetpack.createWriteStream(path + fullName);
-            await connection.body.pipe(fileStream);
-
-            return [url, fullName];
+        } catch (e) {
+            log.warn(e);
         }
         return null;
     }
@@ -303,15 +303,6 @@ export class GmailDownloader implements IDownloader {
             folderNumber++;
         } while (jetpack.exists(initalDirectory) != false);
         return initalDirectory + path.sep;
-    }
-
-    private extractJsonFileFromZip(fileLocation: string): boolean {
-        let zip = new AdmZip(fileLocation);
-        if(zip.getEntry("original_data.json")) {
-            zip.extractEntryTo("original_data.json", FileUtils.getFilePath(true), false, true);
-            return true;
-        }
-        return false;
     }
 
 }

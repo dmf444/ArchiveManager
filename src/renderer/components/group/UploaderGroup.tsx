@@ -60,7 +60,7 @@ export class UploaderGroup extends React.Component<UploaderProps, any> {
     }
 
     getPercentage = () => {
-        return this.computePercentage(this.state.current);
+        return Math.round(this.computePercentage(this.state.current));
     }
 
     getSuccessPercentage = () => {

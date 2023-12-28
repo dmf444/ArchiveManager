@@ -3,7 +3,7 @@ import {app} from "electron";
 const path = require('path');
 const log = require('electron-log');
 
-type descType = {name: string, fields: any, fileTypes: string[] | null};
+type descType = {name: string, fields: any, fileTypes: string[] | null, fileName: string };
 type writtenFileContent = {name: string, version: string, fields: any, fileTypes: string[] | null};
 export class DescriptionFileReader {
 
@@ -27,10 +27,10 @@ export class DescriptionFileReader {
         this.versions = new Map<string, descType>();
 
         let fileNames: string[] = jetpack.list(descFolderPath);
-        fileNames.forEach(fileName => {
+        fileNames.forEach((fileName, index) => {
             let content: writtenFileContent = jetpack.read(descFolderPath + path.sep + fileName, 'json');
             let types = content.fileTypes ? content.fileTypes : null;
-            this.versions.set(content.version, {name: content.version + " (" + content.name + ")", fields: content.fields, fileTypes: types});
+            this.versions.set(content.version, {name: content.version + " (" + content.name + ")", fields: content.fields, fileTypes: types, fileName: fileName});
         });
     }
 
@@ -63,6 +63,17 @@ export class DescriptionFileReader {
 
             iteration = keys.next();
         }
+        return responseArray;
+    }
+
+    public getVersionsList(): string[] {
+        let keys = this.versions.keys();
+        let responseArray = [];
+
+        for (const key of this.versions.keys()) {
+            responseArray.push(this.versions.get(key).fileName);
+        }
+
         return responseArray;
     }
 

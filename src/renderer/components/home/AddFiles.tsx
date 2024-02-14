@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import '@public/style.css';
-import {Button, Input, Upload, message, Row, Col, Form, Divider, Modal} from 'antd';
+import {Button, Input, Upload, message, Row, Col, Form, Divider, Modal, Checkbox} from 'antd';
 import {ExclamationCircleOutlined, FileOutlined, UploadOutlined} from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import {ipcRenderer} from 'electron';
@@ -33,7 +33,8 @@ export class AddFiles extends React.Component {
                     filePaths.push({fileName: file.originFileObj.name, path: file.originFileObj.path});
                 }
             }
-            ipcRenderer.send('import_local_file', filePaths);
+            const copyFile = values['file_copy'] ? values['file_copy'] : false;
+            ipcRenderer.send('import_local_file', copyFile, filePaths);
         } else if(values['directory_select'] != null && dirSelect.files.length > 1) {
             let dirPath = "";
             let files = [];
@@ -150,6 +151,9 @@ export class AddFiles extends React.Component {
                     </Row>
                     <Row>
                         <Col span={7} offset={7}>
+                            <Form.Item name='file_copy' valuePropName="checked">
+                                <Checkbox>Copy File(s)</Checkbox>
+                            </Form.Item>
                             <Form.Item>
                                 <Button size="large" type="primary" htmlType="submit" block={true}>
                                     Submit

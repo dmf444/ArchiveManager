@@ -25,6 +25,20 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         return this._fileModels;
     }
 
+    public getUploadSortedFiles() {
+        let oldModels = { ...this._fileModels };
+        oldModels.sort((a, b) => {
+            if (a.fileName.startsWith("root-")) {
+                return 1;
+            }
+            if (b.fileName.startsWith("root-")) {
+                return -1;
+            }
+            return 0;
+        });
+        return oldModels;
+    }
+
     public getYear(): string {
         return this._year;
     }

@@ -3,8 +3,6 @@ import {DiscordSettings} from "./settings/DiscordSettings";
 import {notificationPackage} from "./Events";
 import {getEventsDispatcher, getFileDatabase, getFileManager, getSettingsManager, reloadDiscordBot} from "./main";
 import {FileModel} from "@main/file/FileModel";
-import {FileUtils} from "@main/downloader/FileUtils";
-import {FileEditBuilder} from "@main/file/FileEditBuilder";
 
 const log = require('electron-log');
 
@@ -41,7 +39,7 @@ export class Bot {
             });
 
 
-            this.client.login(this._settings.token).catch(error => console.log(error));
+            this.client.login(this._settings.token).catch(error => log.error( error));
         } else {
             log.warn("Discord Token not set, bot not Initialized!");
         }

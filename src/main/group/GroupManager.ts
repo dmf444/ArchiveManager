@@ -74,7 +74,7 @@ export class GroupManager {
         let deleteGroup = true;
         if(window != null) window.webContents.send('group_upload_start', group.getFiles().length);
 
-        for (const file of group.getFiles()) {
+        for (const file of group.getUploadSortedFiles()) {
 
             let mergedFile = this.mergeGroupData(group, file);
             if(mergedFile == null) {

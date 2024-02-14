@@ -9,6 +9,7 @@ pipeline {
   stages {
     stage('Build Windows') {
       steps {
+        sh 'rm package-lock.json'
         sh 'npm install'
         sh 'npm run verup'
         sh 'npm run prod'

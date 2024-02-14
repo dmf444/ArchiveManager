@@ -281,7 +281,8 @@ ipcMain.on('file_delete', function(event, arg) {
 });
 
 ipcMain.on('file_download', function(event, arg) {
-    getFileManager().moveFileToIngestById(arg);
+    let file: FileModel = getFileDatabase().getFileById(arg);
+    getFileManager().moveFileToIngest(file, true);
 });
 
 ipcMain.on('stats_new_files', function(event, arg) {
@@ -344,9 +345,9 @@ ipcMain.on('file_edit_get_containers', function (event, arg) {
 });
 
 
-ipcMain.on('import_local_file', function (event, filePaths: []) {
+ipcMain.on('import_local_file', function (event, copyFile: boolean, filePaths: []) {
     filePaths.forEach((fileModule: {path: string, fileName: string}) => {
-       getFileManager().addFileFromLocal(fileModule.path, fileModule.fileName);
+       getFileManager().addFileFromLocal(fileModule.path, fileModule.fileName, copyFile);
     });
 });
 

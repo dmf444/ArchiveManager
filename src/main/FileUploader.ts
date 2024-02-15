@@ -37,7 +37,7 @@ export class FileUploader {
         if (!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
             data.set('page_count', this.file.fileMetadata.pageCount);
         }
-        data.set('date', this.file.fileMetadata.date);
+        data.set('date', this.file.fileMetadata.date ?? "");
         data.set('restriction', this.file.fileMetadata.restrictions);
         if(this.file.fileMetadata.tags.length == 0) {
             data.append('tags[]', []);

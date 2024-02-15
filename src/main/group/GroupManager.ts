@@ -8,6 +8,7 @@ import {FileUploadData} from "@main/file/FileUploadData";
 import * as path from "path";
 import log from "electron-log";
 import {GroupUploader} from "@main/group/controller/GroupUploader";
+import {IDownloader} from "@main/downloader/interfaces/IDownloader";
 
 
 type GroupImportType = {
@@ -18,7 +19,7 @@ type GroupImportType = {
 
 export class GroupManager {
 
-    public static importGroup(groupInfo: GroupImportType){
+    public static importGroup(groupInfo: GroupImportType, downloader?: IDownloader){
         if (groupInfo.type == "individual") {
             groupInfo.files.forEach((file) => {
                 getFileManager().addFileFromLocal(file.filePath, file.fileName);
@@ -28,7 +29,11 @@ export class GroupManager {
             let group = this.createGroup(groupInfo.path);
             //Move Folder to Staging area
             const newFolderName = `g${ group.id }_${ group.getName() }`;
-            jetpack.move(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
+            if(groupInfo.path.startsWith(FileUtils.getFilePath(false))) {
+                jetpack.copy(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
+            } else {
+                jetpack.move(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
+            }
             const absPath = FileUtils.getFilePath(false) + newFolderName + path.sep;
             group.setRootFolder(absPath);
             // Create FileModel for each subfile
@@ -38,7 +43,11 @@ export class GroupManager {
                 let hash: string = FileUtils.getFileHash(filePath);
                 let metadata: FileUploadData = FileUploadData.fromJson(null);
                 metadata.restrictions = 1;
-                group.addFileModel(new FileModel(id, file.fileName, filePath, FileState.NEW, '', hash, metadata));
+                let fileModel = new FileModel(id, file.fileName, filePath, FileState.NEW, '', hash, metadata);
+                if(downloader) {
+                    downloader.createdFilePostback(fileModel);
+                }
+                group.addFileModel(fileModel);
                 id++;
             });
             //Save to database
@@ -102,7 +111,11 @@ export class GroupManager {
 
             await uploader.upload();
 
-            if(uploader.hasFailedFile()) deleteGroup = false;
+            if(uploader.hasFailedFile()) {
+                deleteGroup = false;
+                if(window != null) window.webContents.send('status_update', -1);
+                break;
+            }
         }
 
         if(deleteGroup) {

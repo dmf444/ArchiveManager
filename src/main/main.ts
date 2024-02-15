@@ -413,6 +413,7 @@ ipcMain.on('group_delete', function(event, arg) {
 });
 
 ipcMain.on('group_upload', function (event, args) {
+    groupUpdateBuilder.commit();
     GroupManager.uploadGroup(getFileDatabase().getGroupById(args));
 });
 

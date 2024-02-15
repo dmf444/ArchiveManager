@@ -1,3 +1,4 @@
+import log from "electron-log";
 
 
 export class GoogleOauthSettings implements ISettings {
@@ -28,6 +29,7 @@ export class GoogleOauthSettings implements ISettings {
 
     getRenderingModel(): settingFrame {
         let clientKeyName = this.clientKey !== "" && this.token == null ? "Client Key <>" : "Client Key";
+        //log.info(this.clientKey, this.clientKey !== null, this.token, clientKeyName);
         return {
             id: this.categoryName,
             category: this.localizedName,

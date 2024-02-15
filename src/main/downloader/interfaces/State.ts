@@ -1,5 +1,6 @@
 export enum STATE {
     SUCCESS,
     FAILED,
-    MULTIPLE
+    MULTIPLE,
+    GROUP
 }

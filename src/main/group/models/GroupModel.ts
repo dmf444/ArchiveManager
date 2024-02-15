@@ -26,7 +26,7 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
     }
 
     public getUploadSortedFiles() {
-        let oldModels = { ...this._fileModels };
+        let oldModels = [ ...this._fileModels ];
         oldModels.sort((a, b) => {
             if (a.fileName.startsWith("root-")) {
                 return 1;
@@ -108,7 +108,7 @@ export class GroupModel implements IJsonSerializable<GroupModel> {
         let index = this._fileModels.findIndex((element) => {
             return element.id == fileModel.id;
         });
-        this._fileModels.slice(index, 1);
+        this._fileModels.splice(index, 1);
     }
 
     public findFileById(fileModelId: number) {

@@ -1,4 +1,5 @@
 import {BrowserWindow, ipcMain} from "electron";
+import {getEventsDispatcher} from "@main/main";
 
 const {autoUpdater} = require("electron-updater");
 const log = require('electron-log');
@@ -17,6 +18,7 @@ export class AutoUpdateController {
     }
 
     public checkForUpdates() {
+        getEventsDispatcher().dispatch({type: "webserver", data: { subtype: "update" }});
         autoUpdater.checkForUpdatesAndNotify().then((results) => {
             if(results != null) {
                 this.remoteVersion = results.updateInfo.version;

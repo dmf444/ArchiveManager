@@ -39,6 +39,9 @@ export class FileUploader {
         }
         data.set('date', this.file.fileMetadata.date);
         data.set('restriction', this.file.fileMetadata.restrictions);
+        if(this.file.fileMetadata.tags.length == 0) {
+            data.append('tags[]', []);
+        }
         this.file.fileMetadata.tags.forEach(tag => {
             data.append('tags[]', tag);
         });
@@ -75,13 +78,15 @@ export class FileUploader {
         let connection = await fetch(url, data);
         let backup = connection.clone();
         if (connection.headers.has('content-type') && connection.headers.get('content-type') === "application/json") {
-            connection.json().then(data => this.parseResults(data)).catch(e => {
-                backup.text().then(text => {
-                    this.parseResults({status: false, message: "Failed HTTP send, see logs for details - " + backup.status});
-                    log.info('error parsing', e);
-                    log.info('RESPONSE TEXT: ', text);
-                });
-            });
+            try {
+                let json = await connection.json();
+                this.parseResults(json);
+            } catch (e) {
+                let text = await backup.text();
+                this.parseResults({status: false, message: "Failed HTTP send, see logs for details - " + backup.status});
+                log.info('error parsing', e);
+                log.info('RESPONSE TEXT: ', text);
+            }
         } else {
             this.parseResults({status: false, message: "Failed HTTP send, see logs for details"});
             log.info(connection.text());

@@ -85,7 +85,7 @@ export class ContentSurround extends React.Component{
     render() {
         return (
             <Layout style={{height: "100%"}}>
-                <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse} style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0}}>
+                <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse} style={{ height: '100vh', position: 'fixed', left: 0}}>
                     <div className='logo' />
                     <Menu theme='dark' mode='inline' defaultSelectedKeys={['1']} style={{height: "100%", display: "flex", flexWrap: "wrap", alignContent: "flex-start"}}>
                         <Menu.Item key='1' onClick={this.changeToHome}>

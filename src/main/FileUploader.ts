@@ -18,7 +18,7 @@ export class FileUploader {
     public async upload() {
         let data = new FormData();
 
-
+        log.info("Loading files.")
         if (this.file.savedLocation != null) {
             data.set('original_file', fs.createReadStream(this.file.savedLocation), this.file.fileName);
         }
@@ -28,17 +28,26 @@ export class FileUploader {
         if (this.file.fileMetadata.coverImage != null && this.file.fileMetadata.coverImage !== "") {
             data.set('custom_preview', fs.createReadStream(this.file.fileMetadata.coverImage));
         }
+        log.info("Loading files complete.")
 
         let saveName = this.file.fileMetadata.localizedName == null ? this.file.fileName : this.file.fileMetadata.localizedName;
+        log.info("Loading names.")
         data.set('save_name', saveName);
         data.set('container', this.file.fileMetadata.container);
+        log.info("Loading container.")
         data.set('description', this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion));
+        log.info("Loading desc.")
         data.set('desc_version', this.file.fileMetadata.descriptionVersion);
+        log.info("Loading desc vers.")
         if (!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
+            log.info("Loading PC.")
             data.set('page_count', this.file.fileMetadata.pageCount);
         }
+        log.info("Loading date.")
         data.set('date', this.file.fileMetadata.date ?? "");
+        log.info("Loading restriction.")
         data.set('restriction', this.file.fileMetadata.restrictions);
+        log.info("Loading tags.")
         if(this.file.fileMetadata.tags.length == 0) {
             data.append('tags[]', []);
         }
@@ -46,12 +55,14 @@ export class FileUploader {
             data.append('tags[]', tag);
         });
         if (this.getGroup() != null) {
+            log.info("Loading group.")
             data.set('group_id', this.getGroup());
         }
 
         let urlBase = this._settings.getUrl();
         if (urlBase.slice(-1) !== "/") urlBase += "/";
         let endPoint = !this.file.fileMetadata.descriptionVersion.startsWith("1") ? "endpoint=document" : "endpoint=image";
+        log.info("URL selected.")
         /*fetch(urlBase + "api/upload.php?" + endPoint,
             {
                 method: "post",
@@ -71,6 +82,7 @@ export class FileUploader {
             headers.append('Content-Type', data.headers["Content-Type"]);
             headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
         }
+        log.info("Loading POSTING.")
         await this.connect(urlBase + "api/upload.php?" + endPoint, {method: "post", body: data.stream, headers: headers, mode: "no-cors"});
     }
 

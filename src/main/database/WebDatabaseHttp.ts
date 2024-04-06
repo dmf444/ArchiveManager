@@ -102,7 +102,7 @@ export class WebDatabaseHttp implements IWebDatabase {
         if(finalResponse.status === 200){
             let jsonResp = await finalResponse.json();
             if(jsonResp.success){
-                return jsonResp.isUnique;
+                return !jsonResp.isUnique;
             }
         } else {
             log.warn("[WebdatabaseHTTP] Unable to get tags from webserver, returned status code " + finalResponse.status);

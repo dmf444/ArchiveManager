@@ -14,7 +14,6 @@ import {STATE} from "@main/downloader/interfaces/State";
 import * as path from "path";
 import {FileModel} from "@main/file/FileModel";
 const mime = require('mime');
-const AdmZip = require('adm-zip');
 
 
 

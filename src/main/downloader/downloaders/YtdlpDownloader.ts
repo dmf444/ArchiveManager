@@ -6,9 +6,12 @@ import {FileModel} from "@main/file/FileModel";
 import {getFileDatabase, getYoutubeDlpManager} from '@main/main';
 import {STATE} from "@main/downloader/interfaces/State";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
+
 const path = require('path');
 const log = require('electron-log');
 const AdmZip = require('adm-zip');
+var yazl = require("@indutny/yazl");
+
 
 export class YtdlpDownloader implements IDownloader {
     downloaderName: string = "YT-DLP Downloader";
@@ -34,7 +37,7 @@ export class YtdlpDownloader implements IDownloader {
             let videoFileName: string = this.getVideoFileName(fileNames);
             let md5: string = this.getMd5FromFile(initalDirectory + path.sep + videoFileName);
 
-            let [zipName, zipBasePath] = this.zipFiles(fileNames, videoFileName, initalDirectory, stage);
+            let [zipName, zipBasePath] = await this.zipFiles(fileNames, videoFileName, initalDirectory, stage);
 
 
             log.info("Video Downloaded!");
@@ -73,17 +76,26 @@ export class YtdlpDownloader implements IDownloader {
         return initalDirectory;
     }
 
-    private zipFiles(fileNames: string[], videoFileName: string, initalDirectory: string, stage: boolean) {
-        var zip = new AdmZip();
-        fileNames.forEach((dlFileName: string) => {
-            zip.addLocalFile(initalDirectory + path.sep + dlFileName);
-        });
+    private async zipFiles(fileNames: string[], videoFileName: string, initalDirectory: string, stage: boolean) {
+        var zipFile = new yazl.ZipFile();
 
         let zipBasePath: string = FileUtils.getFilePath(stage);
         let lastDot: number = videoFileName.lastIndexOf(".");
         let zipName: string = videoFileName.substring(0, lastDot) + ".zip";
         let zipSavePath: string = zipBasePath + path.sep + zipName;
-        zip.writeZip(zipSavePath);
+        let pipe = zipFile.outputStream.pipe(jetpack.createWriteStream(zipSavePath));
+
+        fileNames.forEach((dlFileName: string) => {
+            zipFile.addFile(initalDirectory + path.sep + dlFileName, dlFileName);
+        });
+
+        zipFile.end();
+        await new Promise((resolve, reject) => {
+            pipe.on("close", function() {
+                log.info("Zipfile Created!");
+                resolve();
+            });
+        });
         return [zipName, zipBasePath];
     }
 

@@ -390,8 +390,8 @@ ipcMain.on('code_verification', function (event, apiRequester: string, values) {
     }
 });
 
-ipcMain.on('import_directory', function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
-   GroupManager.importGroup(args);
+ipcMain.on('import_directory', async function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
+   await GroupManager.importGroup(args);
 });
 
 ipcMain.on('group_get_content', function (event, args: number) {

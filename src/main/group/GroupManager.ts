@@ -19,7 +19,7 @@ type GroupImportType = {
 
 export class GroupManager {
 
-    public static importGroup(groupInfo: GroupImportType, downloader?: IDownloader){
+    public static async importGroup(groupInfo: GroupImportType, downloader?: IDownloader) {
         if (groupInfo.type == "individual") {
             groupInfo.files.forEach((file) => {
                 getFileManager().addFileFromLocal(file.filePath, file.fileName);
@@ -28,8 +28,8 @@ export class GroupManager {
             // Create Group
             let group = this.createGroup(groupInfo.path);
             //Move Folder to Staging area
-            const newFolderName = `g${ group.id }_${ group.getName() }`;
-            if(groupInfo.path.startsWith(FileUtils.getFilePath(false))) {
+            const newFolderName = `g${group.id}_${group.getName()}`;
+            if (groupInfo.path.startsWith(FileUtils.getFilePath(false))) {
                 jetpack.copy(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
             } else {
                 jetpack.move(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
@@ -38,18 +38,18 @@ export class GroupManager {
             group.setRootFolder(absPath);
             // Create FileModel for each subfile
             let id = 0;
-            groupInfo.files.forEach((file) => {
+            for (const file of groupInfo.files) {
                 let filePath = absPath + file.fileName;
-                let hash: string = FileUtils.getFileHash(filePath);
+                let hash: string = await FileUtils.getFileHash(filePath);
                 let metadata: FileUploadData = FileUploadData.fromJson(null);
                 metadata.restrictions = 1;
                 let fileModel = new FileModel(id, file.fileName, filePath, FileState.NEW, '', hash, metadata);
-                if(downloader) {
+                if (downloader) {
                     downloader.createdFilePostback(fileModel);
                 }
                 group.addFileModel(fileModel);
                 id++;
-            });
+            }
             //Save to database
             getFileDatabase().addGroup(group);
         }

@@ -9,6 +9,7 @@ import * as path from "path";
 import log from "electron-log";
 import {GroupUploader} from "@main/group/controller/GroupUploader";
 import {IDownloader} from "@main/downloader/interfaces/IDownloader";
+import RemoteServerApi from "@main/api/RemoteServerApi";
 
 
 type GroupImportType = {
@@ -82,6 +83,8 @@ export class GroupManager {
 
         let deleteGroup = true;
         if(window != null) window.webContents.send('group_upload_start', group.getFiles().length);
+        let api = new RemoteServerApi();
+        let valid = await api.getToken();
 
         for (const file of group.getUploadSortedFiles()) {
 
@@ -93,7 +96,7 @@ export class GroupManager {
                 continue;
             }
 
-            let uploader = new GroupUploader(mergedFile, group);
+            let uploader = new GroupUploader(mergedFile, api, group);
             if (group.getGroupId() == null) {
                 let groupMade = await uploader.preFlight();
                 if(!groupMade) {

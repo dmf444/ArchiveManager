@@ -1,4 +1,4 @@
-import {Button, Col, Divider, Form, Input, notification, Row} from "antd";
+import {Button, Col, Divider, Empty, Form, Input, notification, Row} from "antd";
 import * as React from 'react';
 import {ipcRenderer} from  'electron';
 import {CheckCircleOutlined} from "@ant-design/icons/lib";
@@ -48,45 +48,50 @@ export class Settings extends React.Component {
         this.setState({data: args});
     }
 
-    createInputs(clientArgs: settingFrame, keyId: Number) {
-        var formInputs = [];
-        for (let j = 0; j < clientArgs.settings.length; j++) {
-            let setting: settingValues = clientArgs.settings[j];
-            let size = Math.round((24 * setting.size) / 100);
+    getInputField(setting: settingValues, key: number, index: number) {
+        if(setting.type && setting.type == "password") {
+            return <Input.Password defaultValue={setting.value} value={setting.value} key={`input_${key}_${index}`}/>;
+        }
+        return <Input defaultValue={setting.value} value={setting.value} key={`input_${key}_${index}`}/>;
+    }
 
+    getInputLabelHeader(setting: settingValues) {
+        return !setting.name.includes("<") ? setting.name : (
+            <div>
+                <Row style={{height: "20px"}}>
+                    <p style={{margin: 0}}>{setting.name.replace("<>", "")}</p>
+                    <Button type={'link'} size={'small'} onClick={() => {this.authorizeAccount()}}>(Authorize Account)</Button>
+                </Row>
+            </div>
+        );
+    }
 
-            let labelHeader = !setting.name.includes("<") ? setting.name : (
-                <div>
-                    <Row style={{height: "20px"}}>
-                        <p style={{margin: 0}}>{setting.name.replace("<>", "")}</p>
-                        <Button type={'link'} size={'small'} onClick={() => {this.authorizeAccount()}}>(Authorize Account)</Button>
-                    </Row>
-                </div>
-            );
-            formInputs.push(
-                <Col span={size} key={"col_" + keyId + "_" + j} style={{paddingTop: 10}}>
-                    <Form.Item label={labelHeader} name={setting.id} key={"formitem_" + keyId + "_" + j} style={{padding: "5px"}}>
-                        <Input defaultValue={setting.value} value={setting.value} key={"input_" + keyId + "_" + j}/>
+    createInputs(clientArgs: settingFrame, keyId: number) {
+        return clientArgs.settings.map((setting, index) => {
+            let displaySize = Math.round((24 * setting.size) / 100);
+
+            return (
+                <Col span={displaySize} key={`col_${keyId}_${index}`} style={{paddingTop: 10}}>
+                    <Form.Item label={this.getInputLabelHeader(setting)} name={setting.id} key={`formitem_${keyId}_${index}`} style={{padding: "5px"}}>
+                        { this.getInputField(setting, keyId, index) }
                     </Form.Item>
                 </Col>
             );
-        }
-        return formInputs;
+        });
     }
 
     createForm = () => {
-        var internalFormList= [];
         if(this.state.data != null){
-            for (let i = 0; i < this.state.data.length; i++) {
-                let clientArgs: settingFrame = this.state.data[i];
-
-                internalFormList.push(<Divider orientation="left" style={{ fontSize: "20px" }} key={i}>{clientArgs.category}</Divider>);
-                internalFormList.push(
-                    <Row style={{width: "100%"}} key={"row_" + i}>
-                        {this.createInputs(clientArgs, i)}
-                    </Row>
-                );
-            }
+            let internalFormList = this.state.data.map((setting, index) => {
+               return (
+                   <>
+                       <Divider orientation="left" style={{ fontSize: "20px" }} key={index}>{setting.category}</Divider>
+                       <Row style={{width: "100%"}} key={`row_${index}`}>
+                           {this.createInputs(setting, index)}
+                       </Row>
+                   </>
+               );
+            });
 
             internalFormList.push(
                 <Form.Item key={this.state.data.length}>
@@ -95,10 +100,13 @@ export class Settings extends React.Component {
                     </Button>
                 </Form.Item>
             );
+            return internalFormList;
 
         }
 
-        return internalFormList;
+        return [
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"No settings were found to configure."}/>
+        ];
     }
 
     onFinish = values => {

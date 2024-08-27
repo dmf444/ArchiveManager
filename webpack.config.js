@@ -19,6 +19,7 @@ const commonConfig = {
   node: { __dirname: false, __filename: false },
   resolve: {
     alias: {
+      "wretch": "wretch/dist",
       '@': srcPaths('src'),
       '@main': srcPaths('src/main'),
       '@models': srcPaths('src/models'),

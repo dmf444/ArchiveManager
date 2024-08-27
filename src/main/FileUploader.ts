@@ -3,75 +3,61 @@ import * as fs from 'fs';
 import {getDescriptionReader, getFileDatabase, getFileManager, getMainWindow, getSettingsManager} from "@main/main";
 import {UploadSettings} from "@main/settings/UploadSettings";
 import fetch, {Headers} from 'node-fetch';
-const FormData = require('formdata-node');
+import {objectToFormData} from "@octetstream/object-to-form-data/lib/object-to-form-data";
+import FormData from "formdata-node";
+import RemoteServerApi from "@main/api/RemoteServerApi";
+const FormDataNode = require('formdata-node');
 const log = require('electron-log');
 
 export class FileUploader {
     protected file: FileModel;
     protected _settings: UploadSettings;
+    protected remoteServerApi: RemoteServerApi;
 
-    constructor(file) {
+    constructor(file: FileModel, remoteApi: RemoteServerApi) {
         this.file = file;
         this._settings = <UploadSettings>getSettingsManager().getSettings("upload");
+        this.remoteServerApi = remoteApi;
     }
 
     public async upload() {
-        let data = new FormData();
 
-        log.debug("Loading files.")
+        log.debug("Building standard payload.");
+        let fileMetadata = this.file.fileMetadata;
+        const form= objectToFormData({
+            save_name: fileMetadata.localizedName ?? this.file.fileName,
+            container: fileMetadata.container,
+            description: this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion),
+            desc_version: fileMetadata.descriptionVersion,
+            page_count: fileMetadata.descriptionVersion.startsWith("1") ? fileMetadata.pageCount : undefined,
+            date: fileMetadata.date ?? "",
+            restrictions: fileMetadata.restrictions,
+            tags: fileMetadata.tags,
+            group_id: this.getGroup()
+        }, {FormData: FormDataNode}) as FormData;
+
+        log.debug("Loading files.");
         if (this.file.savedLocation != null) {
-            data.set('original_file', fs.createReadStream(this.file.savedLocation), this.file.fileName);
+            form.set('original_file', fs.createReadStream(this.file.savedLocation), this.file.fileName);
         }
-        if (this.file.fileMetadata.extraFile != null && this.file.fileMetadata.extraFile !== "") {
-            data.set('cached_file', fs.createReadStream(this.file.fileMetadata.extraFile));
+        if (fileMetadata.extraFile != null && fileMetadata.extraFile !== "") {
+            form.set('cached_file', fs.createReadStream(this.file.fileMetadata.extraFile));
         }
-        if (this.file.fileMetadata.coverImage != null && this.file.fileMetadata.coverImage !== "") {
-            data.set('custom_preview', fs.createReadStream(this.file.fileMetadata.coverImage));
+        if (fileMetadata.coverImage != null && fileMetadata.coverImage !== "") {
+            form.set('custom_preview', fs.createReadStream(this.file.fileMetadata.coverImage));
         }
-        log.debug("Loading files complete.")
+        log.debug("Loading files complete.");
 
-        let saveName = this.file.fileMetadata.localizedName == null ? this.file.fileName : this.file.fileMetadata.localizedName;
-        log.debug("Loading names.")
-        data.set('save_name', saveName);
-        data.set('container', this.file.fileMetadata.container);
-        log.debug("Loading container.")
-        data.set('description', this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion));
-        log.debug("Loading desc.")
-        data.set('desc_version', this.file.fileMetadata.descriptionVersion);
-        log.debug("Loading desc vers.")
-        if (!this.file.fileMetadata.descriptionVersion.startsWith("1")) {
-            log.info("Loading PC.")
-            data.set('page_count', this.file.fileMetadata.pageCount);
-        }
-        log.debug("Loading date.")
-        data.set('date', this.file.fileMetadata.date ?? "");
-        log.debug("Loading restriction.")
-        data.set('restriction', this.file.fileMetadata.restrictions);
-        log.debug("Loading tags.")
-        if(this.file.fileMetadata.tags.length == 0) {
-            data.append('tags[]', []);
-        }
-        this.file.fileMetadata.tags.forEach(tag => {
-            data.append('tags[]', tag);
-        });
-        if (this.getGroup() != null) {
-            log.debug("Loading group.")
-            data.set('group_id', this.getGroup());
-        }
 
-        let urlBase = this._settings.getUrl();
-        if (urlBase.slice(-1) !== "/") urlBase += "/";
-        let endPoint = !this.file.fileMetadata.descriptionVersion.startsWith("1") ? "endpoint=document" : "endpoint=image";
-        log.debug("URL selected.")
-
-        let headers = data.headers;
-        if (this._settings.getUsername() !== '') {
-            headers = new Headers();
-            headers.append('Content-Type', data.headers["Content-Type"]);
-            headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
+        log.debug("POSTING.");
+        try{
+            let data = await this.remoteServerApi.uploadFile(form);
+            this.parseResults(data);
+        } catch(e) {
+            this.parseResults({status: false, message: "Failed HTTP send, see logs for details - " + e.code});
+            log.info('error parsing', e);
+            //log.info('RESPONSE TEXT: ', text);
         }
-        log.debug("POSTING.")
-        await this.connect(urlBase + "api/upload.php?" + endPoint, {method: "post", body: data.stream, headers: headers, mode: "no-cors"});
     }
 
     async connect(url, data) {
@@ -123,7 +109,7 @@ export class FileUploader {
     }
 
     protected getGroup(): string {
-        return null;
+        return undefined;
     }
 
 }

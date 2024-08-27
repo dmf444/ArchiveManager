@@ -35,7 +35,7 @@ export class GoogleOauthSettings implements ISettings {
             category: this.localizedName,
             settings: [
                 {id: 'client_key', value: this.clientKey, size: 50, name: clientKeyName},
-                {id: 'client_secret', value: this.clientSecret, size: 50, name: "Client Secret"}
+                {id: 'client_secret', value: this.clientSecret, size: 50, name: "Client Secret", type: "password"}
             ]
         }
     }

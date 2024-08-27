@@ -53,7 +53,7 @@ export class DiscordSettings implements ISettings{
             id: this.categoryName,
             category: this.localizedName,
             settings: [
-                {id: 'token', value: this.token, size: 66.6, name: "Discord Bot Token"},
+                {id: 'token', value: this.token, size: 66.6, name: "Discord Bot Token", type: "password"},
                 {id: 'channelId', value: this.channel_id, size: 33.3, name: "Channel Id"},
                 {id: 'authorizedUsers', value: this._authorizedUsers.join(","), size: 100, name: "Authorized Users"},
                 {id: 'acceptIcon', value: this.icons_accept, size: 33.3, name: "Accept Emote"},

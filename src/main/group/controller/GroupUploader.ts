@@ -5,6 +5,8 @@ import fetch, {Headers} from 'node-fetch';
 import FormData from "formdata-node";
 import {getFileDatabase, getMainWindow} from "@main/main";
 import jetpack from "fs-jetpack";
+import RemoteServerApi from "@main/api/RemoteServerApi";
+import log from "electron-log";
 
 
 export class GroupUploader extends FileUploader {
@@ -12,8 +14,8 @@ export class GroupUploader extends FileUploader {
     private groupId: string;
     private failedFile: boolean;
 
-    constructor(file: FileModel, group: GroupModel) {
-        super(file);
+    constructor(file: FileModel, remoteApi: RemoteServerApi, group: GroupModel) {
+        super(file, remoteApi);
         this.group = group;
         this.failedFile = false;
     }
@@ -32,29 +34,17 @@ export class GroupUploader extends FileUploader {
             return;
         }
 
-        let data = new FormData();
-
-        data.set('group_name', this.group.getName());
-
-        let headers = new Headers();
-        headers.append('Content-Type', data.headers["Content-Type"]);
-
-        if(this._settings.getUsername() !== '') {
-            headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
-        }
-
-        let urlBase = this._settings.getUrl();
-        if(urlBase.slice(-1) !== "/") urlBase += "/";
-
-        let connection = await fetch(`${urlBase}api/upload.php?endpoint=group`, { method: "post", body: data.stream, headers: headers });
-        if(connection.status === 200) {
-            let json = await connection.json();
+        try{
+            const json = await this.remoteServerApi.createGroup(this.group.getName());
             if(json.uid == -1){
                 this.groupId = null;
             }else {
                 this.groupId = json.uid;
             }
+        } catch (e) {
+            log.error(e);
         }
+
         if(this.groupId == null) await this.preFlight(++depth);
         return this.groupId !== null;
     }

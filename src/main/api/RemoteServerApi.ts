@@ -9,7 +9,23 @@ import FormData from "formdata-node";
 import log from "electron-log";
 import basicAuth from "@main/api/BasicAuth";
 import formData from "@main/api/FormData";
+import {ReadStream} from "fs";
 
+
+export type UploadType = {
+    save_name: string,
+    container: number,
+    description: string
+    desc_version: string,
+    page_count?: number,
+    date: string,
+    restriction: number,
+    tags: string[],
+    group_id?: string,
+    original_file?: {file_data: ReadStream, file_title: string},
+    cached_file?: ReadStream,
+    custom_preview?: ReadStream
+}
 
 export default class RemoteServerApi {
 
@@ -31,9 +47,9 @@ export default class RemoteServerApi {
 
 
     public getToken(): Promise<boolean> {
-        return this.baseApi.url("/api/authentication/login.php").formData({username: this.apiUsername, motdepass: this.apiPassword}).post().res((jsonPayload) => {
-            jsonPayload.text().then(data => console.log(data));
-            if(jsonPayload.auth) {
+        return this.baseApi.url("/api/authentication/login.php").formData({username: this.apiUsername, motdepass: this.apiPassword}).post().json((jsonPayload) => {
+            log.info(`Auth Request Response: ${jsonPayload.auth} - contains probably valid token: ${jsonPayload.token.startsWith("ey")}`);
+            if (jsonPayload.auth) {
                 this.token = jsonPayload.token;
                 return true;
             }
@@ -45,15 +61,15 @@ export default class RemoteServerApi {
     }
 
 
-    public async uploadFile(data: FormData) {
+    public async uploadFile(data: UploadType) {
         if (this.token == null) await this.getToken();
         const queryParams = {
-          endpoint: (data.get("desc_version") as string).startsWith("1") ? "image" : "document"
+          endpoint: data.desc_version.startsWith("1") ? "image" : "document"
         };
 
-        return this.baseApi.url("/api/upload.php").headers({ "X-ARCHIVES-AUTH": this.token, ...data.headers }).query(queryParams).body(data.stream).post().unauthorized(async (error, req) => {
+        return this.baseApi.url("/api/upload.php").headers({ "X-ARCHIVES-AUTH": this.token }).query(queryParams).formData(data).post().unauthorized(async (error, req) => {
             await this.getToken().catch(err => log.warn(err));
-            return req.headers({ "X-ARCHIVES-AUTH": this.token }).post().unauthorized(err => log.warn(err)).json();
+            return req.headers({ "X-ARCHIVES-AUTH": this.token }).post().unauthorized(err => log.warn("Reauth Error", err)).json();
         }).json();
     }
 

@@ -11,6 +11,14 @@ const log = require('electron-log');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
+export type UploadResultStatusType = {
+    intid: string,
+    name: string,
+    datetime: string,
+    status: "success" | "failure",
+    errors?: string | string[]
+}
+
 
 export class FileDatabase {
     private database;
@@ -149,7 +157,7 @@ export class FileDatabase {
         return this.database.get('groups').value();
     }
 
-    public addNewUpload(data) {
+    public addNewUpload(data: UploadResultStatusType) {
         let dataSpot = this.database.get('uploadhist');
         if(dataSpot == null){
             this.database.push({uploadhist: []}).write();

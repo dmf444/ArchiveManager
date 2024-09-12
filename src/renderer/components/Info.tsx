@@ -89,7 +89,10 @@ export class Info extends React.Component {
             title: 'Errors',
             dataIndex: 'errors',
             key: 'errors',
-            ellipsis: true
+            ellipsis: true,
+            render: text => {
+                return text instanceof Array ? text.join(", ") : text;
+            }
         }
     ];
 

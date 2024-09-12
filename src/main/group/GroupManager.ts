@@ -10,6 +10,7 @@ import log from "electron-log";
 import {GroupUploader} from "@main/group/controller/GroupUploader";
 import {IDownloader} from "@main/downloader/interfaces/IDownloader";
 import RemoteServerApi from "@main/api/RemoteServerApi";
+import {UploadResultStatusType} from "@main/database/LocalDatabase";
 
 
 type GroupImportType = {
@@ -102,7 +103,13 @@ export class GroupManager {
                 if(!groupMade) {
                     deleteGroup = false;
                     let date = new Date();
-                    let uploadAttempt = { intid: `G${group.id}`, name: `this.file.fileName`, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes(), errors: ['Unable to create group id'], status: 'reject' };
+                    let uploadAttempt: UploadResultStatusType = {
+                        intid: `G${group.id}`,
+                        name: `this.file.fileName`,
+                        datetime: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`,
+                        errors: ['Unable to create group id'],
+                        status: 'failure'
+                    };
                     getFileDatabase().addNewUpload(uploadAttempt);
                     if(window != null) window.webContents.send('status_update', -1);
                     break;

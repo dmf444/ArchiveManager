@@ -1,11 +1,9 @@
 import * as React from 'react';
-import {Card, Col, Row, Button, Divider, Input, Typography, Form, Select, Popconfirm, Upload, Empty} from 'antd';
-import {ImageRendering} from "@/renderer/components/files/ImageRendering";
+import {Card, Col, Row, Button, Divider, Typography, Form, Select, Popconfirm, Upload, Empty} from 'antd';
 
 const { Option } = Select;
 const log = require('electron-log');
-const { Text, Title } = Typography;
-const { TextArea } = Input;
+const { Text } = Typography;
 import {
     DeleteOutlined,
     DeliveredProcedureOutlined, DownloadOutlined,
@@ -215,7 +213,7 @@ export class FileInfo extends React.Component<FileProps, FileInfoState>{
                                 <Button type="primary" icon={<DeliveredProcedureOutlined />} block={true} style={{paddingLeft: "10px", paddingRight: "10px"}} onClick={this.sendFileBrowser}>Open File</Button>
                             </Col>
                             <Col span={12}>
-                                <Button type="primary" icon={<IeOutlined />} block={true} style={{paddingLeft: "10px", paddingRight: "10px"}} onClick={this.sendOpenBrowser}>Open File In Browser</Button>
+                                <Button type="primary" icon={<IeOutlined />} block={true} style={{paddingLeft: "10px", paddingRight: "10px"}} onClick={this.sendOpenBrowser} disabled={ !this.props.editingCard.url}>Open File In Browser</Button>
                             </Col>
                         </Row>
 

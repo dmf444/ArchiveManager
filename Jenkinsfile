@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'electronuserland/builder:wine'
+      image 'electronuserland/builder:18-wine-07.24'
       args '-u 0:0'
     }
 

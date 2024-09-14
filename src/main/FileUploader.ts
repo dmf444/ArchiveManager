@@ -27,7 +27,7 @@ export class FileUploader {
             container: fileMetadata.container,
             description: this.completeJson(this.file.fileMetadata.description, this.file.fileMetadata.descriptionVersion),
             desc_version: fileMetadata.descriptionVersion,
-            page_count: !fileMetadata.descriptionVersion.startsWith("1") ? fileMetadata.pageCount : undefined,
+            page_count: !fileMetadata.descriptionVersion.startsWith("1") ? (fileMetadata.pageCount ?? "null") : undefined,
             date: fileMetadata.date ?? "",
             restriction: fileMetadata.restrictions,
             tags: fileMetadata.tags,

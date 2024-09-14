@@ -17,7 +17,7 @@ export type UploadType = {
     container: number,
     description: string
     desc_version: string,
-    page_count?: number,
+    page_count?: number | "null",
     date: string,
     restriction: number,
     tags: string[],

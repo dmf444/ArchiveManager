@@ -27,7 +27,7 @@ function convertFormData(
                 if (value == undefined) return;
 
                 if(value.hasOwnProperty("file_title") && value.hasOwnProperty("file_data")) {
-                    formData.set(formKey, value.data, value.title);
+                    formData.set(formKey, value.file_data, value.file_title);
                     return;
                 }
 

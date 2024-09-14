@@ -11,6 +11,7 @@ import {GroupUploader} from "@main/group/controller/GroupUploader";
 import {IDownloader} from "@main/downloader/interfaces/IDownloader";
 import RemoteServerApi from "@main/api/RemoteServerApi";
 import {UploadResultStatusType} from "@main/database/LocalDatabase";
+import {sendSuccess} from "@main/NotificationBundle";
 
 
 type GroupImportType = {
@@ -54,6 +55,7 @@ export class GroupManager {
             }
             //Save to database
             getFileDatabase().addGroup(group);
+            sendSuccess("Group Import Completed", "Successfully imported group folder.");
         }
     }
 
@@ -74,7 +76,7 @@ export class GroupManager {
     public static deleteGroup(group: GroupModel, removeFolder: boolean = false) {
         log.info(`Deleting Group: ${group.getName()} with id: ${group.id}. Folder removal: ${removeFolder}`);
         if(removeFolder) {
-            jetpack.remove(group.getRootFolder())
+            jetpack.remove(group.getRootFolder());
         }
         getFileDatabase().removeGroup(group);
     }

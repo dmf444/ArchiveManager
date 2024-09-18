@@ -5,6 +5,9 @@ import fetch, {Headers} from 'node-fetch';
 import FormData from "formdata-node";
 import {getFileDatabase, getMainWindow} from "@main/main";
 import jetpack from "fs-jetpack";
+import RemoteServerApi from "@main/api/RemoteServerApi";
+import log from "electron-log";
+import {UploadResultStatusType} from "@main/database/LocalDatabase";
 
 
 export class GroupUploader extends FileUploader {
@@ -12,8 +15,8 @@ export class GroupUploader extends FileUploader {
     private groupId: string;
     private failedFile: boolean;
 
-    constructor(file: FileModel, group: GroupModel) {
-        super(file);
+    constructor(file: FileModel, remoteApi: RemoteServerApi, group: GroupModel) {
+        super(file, remoteApi);
         this.group = group;
         this.failedFile = false;
     }
@@ -32,46 +35,37 @@ export class GroupUploader extends FileUploader {
             return;
         }
 
-        let data = new FormData();
-
-        data.set('group_name', this.group.getName());
-
-        let headers = new Headers();
-        headers.append('Content-Type', data.headers["Content-Type"]);
-
-        if(this._settings.getUsername() !== '') {
-            headers.append('Authorization', 'Basic ' + Buffer.from(`${this._settings.getUsername()}:${this._settings.getPassword()}`).toString('base64'));
-        }
-
-        let urlBase = this._settings.getUrl();
-        if(urlBase.slice(-1) !== "/") urlBase += "/";
-
-        let connection = await fetch(`${urlBase}api/upload.php?endpoint=group`, { method: "post", body: data.stream, headers: headers });
-        if(connection.status === 200) {
-            let json = await connection.json();
+        try{
+            const json = await this.remoteServerApi.createGroup(this.group.getName());
             if(json.uid == -1){
                 this.groupId = null;
             }else {
                 this.groupId = json.uid;
             }
+        } catch (e) {
+            log.error(e);
         }
+
         if(this.groupId == null) await this.preFlight(++depth);
         return this.groupId !== null;
     }
 
-    protected parseResults(data) {
+    protected parseResults(data: {success: boolean, message?: string | string[], uid?: string}) {
         let date = new Date();
-        let uploadAttempt = { intid: `G${this.group.id}/${this.file.id}`, name: this.file.fileName, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes() };
+        let uploadAttempt: UploadResultStatusType = {
+            intid: `G${this.group.id}/${this.file.id}`,
+            name: this.file.fileName,
+            datetime: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`,
+            status: data.success ? "success" : "failure"
+        };
         let window = getMainWindow();
 
         if(data.success) {
-            uploadAttempt['status'] = 'success';
             this.group.removeFileModel(this.file);
             jetpack.remove(this.file.savedLocation);
             getFileDatabase().updateGroup(this.group);
             if(window != null) window.webContents.send('status_update', 1);
         } else {
-            uploadAttempt['status'] = 'reject';
             uploadAttempt['errors'] = data.message;
             if(window != null) window.webContents.send('status_update', 0);
             this.failedFile = true;

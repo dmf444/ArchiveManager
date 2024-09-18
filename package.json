@@ -6,11 +6,12 @@
   "scripts": {
     "start": "electron ./dist/main.bundle.js",
     "verup": "npm version --no-git-tag-version 2.0.${BUILD_NUMBER}",
-    "dev": "rimraf dist && cross-env NODE_ENV=development webpack --watch --progress --colors",
+    "dev": "rimraf dist && cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack --watch --progress --colors",
     "prod": "rimraf dist && cross-env NODE_ENV=development webpack --progress --colors",
     "test": "jest",
     "build:win": "electron-builder build --win --x64 --publish never",
-    "build:mac": "electron-builder build --mac --x64 -c.mac.identity=null"
+    "build:mac": "electron-builder build --mac --x64 -c.mac.identity=null",
+    "setup": "npm install --legacy-peer-deps"
   },
   "build": {
     "appId": "com.dmf444.archivesmanager",
@@ -53,15 +54,17 @@
     "electron-log": "^4.1.2",
     "electron-dl": "3.3.1",
     "fs-jetpack": "^2.2.3",
+    "@indutny/yazl": "2.7.0",
     "adm-zip": "^0.4.14",
     "electron-context-menu": "^2.0.1",
     "electron-updater": "4.3.1",
-    "node-fetch": "2.6.1",
+    "node-fetch": "2.7.0",
     "formdata-node": "^2.4.0",
     "googleapis": "89.0.0",
     "@google-cloud/local-auth": "^1.0.1",
     "hex2dec": "1.1.2",
-    "mime": "3.0.0"
+    "mime": "3.0.0",
+    "wretch": "^2.9.0"
   },
   "devDependencies": {
     "@types/react-router": "^4.4.5",
@@ -93,7 +96,7 @@
     "tsconfig-paths": "^3.9.0",
     "tslint": "^5.20.1",
     "tslint-microsoft-contrib": "^5.2.1",
-    "typescript": "^3.7.2",
+    "typescript": "^3.9.10",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "jest": "^27.3.1",

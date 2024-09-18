@@ -7,6 +7,8 @@ export class UploadSettings implements ISettings{
     private __url : string;
     private __username: string = '';
     private __password: string = '';
+    private __archivesUsername: string = '';
+    private __archivesPassword: string = '';
 
     constructor() {
         this.categoryName = "upload";
@@ -27,15 +29,25 @@ export class UploadSettings implements ISettings{
         return this.__password;
     }
 
+    public getArchivesUsername() {
+        return this.__archivesUsername;
+    }
+
+    public getArchivesPassword() {
+        return this.__archivesPassword;
+    }
+
     equals(settingImpl: {}): boolean {
         let setting: UploadSettings = <UploadSettings>new UploadSettings().fromJson(settingImpl);
-        return setting.__url === this.__url && setting.__username === this.__username && setting.__password === this.__password;
+        return setting.__url === this.__url && setting.__username === this.__username && setting.__password === this.__password && setting.__archivesUsername == this.__archivesUsername && setting.__archivesPassword == this.__archivesPassword;
     }
 
     fromJson(jsonModel: {}): ISettings {
         this.__url = jsonModel['url'];
         this.__username = jsonModel['username_uploader'];
         this.__password = jsonModel['password_uploader'];
+        this.__archivesUsername = jsonModel['username_website'];
+        this.__archivesPassword = jsonModel['password_website'];
         return this;
     }
 
@@ -45,8 +57,10 @@ export class UploadSettings implements ISettings{
             category: this.localizedName,
             settings: [
                 {id: 'url', value: this.__url, size: 100, name: "API Base URL"},
-                {id: 'username_uploader', value: this.__username, size: 50, name: "API Authentication Username"},
-                {id: 'password_uploader', value: this.__password, size: 50, name: "API Authentication Password"}
+                {id: 'username_uploader', value: this.__username, size: 50, name: "Proxy Username"},
+                {id: 'password_uploader', value: this.__password, size: 50, name: "Proxy Password", type: "password"},
+                {id: 'username_website', value: this.__archivesUsername, size: 50, name: "Archives Username"},
+                {id: 'password_website', value: this.__archivesPassword, size: 50, name: "Archives Password", type: "password"}
             ]
         }
     }
@@ -55,7 +69,9 @@ export class UploadSettings implements ISettings{
         return {
             url: this.__url,
             username_uploader: this.__username,
-            password_uploader: this.__password
+            password_uploader: this.__password,
+            username_website: this.__archivesUsername,
+            password_website: this.__archivesPassword
         };
     }
 

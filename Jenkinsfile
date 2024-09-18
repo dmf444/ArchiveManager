@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'electronuserland/builder:wine'
+      image 'electronuserland/builder:18-wine-07.24'
       args '-u 0:0'
     }
 
@@ -10,7 +10,7 @@ pipeline {
     stage('Build Windows') {
       steps {
         sh 'rm package-lock.json'
-        sh 'npm install'
+        sh 'npm run setup'
         sh 'npm run verup'
         sh 'npm run prod'
         sh 'npm run build:win'

@@ -6,7 +6,7 @@ import {FileState} from "@main/file/FileState";
 import {FileModel} from "@main/file/FileModel";
 import {InspectResult} from "fs-jetpack/types";
 import * as path from "path";
-
+const crypto = require('crypto');
 const log = require('electron-log');
 
 
@@ -88,12 +88,31 @@ export class FileUtils {
         if(oldFileName != file.fileName) {
             file.savedLocation = file.savedLocation.replace(oldFileName, "") + file.fileName;
         }
-        if(copyFile) {
-            jetpack.copy(file.savedLocation, stagingingPath + file.fileName);
-        } else{
-            jetpack.move(file.savedLocation, stagingingPath + file.fileName);
-        }
 
+        this.relocateFile(file.savedLocation, stagingingPath + file.fileName, copyFile);
+
+    }
+
+    private static relocateFile(currentFilePath: string, destinationFilePath: string, copyFile: boolean = false) {
+        let fileSize = jetpack.inspect(currentFilePath).size;
+        console.debug(`Importing file of size ${fileSize}`);
+        if(fileSize < (1024 ** 3)) {
+            if(copyFile) {
+                jetpack.copy(currentFilePath, destinationFilePath);
+            } else{
+                jetpack.move(currentFilePath, destinationFilePath);
+            }
+        } else {
+            let readStream = jetpack.createReadStream(currentFilePath);
+            let writeStream = jetpack.createWriteStream(destinationFilePath);
+
+            readStream.pipe(writeStream);
+            readStream.on('end', () => {
+                if(!copyFile) {
+                    jetpack.remove(currentFilePath);
+                }
+            });
+        }
     }
 
     public static moveFileByPath(absolutePath: string) {
@@ -103,7 +122,7 @@ export class FileUtils {
         log.info(fileName);
         fileName = this.renameFileIfExists(fileName, absolutePath);
         log.info(fileName);
-        jetpack.move(absolutePath, stagingingPath + fileName);
+        this.relocateFile(absolutePath, stagingingPath + fileName);
         return stagingingPath + fileName;
     }
 
@@ -123,9 +142,21 @@ export class FileUtils {
         return fileName;
     }
 
-    public static getFileHash(filePath: string): string {
-        let result: InspectResult = jetpack.inspect(filePath, {checksum: "md5"});
-        return result.md5;
+    public static async getFileHash(filePath: string): Promise<string> {
+        //let result: InspectResult = jetpack.inspect(filePath, {checksum: "md5"});
+        //log.info(result.md5);
+        return await this.hashOfStream(filePath);
+    }
+
+    private static async hashOfStream(path): Promise<string> {
+        //https://gist.github.com/F1LT3R/2e4347a6609c3d0105afce68cd101561
+        return await new Promise((resolve, reject) => {
+            const hash = crypto.createHash('md5')
+            const rs = jetpack.createReadStream(path);
+            rs.on('error', reject);
+            rs.on('data', chunk => hash.update(chunk));
+            rs.on('end', () => resolve(hash.digest('hex')));
+        });
     }
 
 }

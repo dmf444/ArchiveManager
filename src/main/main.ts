@@ -12,7 +12,7 @@ import {FileDatabase} from '@main/database/LocalDatabase';
 import {FileManager} from "@main/downloader/FileManager";
 import {YoutubeDLManager} from "@main/youtubedl/YoutubeDLManager";
 import {FileEditBuilder} from "@main/file/FileEditBuilder";
-import {sendSuccess} from "@main/NotificationBundle";
+import {sendError, sendSuccess} from "@main/NotificationBundle";
 import {autoUpdateControl} from '@main/updater/AutoUpdateController';
 import {DescriptionFileReader} from "@main/description/DescriptionFileReader";
 import {FileUploader} from '@main/FileUploader';
@@ -26,6 +26,7 @@ import {FileModel} from '@main/file/FileModel';
 import {GroupModel} from '@main/group/models/GroupModel';
 import {GroupEditBuilder} from '@main/group/controller/GroupEditBuilder';
 import * as fs from 'fs';
+import RemoteServerApi from "@main/api/RemoteServerApi";
 const contextMenu = require('electron-context-menu');
 const log = require('electron-log');
 const electronDl = require('electron-dl');
@@ -365,8 +366,17 @@ ipcMain.on('file_description_format_get', function (event, version: string) {
 
 ipcMain.on('file_upload', function (event, id:number) {
     fileUpdateBuilder.commitFile();
-    let uploader = new FileUploader(getFileDatabase().getFileById(id));
-    uploader.upload();
+    let api = new RemoteServerApi();
+    api.getToken().then(success => {
+        if(!success) {
+            event.sender.send("status_update", false);
+            sendError("Login Request Failed!", "Unable to login to the Archives.");
+            return;
+        }
+
+        let uploader = new FileUploader(getFileDatabase().getFileById(id), api);
+        uploader.upload();
+    });
 });
 
 ipcMain.on('upload_list_get', function (event, args) {
@@ -390,8 +400,8 @@ ipcMain.on('code_verification', function (event, apiRequester: string, values) {
     }
 });
 
-ipcMain.on('import_directory', function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
-   GroupManager.importGroup(args);
+ipcMain.on('import_directory', async function (event, args: {type: "grouped" | "individual", path: string, files: {fileName: string, filePath: string, relativePath: string}[] }) {
+   await GroupManager.importGroup(args);
 });
 
 ipcMain.on('group_get_content', function (event, args: number) {

@@ -9,6 +9,9 @@ import * as path from "path";
 import log from "electron-log";
 import {GroupUploader} from "@main/group/controller/GroupUploader";
 import {IDownloader} from "@main/downloader/interfaces/IDownloader";
+import RemoteServerApi from "@main/api/RemoteServerApi";
+import {UploadResultStatusType} from "@main/database/LocalDatabase";
+import {sendSuccess} from "@main/NotificationBundle";
 
 
 type GroupImportType = {
@@ -19,7 +22,7 @@ type GroupImportType = {
 
 export class GroupManager {
 
-    public static importGroup(groupInfo: GroupImportType, downloader?: IDownloader){
+    public static async importGroup(groupInfo: GroupImportType, downloader?: IDownloader) {
         if (groupInfo.type == "individual") {
             groupInfo.files.forEach((file) => {
                 getFileManager().addFileFromLocal(file.filePath, file.fileName);
@@ -28,8 +31,8 @@ export class GroupManager {
             // Create Group
             let group = this.createGroup(groupInfo.path);
             //Move Folder to Staging area
-            const newFolderName = `g${ group.id }_${ group.getName() }`;
-            if(groupInfo.path.startsWith(FileUtils.getFilePath(false))) {
+            const newFolderName = `g${group.id}_${group.getName()}`;
+            if (groupInfo.path.startsWith(FileUtils.getFilePath(false))) {
                 jetpack.copy(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
             } else {
                 jetpack.move(groupInfo.path, FileUtils.getFilePath(false) + newFolderName);
@@ -38,20 +41,21 @@ export class GroupManager {
             group.setRootFolder(absPath);
             // Create FileModel for each subfile
             let id = 0;
-            groupInfo.files.forEach((file) => {
+            for (const file of groupInfo.files) {
                 let filePath = absPath + file.fileName;
-                let hash: string = FileUtils.getFileHash(filePath);
+                let hash: string = await FileUtils.getFileHash(filePath);
                 let metadata: FileUploadData = FileUploadData.fromJson(null);
                 metadata.restrictions = 1;
                 let fileModel = new FileModel(id, file.fileName, filePath, FileState.NEW, '', hash, metadata);
-                if(downloader) {
+                if (downloader) {
                     downloader.createdFilePostback(fileModel);
                 }
                 group.addFileModel(fileModel);
                 id++;
-            });
+            }
             //Save to database
             getFileDatabase().addGroup(group);
+            sendSuccess("Group Import Completed", "Successfully imported group folder.");
         }
     }
 
@@ -72,7 +76,7 @@ export class GroupManager {
     public static deleteGroup(group: GroupModel, removeFolder: boolean = false) {
         log.info(`Deleting Group: ${group.getName()} with id: ${group.id}. Folder removal: ${removeFolder}`);
         if(removeFolder) {
-            jetpack.remove(group.getRootFolder())
+            jetpack.remove(group.getRootFolder());
         }
         getFileDatabase().removeGroup(group);
     }
@@ -82,6 +86,8 @@ export class GroupManager {
 
         let deleteGroup = true;
         if(window != null) window.webContents.send('group_upload_start', group.getFiles().length);
+        let api = new RemoteServerApi();
+        let valid = await api.getToken();
 
         for (const file of group.getUploadSortedFiles()) {
 
@@ -93,13 +99,19 @@ export class GroupManager {
                 continue;
             }
 
-            let uploader = new GroupUploader(mergedFile, group);
+            let uploader = new GroupUploader(mergedFile, api, group);
             if (group.getGroupId() == null) {
                 let groupMade = await uploader.preFlight();
                 if(!groupMade) {
                     deleteGroup = false;
                     let date = new Date();
-                    let uploadAttempt = { intid: `G${group.id}`, name: `this.file.fileName`, datetime: date.toLocaleDateString() + " " + date.getHours() + ":" + date.getMinutes(), errors: ['Unable to create group id'], status: 'reject' };
+                    let uploadAttempt: UploadResultStatusType = {
+                        intid: `G${group.id}`,
+                        name: `this.file.fileName`,
+                        datetime: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`,
+                        errors: ['Unable to create group id'],
+                        status: 'failure'
+                    };
                     getFileDatabase().addNewUpload(uploadAttempt);
                     if(window != null) window.webContents.send('status_update', -1);
                     break;

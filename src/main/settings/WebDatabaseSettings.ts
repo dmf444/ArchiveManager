@@ -38,7 +38,7 @@ export class WebDatabaseSettings implements ISettings {
                 {id: 'host_address', value: this.hostAddr, size: 50, name: "Remote Host Address"},
                 {id: 'databaseName', value: this.databaseName, size: 50, name: "Database Name"},
                 {id: 'username', value: this.username, size: 50, name: "Database Username"},
-                {id: 'password', value: this.password, size: 50, name: "Database Password"}
+                {id: 'password', value: this.password, size: 50, name: "Database Password", type: "password"}
             ]
         }
     }

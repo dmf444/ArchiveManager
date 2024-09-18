@@ -3,7 +3,7 @@ import {FileUtils} from "@main/downloader/FileUtils";
 import {getFileDatabase} from "@main/main";
 import {FileModel} from "@main/file/FileModel";
 import {FileState} from "@main/file/FileState";
-import {sendError, sendSuccess} from "@main/NotificationBundle";
+import {sendError, sendInfo, sendSuccess} from "@main/NotificationBundle";
 import {downloadPromise, IDownloader} from "@main/downloader/interfaces/IDownloader";
 import {STATE} from "@main/downloader/interfaces/State";
 import {GoogleDriveDownloader} from "@main/downloader/downloaders/GoogleDriveDownloader";
@@ -31,6 +31,7 @@ export class FileManager {
         for(let i = 0; i < this.downloaders.length; i++) {
             let downloader: IDownloader = this.downloaders[i];
             if(downloader.acceptsUrl(url)) {
+                sendInfo("Downloading...", `Now downloading the file from ${url}`, url);
                 downloader.downloadUrl(url, stage).then((downloadPromise: downloadPromise) => {
                     log.warn(downloadPromise);
                     this.downloadFileCallback(downloadPromise, downloader, url, stage);
@@ -66,11 +67,12 @@ export class FileManager {
         } else if(state == STATE.MULTIPLE && uploadResults.multiItem != null) {
 
             uploadResults.multiItem.forEach((downloadData: downloadPromise) => {
+                sendInfo("Downloading Subfile", `A sub-file was found. Now downloading ${downloadData.url}`, downloadData.url);
                 log.warn("Calling Each");
                 if (downloadData.state == STATE.FAILED) {
                     const fileModel = FileUtils.createNewErrorFileEntry(downloadData.url);
                     downloader.createdFilePostback(fileModel);
-                    sendError("Download Failed!", `Unable to download ${downloadData.url}`);
+                    sendError("Download Failed!", `Unable to download ${downloadData.url}`, downloadData.url);
                     return;
                 }
                 let webUrl = downloadData.url != null ? downloadData.url : url;
@@ -92,8 +94,9 @@ export class FileManager {
                 type: "grouped",
                 path: uploadResults.filePathDir,
                 files: groupFiles
-            }, downloader);
-            downloader.createdFilePostback(uploadResults.filePathDir);
+            }, downloader).then(() => {
+                downloader.createdFilePostback(uploadResults.filePathDir);
+            });
 
         } else {
             if(fileModel != null) {
@@ -102,7 +105,7 @@ export class FileManager {
             } else {
                 FileUtils.createNewErrorFileEntry(url);
             }
-            sendError("Download Failed!", `Unable to download ${url}`);
+            sendError("Download Failed!", `Unable to download ${url}`, url);
         }
     }
 
@@ -111,38 +114,41 @@ export class FileManager {
         let fileName = uploadResults.fileName;
         let filePath = filePathDir + fileName;
 
-        //Get file MD5
-        let hashCheck: string = uploadResults.md5;
-        if (hashCheck == null) {
-            hashCheck = FileUtils.getFileHash(filePath);
-        }
 
-        FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
-            if(fileModel != null) {
-                fileModel.fileName = uploadResults.fileName;
-                fileModel.savedLocation = filePath;
-                fileModel.md5 = hashCheck;
-                if(contains){
-                    fileModel.state = FileState.DUPLICATE;
+        FileUtils.getFileHash(filePath).then((md5: string) => {
+            let hashCheck: string = uploadResults.md5 ?? md5;
+
+            FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
+                if(fileModel != null) {
+                    fileModel.fileName = uploadResults.fileName;
+                    fileModel.savedLocation = filePath;
+                    fileModel.md5 = hashCheck;
+                    if(contains){
+                        fileModel.state = FileState.DUPLICATE;
+                    }
+                    getFileDatabase().updateFile(fileModel);
+                } else {
+                    let file = FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
+                    downloader.createdFilePostback(file);
                 }
-                getFileDatabase().updateFile(fileModel);
-            } else {
-                let file = FileUtils.createNewFileEntry(filePath, fileName, url, contains, hashCheck, stage);
-                downloader.createdFilePostback(file);
-            }
-            sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
+                sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`, url);
+            });
         });
     }
 
     public addFileFromLocal(filePath: string, fileName: string, copyFile: boolean = false) {
         if(!filePath.includes(FileUtils.getFilePath(true)) && !filePath.includes(FileUtils.getFilePath(false))){
+            sendInfo("Importing Local File", `Assessing ${fileName} for file viability & uniqueness.`, fileName);
+            FileUtils.getFileHash(filePath).then(md5 => {
 
-            let hashCheck: string = FileUtils.getFileHash(filePath);
-            FileUtils.queryForDuplicates(hashCheck).then((contains: boolean) => {
-                let file = FileUtils.createNewFileEntry(filePath, fileName, '', contains, hashCheck, false);
-                this.moveFileToIngest(file, false, copyFile);
-                sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`);
+                FileUtils.queryForDuplicates(md5).then((contains: boolean) => {
+                    let file = FileUtils.createNewFileEntry(filePath, fileName, '', contains, md5, false);
+                    this.moveFileToIngest(file, false, copyFile);
+                    sendSuccess("Download Success!", `File ${fileName} was downloaded successfully!`, fileName);
+                });
+
             });
+
         }
     }
 

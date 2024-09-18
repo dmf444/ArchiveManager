@@ -10,7 +10,7 @@ import { Home } from './Home';
 import { Files } from './Files';
 import {Settings} from "@/renderer/components/Settings";
 import {ipcRenderer} from "electron";
-import {CheckCircleOutlined, InfoCircleOutlined} from "@ant-design/icons/lib";
+import {CheckCircleOutlined, InfoCircleOutlined, LoadingOutlined} from "@ant-design/icons/lib";
 import {ArgsProps} from "antd/lib/notification";
 import {notificationBundle} from "@main/NotificationBundle";
 import {Info} from "@/renderer/components/Info";
@@ -38,16 +38,14 @@ export class ContentSurround extends React.Component{
             message: bundle.message,
             description: bundle.description,
             placement: "bottomRight",
-            duration: 5
+            duration: bundle.notificationId && bundle.status == "info" ? 0 : 5,
+            type: bundle.status,
+            key: bundle.notificationId ?? undefined,
+            icon: bundle.status == "info" ? <LoadingOutlined /> : undefined
         }
 
-        if(bundle.status == "success") {
-            notification.success(config);
-        } else if(bundle.status == "warn") {
-            notification.warning(config);
-        } else {
-            notification.error(config);
-        }
+
+        notification.open(config);
     }
 
     onCollapse = collapsed => {
